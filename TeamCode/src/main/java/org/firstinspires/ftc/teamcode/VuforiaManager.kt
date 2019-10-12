@@ -59,23 +59,14 @@ class VuforiaManager {
         val tfodMonitorViewId =
                 context.resources.getIdentifier("tfodMonitorViewId", "id", context.packageName)
         val tfodParams = TFObjectDetector.Parameters(tfodMonitorViewId)
-        tfodParams.minimumConfidence = 0.5
 
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParams, vuforia).apply {
             loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL)
         }
     }
 
-    fun getUpdatedRecognitions(): List<Recognition> = tfod?.updatedRecognitions ?: emptyList()
-
-    fun searchForGold(): Boolean {
-        val updatedRecognitions = tfod?.updatedRecognitions
-
-        if (updatedRecognitions != null)
-            return updatedRecognitions.any { it.label == LABEL_GOLD_MINERAL }
-
-        return false
-    }
+    val recognitions: List<Recognition>
+        get() = tfod?.recognitions ?: emptyList()
 
     fun waitForDetector() {
         try {
