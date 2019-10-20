@@ -5,8 +5,6 @@ import kotlin.properties.Delegates
 
 class TeamRobot {
 
-    var x = 0
-    var y = 0
     var isOpModeActive = false
         private set
     var wheels: WheelMotors by Delegates.notNull()
@@ -14,8 +12,6 @@ class TeamRobot {
     val vuforia = VuforiaManager()
 
     fun init(hardwareMap: HardwareMap) {
-        x = 0
-        y = 0
         isOpModeActive = true
         wheels = WheelMotors(hardwareMap.dcMotor)
 
