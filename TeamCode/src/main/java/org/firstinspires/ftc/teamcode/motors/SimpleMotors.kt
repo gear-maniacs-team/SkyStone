@@ -1,9 +1,9 @@
-package org.firstinspires.ftc.teamcode
+package org.firstinspires.ftc.teamcode.motors
 
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.HardwareMap
 
-class WheelMotors(deviceMapping: HardwareMap.DeviceMapping<DcMotor>) {
+class SimpleMotors(deviceMapping: HardwareMap.DeviceMapping<DcMotor>) {
 
     val left: DcMotor = deviceMapping["left"]
     val right: DcMotor = deviceMapping["right"]

@@ -1,23 +1,30 @@
 package org.firstinspires.ftc.teamcode
 
 import com.qualcomm.robotcore.hardware.HardwareMap
+import org.firstinspires.ftc.teamcode.motors.ArmMotors
+import org.firstinspires.ftc.teamcode.motors.WheelMotors
 import kotlin.properties.Delegates
 
 class TeamRobot {
 
-    var x = 0
-    var y = 0
     var isOpModeActive = false
         private set
-    var wheels: WheelMotors by Delegates.notNull()
+    var wheelsMotors by Delegates.notNull<WheelMotors>()
+        private set
+    var armMotors by Delegates.notNull<ArmMotors>()
         private set
     val vuforia = VuforiaManager()
 
-    fun init(hardwareMap: HardwareMap) {
-        x = 0
-        y = 0
+    fun init() {
         isOpModeActive = true
-        wheels = WheelMotors(hardwareMap.dcMotor)
+
+        INSTANCE = this
+    }
+
+    fun init(hardwareMap: HardwareMap) {
+        isOpModeActive = true
+        wheelsMotors = WheelMotors(hardwareMap.dcMotor)
+        armMotors = ArmMotors(hardwareMap.dcMotor)
 
         INSTANCE = this
     }

@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition
+import org.firstinspires.ftc.teamcode.motors.SimpleMotors
+import org.firstinspires.ftc.teamcode.utils.fastLazy
 import java.util.concurrent.Executors
 
 @Autonomous(name = "StoneFollower")
@@ -34,12 +36,13 @@ class StoneFollower : OpMode() {
     private val robot = TeamRobot()
     private val executor = Executors.newSingleThreadExecutor()
     private var cube: Recognition? = null
+    private val wheels by fastLazy { SimpleMotors(hardwareMap.dcMotor) }
 
     override fun init() {
         robot.init(hardwareMap)
         robot.vuforia.startDetectorAsync(hardwareMap)
 
-        with(robot.wheels) {
+        with(wheels) {
             left.direction = DcMotorSimple.Direction.REVERSE
             setModeAll(DcMotor.RunMode.STOP_AND_RESET_ENCODER)
             setModeAll(DcMotor.RunMode.RUN_USING_ENCODER)
@@ -60,7 +63,7 @@ class StoneFollower : OpMode() {
         val cube = cube
 
         if (cube == null) {
-            robot.wheels.setPowerAll(0.0)
+            wheels.setPowerAll(0.0)
             return
         }
 
@@ -86,8 +89,6 @@ class StoneFollower : OpMode() {
     }
 
     private fun move(dist: Float, leftPower: Double, rightPower: Double) {
-        val wheels = robot.wheels
-
         val finalLeftPower = run {
             val currentPosition = wheels.left.currentPosition
             val targetPosition = currentPosition + getTicksFromCM(dist).toInt()
