@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorSimple
@@ -9,6 +10,7 @@ import org.firstinspires.ftc.teamcode.motors.SimpleMotors
 import org.firstinspires.ftc.teamcode.utils.fastLazy
 import java.util.concurrent.Executors
 
+@Disabled
 @Autonomous(name = "StoneFollower")
 class StoneFollower : OpMode() {
 
@@ -52,7 +54,7 @@ class StoneFollower : OpMode() {
     override fun start() {
         executor.submit {
             while (robot.isOpModeActive)
-                cube = robot.vuforia.recognitions.firstOrNull { it.label == VuforiaManager.LABEL_GOLD_MINERAL }
+                cube = robot.vuforia.recognitions.firstOrNull { it.label == VuforiaManager.LABEL_STONE }
             Thread.sleep(20)
         }
 

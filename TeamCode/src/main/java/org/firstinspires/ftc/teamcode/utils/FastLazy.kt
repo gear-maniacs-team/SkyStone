@@ -21,11 +21,4 @@ private class FastLazyImpl<out T>(initializer: () -> T) : Lazy<T> {
     override fun toString(): String = if (isInitialized()) value.toString() else "Lazy value not initialized yet."
 }
 
-private class InitializedLazyImpl<out T>(override val value: T) : Lazy<T>  {
-
-    override fun isInitialized(): Boolean = true
-
-    override fun toString(): String = value.toString()
-}
-
 fun <T> fastLazy(initializer: () -> T): Lazy<T> = FastLazyImpl(initializer)
