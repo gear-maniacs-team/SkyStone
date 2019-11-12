@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode
+package org.firstinspires.ftc.teamcode.autonomous
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.Disabled
@@ -6,13 +6,15 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition
+import org.firstinspires.ftc.teamcode.TeamRobot
 import org.firstinspires.ftc.teamcode.motors.SimpleMotors
+import org.firstinspires.ftc.teamcode.detector.VuforiaManager
 import org.firstinspires.ftc.teamcode.utils.fastLazy
 import java.util.concurrent.Executors
 
 @Disabled
 @Autonomous(name = "Simple StoneFollower")
-class StoneFollower : OpMode() {
+class SimpleStoneFollower : OpMode() {
 
     private companion object {
         const val DEFAULT_POWER = 0.7

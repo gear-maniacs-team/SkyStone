@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode
+package org.firstinspires.ftc.teamcode.detector
 
 import android.content.Context
 import com.qualcomm.robotcore.hardware.HardwareMap

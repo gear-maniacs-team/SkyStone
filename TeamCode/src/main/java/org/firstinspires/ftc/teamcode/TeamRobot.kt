@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode
 import com.qualcomm.robotcore.hardware.HardwareMap
 import org.firstinspires.ftc.teamcode.motors.ArmMotors
 import org.firstinspires.ftc.teamcode.motors.WheelMotors
+import org.firstinspires.ftc.teamcode.detector.VuforiaManager
 import kotlin.properties.Delegates
 
 class TeamRobot {
