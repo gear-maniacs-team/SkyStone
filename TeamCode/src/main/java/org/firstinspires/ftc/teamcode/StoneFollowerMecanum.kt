@@ -14,23 +14,19 @@ class StoneFollowerMecanum : OpMode() {
 
     private companion object {
         const val DEFAULT_POWER = 0.7
-        const val HEIGHT_COEFFICIENT = 20 * 271
 
-        const val MOTOR_TICKS = 1120
-        const val WHEELS_DIAMETER = 10.16
-        const val TICKS_PER_CM = MOTOR_TICKS / (WHEELS_DIAMETER * Math.PI)
+        private const val MOTOR_TICKS = 1120
+        private const val WHEELS_DIAMETER = 10.16
+        private const val TICKS_PER_CM = MOTOR_TICKS / (WHEELS_DIAMETER * Math.PI)
+
+        private const val HEIGHT_COEFFICIENT = 20 * 271
 
         /*
-         * Transforms CM into encoder ticks for the Hex HD 1:40 motor
+         * Transforms CM into encoder ticks
          */
-        fun getTicksFromCM(cm: Double): Double = cm * TICKS_PER_CM
+        fun cmToTicks(cm: Double): Double = cm * TICKS_PER_CM
 
         fun getDist(height: Float) = HEIGHT_COEFFICIENT / height
-
-        /*
-         * Compares two encoder positions with a margin of error of one digit
-         */
-        infix fun Int.isPositionEqual(other: Int) = this / 10 == other / 10
 
         fun mapToRange(inputStart: Double, inputEnd: Double, outputStart: Double, outputEnd: Double, input: Double) =
             outputStart + ((outputEnd - outputStart) / (inputEnd - inputStart)) * (input - inputStart)
@@ -47,7 +43,7 @@ class StoneFollowerMecanum : OpMode() {
     override fun init() {
         robot.init(hardwareMap)
         robot.vuforia.startDetectorAsync(hardwareMap)
-        distanceSensor = hardwareMap.get(DistanceSensor::class.java, "camera_distance_sensor");
+        distanceSensor = hardwareMap.get(DistanceSensor::class.java, "camera_distance_sensor")
 
         with(wheelMotors) {
             setModeAll(DcMotor.RunMode.STOP_AND_RESET_ENCODER)
@@ -60,14 +56,14 @@ class StoneFollowerMecanum : OpMode() {
             while (robot.isOpModeActive) {
                 robot.vuforia.waitForDetector()
                 cube = robot.vuforia.recognitions.firstOrNull { it.label == VuforiaManager.LABEL_STONE }
-                Thread.sleep(50)
+                Thread.sleep(100)
             }
         }
 
         executor.submit {
             while (robot.isOpModeActive) {
                 distanceSensorUnit = distanceSensor.getDistance(DistanceUnit.CM)
-                Thread.sleep(50)
+                Thread.sleep(100)
             }
         }
 
@@ -94,7 +90,7 @@ class StoneFollowerMecanum : OpMode() {
 
         move(
             mapToRange(0.01, 0.99, -0.5, 0.5, cubePos.toDouble()),
-            mapToRange(100.0, 2000.0, 0.0, DEFAULT_POWER, minOf(getTicksFromCM(dist), 2000.0))
+            mapToRange(100.0, 2000.0, 0.0, DEFAULT_POWER, minOf(cmToTicks(dist), 2000.0))
         )
 
         telemetry.addData("Camera Distance", cameraDistance)
@@ -103,24 +99,20 @@ class StoneFollowerMecanum : OpMode() {
     }
 
     private fun move(x: Double, y: Double) {
-        var powerLeftBack = y + x
-        var powerLeftFront = y + x
-        var powerRightFront = -y + x
-        var powerRightBack = -y + x
+        var powerLeft = y + x
+        var powerRight = -y + x
 
         // Find the biggest value
-        val max = maxOf(maxOf(powerLeftBack, powerLeftFront, powerRightFront), powerRightBack)
+        val max = maxOf(powerLeft, powerRight)
 
         if (max > 1) {
-            powerLeftFront /= max
-            powerRightFront /= max
-            powerLeftBack /= max
-            powerRightBack /= max
+            powerLeft /= max
+            powerRight /= max
         }
 
-        wheelMotors.rightFront.power = powerRightFront
-        wheelMotors.leftFront.power = powerLeftFront
-        wheelMotors.rightBack.power = powerRightBack
-        wheelMotors.leftBack.power = powerLeftBack
+        wheelMotors.rightFront.power = powerRight
+        wheelMotors.leftFront.power = powerLeft
+        wheelMotors.rightBack.power = powerRight
+        wheelMotors.leftBack.power = powerLeft
     }
 }

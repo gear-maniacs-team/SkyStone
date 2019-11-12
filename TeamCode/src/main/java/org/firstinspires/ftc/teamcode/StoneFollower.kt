@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.utils.fastLazy
 import java.util.concurrent.Executors
 
 @Disabled
-@Autonomous(name = "StoneFollower")
+@Autonomous(name = "Simple StoneFollower")
 class StoneFollower : OpMode() {
 
     private companion object {
