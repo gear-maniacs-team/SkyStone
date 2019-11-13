@@ -10,31 +10,31 @@ import org.openftc.easyopencv.OpenCvWebcam
 
 class OpenCvManager(private var pipeline: OpenCvPipeline) {
 
-    private lateinit var webcam: OpenCvCamera
+    private lateinit var camera: OpenCvCamera
 
     fun startCamera(hardwareMap: HardwareMap) {
         val cameraMonitorViewId = hardwareMap.appContext.resources.getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.packageName)
-        webcam = OpenCvWebcam(hardwareMap.get(WebcamName::class.java, "Webcam 1"), cameraMonitorViewId)
+        camera = OpenCvWebcam(hardwareMap.get(WebcamName::class.java, "Webcam 1"), cameraMonitorViewId)
 
-        webcam.openCameraDevice()
-        webcam.setPipeline(pipeline)
+        camera.openCameraDevice()
+        camera.setPipeline(pipeline)
     }
 
     fun startDetector(width: Int, height: Int) {
-        webcam.startStreaming(width, height, OpenCvCameraRotation.UPRIGHT)
+        camera.startStreaming(width, height, OpenCvCameraRotation.UPRIGHT)
     }
 
     fun stopDetector() {
-        webcam.stopStreaming()
+        camera.stopStreaming()
     }
 
     fun showPreview(showFps: Boolean = false) {
-        webcam.resumeViewport()
-        webcam.showFpsMeterOnViewport(showFps)
+        camera.resumeViewport()
+        camera.showFpsMeterOnViewport(showFps)
     }
 
     fun hidePreview() {
-        webcam.pauseViewport()
+        camera.pauseViewport()
     }
 
     fun switchPipeline(pipeline: OpenCvPipeline) {
@@ -42,15 +42,15 @@ class OpenCvManager(private var pipeline: OpenCvPipeline) {
     }
 
     fun stopCamera() {
-        webcam.stopStreaming()
-        webcam.closeCameraDevice()
+        camera.stopStreaming()
+        camera.closeCameraDevice()
     }
 
     fun printTelemetry(telemetry: Telemetry) {
-        telemetry.addData("Frame Count", webcam.frameCount)
-        telemetry.addData("FPS", String.format("%.2f", webcam.fps))
-        telemetry.addData("Total frame time ms", webcam.totalFrameTimeMs)
-        telemetry.addData("Pipeline time ms", webcam.pipelineTimeMs)
-        telemetry.addData("Overhead time ms", webcam.overheadTimeMs)
+        telemetry.addData("Frame Count", camera.frameCount)
+        telemetry.addData("FPS", String.format("%.2f", camera.fps))
+        telemetry.addData("Total frame time ms", camera.totalFrameTimeMs)
+        telemetry.addData("Pipeline time ms", camera.pipelineTimeMs)
+        telemetry.addData("Overhead time ms", camera.overheadTimeMs)
     }
 }
