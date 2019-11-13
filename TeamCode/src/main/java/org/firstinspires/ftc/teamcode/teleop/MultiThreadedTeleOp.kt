@@ -85,7 +85,10 @@ class MultiThreadedTeleOp : OpMode() {
     private fun strafe() {
         // Strafe Right
         while (gamepad1.right_stick_x > 0) {
-
+            wheelMotors.rightFront.power = MOTOR_SPEED_STRAFE
+            wheelMotors.leftFront.power = MOTOR_SPEED_STRAFE
+            wheelMotors.rightBack.power = -MOTOR_SPEED_STRAFE
+            wheelMotors.leftBack.power = -MOTOR_SPEED_STRAFE
         }
 
         // Strafe Left

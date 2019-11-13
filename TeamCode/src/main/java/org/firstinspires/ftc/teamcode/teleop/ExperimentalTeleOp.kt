@@ -76,20 +76,18 @@ class ExperimentalTeleOp : OpMode() {
     }
 
     private fun strafe() {
-        // Strafe Right
         with(wheelMotors) {
-            rightFront.power = rightFront.power + MOTOR_SPEED_STRAFE
-            leftFront.power = leftFront.power + MOTOR_SPEED_STRAFE
-            rightBack.power = rightBack.power - MOTOR_SPEED_STRAFE
-            leftBack.power = leftBack.power - MOTOR_SPEED_STRAFE
-        }
-
-        // Strafe Left
-        with(wheelMotors) {
-            rightFront.power = rightFront.power - MOTOR_SPEED_STRAFE
-            leftFront.power = leftFront.power - MOTOR_SPEED_STRAFE
-            rightBack.power = rightBack.power + MOTOR_SPEED_STRAFE
-            leftBack.power = leftBack.power + MOTOR_SPEED_STRAFE
+            if (gamepad1.right_stick_x > 0) { // Strafe Right
+                rightFront.power = rightFront.power + MOTOR_SPEED_STRAFE
+                leftFront.power = leftFront.power + MOTOR_SPEED_STRAFE
+                rightBack.power = rightBack.power - MOTOR_SPEED_STRAFE
+                leftBack.power = leftBack.power - MOTOR_SPEED_STRAFE
+            } else if (gamepad1.right_stick_x < 0) { // Strafe Left
+                rightFront.power = rightFront.power - MOTOR_SPEED_STRAFE
+                leftFront.power = leftFront.power - MOTOR_SPEED_STRAFE
+                rightBack.power = rightBack.power + MOTOR_SPEED_STRAFE
+                leftBack.power = leftBack.power + MOTOR_SPEED_STRAFE
+            }
         }
     }
 
