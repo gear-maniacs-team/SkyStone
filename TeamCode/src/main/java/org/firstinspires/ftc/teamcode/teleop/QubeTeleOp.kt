@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode.teleop
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
 import org.firstinspires.ftc.teamcode.QubeRobot
 import org.firstinspires.ftc.teamcode.utils.fastLazy
 
+@TeleOp(name = "QubeTeleOp")
 class QubeTeleOp : OpMode() {
 
     private val robot = QubeRobot()
