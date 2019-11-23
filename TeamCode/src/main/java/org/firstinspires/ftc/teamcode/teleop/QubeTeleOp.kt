@@ -121,9 +121,9 @@ class QubeTeleOp : OpMode() {
 
     private fun getTheFuckOut() {
         if (gamepad2.x)
-            poopOut.position = 0.0
+            poopOut.position = 0.1
         else if (gamepad2.a)
-            poopOut.position = 1.0
+            poopOut.position = 0.6
     }
 
     private fun extension() {
@@ -132,7 +132,7 @@ class QubeTeleOp : OpMode() {
             rightExtension.position = 0.0
         } else if (gamepad2.b) {
             leftExtension.position = 1.0
-            rightExtension.position = -1.0
+            rightExtension.position = 1.0
         }
     }
 
