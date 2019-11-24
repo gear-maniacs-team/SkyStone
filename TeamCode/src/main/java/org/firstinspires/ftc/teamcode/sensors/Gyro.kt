@@ -35,7 +35,7 @@ class Gyro {
 
     fun waitForCalibration() {
         while (!firstImu.isGyroCalibrated || !secondImu.isGyroCalibrated) {
-            Thread.sleep(10);
+            Thread.sleep(10)
         }
     }
 
