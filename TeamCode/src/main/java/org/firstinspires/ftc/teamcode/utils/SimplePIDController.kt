@@ -1,10 +1,14 @@
 package org.firstinspires.ftc.teamcode.utils
 
-class SimplePIDController {
-    private val kp = 0
-    private val ki = 0
-    private val kd = 0
-    var setPoint: Double = 0.0
+import org.firstinspires.ftc.robotcore.internal.system.Misc
+
+class SimplePIDController(
+    @JvmField var kp: Double,
+    @JvmField var ki: Double,
+    @JvmField var kd: Double) {
+
+    constructor() : this(1.0, 0.0, 0.0)
+
     private var currentTime: Long = 0
     private var previousTime: Long = 0
     private var elapsedTime: Long = 0
@@ -13,11 +17,11 @@ class SimplePIDController {
     private var errorRate: Double = 0.0
     private var lastError: Double = 0.0
 
-    fun computePID(input: Double): Double {
+    fun computePID(input: Double, targetPos: Double): Double {
         currentTime = System.currentTimeMillis()
         elapsedTime = (currentTime - previousTime)
 
-        error = setPoint - input
+        error = targetPos - input
         cumulativeError += error * elapsedTime
         errorRate = (error - lastError) / elapsedTime
 
@@ -29,5 +33,5 @@ class SimplePIDController {
         return output
     }
 
-
+    override fun toString(): String = Misc.formatForUser("p=%f i=%f d=%f", kp, ki, kd)
 }

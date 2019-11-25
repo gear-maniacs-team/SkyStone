@@ -3,9 +3,10 @@ package org.firstinspires.ftc.teamcode.autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
-import org.firstinspires.ftc.teamcode.rover_ruckus.RoverRuckusRobot
 import org.firstinspires.ftc.teamcode.detector.OpenCvManager
+import org.firstinspires.ftc.teamcode.rover_ruckus.RoverRuckusRobot
 import org.firstinspires.ftc.teamcode.utils.fastLazy
+import org.firstinspires.ftc.teamcode.utils.mapToRange
 import org.opencv.core.Rect
 
 @TeleOp(name = "AportCV")
@@ -29,9 +30,6 @@ class OpenCvStoneFollower : OpMode() {
         fun cmToTicks(cm: Double): Double = cm * TICKS_PER_CM
 
         fun getDist(height: Float) = HEIGHT_COEFFICIENT / height
-
-        fun mapToRange(inputStart: Double, inputEnd: Double, outputStart: Double, outputEnd: Double, input: Double) =
-                outputStart + ((outputEnd - outputStart) / (inputEnd - inputStart)) * (input - inputStart)
     }
 
     private val robot = RoverRuckusRobot()
