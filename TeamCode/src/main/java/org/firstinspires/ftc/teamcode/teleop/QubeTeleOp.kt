@@ -14,19 +14,23 @@ class QubeTeleOp : OpMode() {
     private val wheelMotors by fastLazy { robot.wheelsMotors }
     private lateinit var leftIntake: DcMotor
     private lateinit var rightIntake: DcMotor
-    private lateinit var poopOut: Servo
+    private lateinit var cargoServo: Servo
     private lateinit var leftExtension: Servo
     private lateinit var rightExtension: Servo
     private var precisionModeOn = false
+
+    private val velocityFront = getVelocityForRpmAndEncoderCycles(220, 383.6)
+    private val velocityBack = getVelocityForRpmAndEncoderCycles(220, 753.2)
 
     override fun init() {
         robot.init(hardwareMap)
 
         wheelMotors.setModeAll(DcMotor.RunMode.RUN_USING_ENCODER)
+
         leftIntake = hardwareMap.dcMotor["intake_left"]
         rightIntake = hardwareMap.dcMotor["intake_right"]
 
-        poopOut = hardwareMap.servo["iesi_afara"]
+        cargoServo = hardwareMap.servo["iesi_afara"]
         leftExtension = hardwareMap.servo["extension_left"]
         rightExtension = hardwareMap.servo["extension_right"]
     }
@@ -35,7 +39,7 @@ class QubeTeleOp : OpMode() {
         Thread {
             while (robot.isOpModeActive) {
                 intake()
-                getTheFuckOut()
+                cargo()
                 extension()
             }
         }.start()
@@ -57,73 +61,77 @@ class QubeTeleOp : OpMode() {
         val x = (-gamepad1.left_stick_x).toDouble()
         val y = (gamepad1.left_stick_y).toDouble()
 
-        var powerLeftBack = y + x
-        var powerLeftFront = y + x
-        var powerRightFront = -y + x
-        var powerRightBack = -y + x
+        var powerLeft = y + x
+        var powerRight = -y + x
 
-        // Find the biggest value
-        val max = maxOf(maxOf(powerLeftBack, powerLeftFront, powerRightFront), powerRightBack)
+        val max = maxOf(powerLeft, powerRight)
 
         if (max > 1) {
-            powerLeftFront /= max
-            powerRightFront /= max
-            powerLeftBack /= max
-            powerRightBack /= max
+            powerLeft /= max
+            powerRight /= max
         }
 
         precisionModeOn = gamepad1.a
 
         if (precisionModeOn) {
-            powerRightFront *= PRECISION_MODE_MULTIPLIER
-            powerLeftFront *= PRECISION_MODE_MULTIPLIER
-            powerRightBack *= PRECISION_MODE_MULTIPLIER
-            powerLeftBack *= PRECISION_MODE_MULTIPLIER
+            powerRight *= PRECISION_MODE_MULTIPLIER
+            powerLeft *= PRECISION_MODE_MULTIPLIER
         }
 
         with(wheelMotors) {
-            // Front motors have double the rpm :(
-            rightFront.power = powerRightFront * MOTOR_SPEED_MULTIPLIER / 2
-            leftFront.power = powerLeftFront * MOTOR_SPEED_MULTIPLIER / 2
-            rightBack.power = powerRightBack * MOTOR_SPEED_MULTIPLIER
-            leftBack.power = powerLeftBack * MOTOR_SPEED_MULTIPLIER
+            rightFront.velocity = velocityFront * MOTOR_SPEED_MULTIPLIER
+            leftFront.velocity = velocityFront * MOTOR_SPEED_MULTIPLIER
+            rightBack.velocity = velocityBack * MOTOR_SPEED_MULTIPLIER
+            leftBack.velocity = velocityBack * MOTOR_SPEED_MULTIPLIER
         }
     }
 
     private fun strafe() {
-        // Strafe Right
-        while (gamepad1.right_stick_x > 0) {
-            wheelMotors.rightFront.power = -MOTOR_SPEED_STRAFE / 2
-            wheelMotors.leftFront.power = -MOTOR_SPEED_STRAFE / 2
-            wheelMotors.rightBack.power = MOTOR_SPEED_STRAFE
-            wheelMotors.leftBack.power = MOTOR_SPEED_STRAFE
-        }
+        with(wheelMotors) {
+            // Strafe Right
+            while (gamepad1.right_stick_x > 0) {
+                rightFront.velocity = -velocityFront * MOTOR_SPEED_STRAFE
+                leftFront.velocity = -velocityFront * MOTOR_SPEED_STRAFE
+                rightBack.velocity = velocityBack * MOTOR_SPEED_STRAFE
+                leftBack.velocity = velocityBack * MOTOR_SPEED_STRAFE
+            }
 
-        // Strafe Left
-        while (gamepad1.right_stick_x < 0) {
-            wheelMotors.rightFront.power = MOTOR_SPEED_STRAFE / 2
-            wheelMotors.leftFront.power = MOTOR_SPEED_STRAFE / 2
-            wheelMotors.rightBack.power = -MOTOR_SPEED_STRAFE
-            wheelMotors.leftBack.power = -MOTOR_SPEED_STRAFE
+            // Strafe Left
+            while (gamepad1.right_stick_x < 0) {
+                rightFront.velocity = velocityFront * MOTOR_SPEED_STRAFE
+                leftFront.velocity = velocityFront * MOTOR_SPEED_STRAFE
+                rightBack.velocity = -velocityBack * MOTOR_SPEED_STRAFE
+                leftBack.velocity = -velocityBack * MOTOR_SPEED_STRAFE
+            }
         }
     }
 
     private fun intake() {
+        if (gamepad2.dpad_left) {
+            leftIntake.power = INTAKE_POWER
+            return
+        } else if (gamepad2.dpad_right) {
+            rightIntake.power = -INTAKE_POWER * 1.333
+            return
+        }
+
         val intakePower = when {
             gamepad2.right_bumper -> INTAKE_POWER
             gamepad2.left_bumper -> -INTAKE_POWER
+            gamepad2.dpad_down -> INTAKE_POWER / 2
+            gamepad2.dpad_up-> -INTAKE_POWER / 2
             else -> 0.0
         }
 
         leftIntake.power = intakePower
-        rightIntake.power = -intakePower
+        rightIntake.power = -intakePower * 1.333
     }
 
-    private fun getTheFuckOut() {
+    private fun cargo() {
         if (gamepad2.x)
-            poopOut.position = 0.1
+            cargoServo.position = 0.1
         else if (gamepad2.a)
-            poopOut.position = 0.6
+            cargoServo.position = 0.6
     }
 
     private fun extension() {
@@ -136,10 +144,12 @@ class QubeTeleOp : OpMode() {
         }
     }
 
+    private fun getVelocityForRpmAndEncoderCycles(rpm: Int, encoder: Double) = rpm * (encoder / 60)
+
     private companion object {
         private const val PRECISION_MODE_MULTIPLIER = 0.45
-        private const val MOTOR_SPEED_MULTIPLIER = 0.8
+        private const val MOTOR_SPEED_MULTIPLIER = 0.9
         private const val MOTOR_SPEED_STRAFE = 0.6
-        private const val INTAKE_POWER = 0.4
+        private const val INTAKE_POWER = 0.75
     }
 }

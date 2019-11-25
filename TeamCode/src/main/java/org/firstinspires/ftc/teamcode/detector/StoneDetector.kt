@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.autonomous
+package org.firstinspires.ftc.teamcode.detector
 
 import com.disnodeteam.dogecv.DogeCV
 import com.disnodeteam.dogecv.detectors.DogeCVDetector
