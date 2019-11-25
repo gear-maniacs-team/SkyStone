@@ -15,6 +15,8 @@ class Gyro {
 
     private lateinit var firstImu: BNO055IMU
     private lateinit var secondImu: BNO055IMU
+
+    @Volatile
     var angle: Float = 0f
         private set
 
