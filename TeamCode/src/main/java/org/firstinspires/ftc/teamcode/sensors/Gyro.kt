@@ -15,7 +15,7 @@ class Gyro {
 
     private lateinit var firstImu: BNO055IMU
     private lateinit var secondImu: BNO055IMU
-    var angle = 0.0
+    var angle: Float = 0f
         private set
 
     fun init(hardwareMap: HardwareMap) {
@@ -40,8 +40,8 @@ class Gyro {
     }
 
     private fun updateValue() {
-        val firstAngle = firstImu.getAngularOrientation(reference, angleOrder, angleUnit).thirdAngle.toDouble()
-        val secondAngle = secondImu.getAngularOrientation(reference, angleOrder, angleUnit).thirdAngle.toDouble()
+        val firstAngle = firstImu.getAngularOrientation(reference, angleOrder, angleUnit).thirdAngle
+        val secondAngle = secondImu.getAngularOrientation(reference, angleOrder, angleUnit).thirdAngle
 
         angle = (firstAngle + secondAngle) / 2
     }

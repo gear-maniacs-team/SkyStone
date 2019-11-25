@@ -1,14 +1,15 @@
 package org.firstinspires.ftc.teamcode.motors
 
 import com.qualcomm.robotcore.hardware.DcMotor
+import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.HardwareMap
 
 class WheelMotors(dcMotors: HardwareMap.DeviceMapping<DcMotor>) {
 
-    val leftFront: DcMotor = dcMotors["TL"]
-    val leftBack: DcMotor = dcMotors["BL"]
-    val rightFront: DcMotor = dcMotors["TR"]
-    val rightBack: DcMotor = dcMotors["BR"]
+    val leftFront: DcMotorEx = dcMotors["TL"] as DcMotorEx
+    val leftBack: DcMotorEx = dcMotors["BL"] as DcMotorEx
+    val rightFront: DcMotorEx = dcMotors["TR"] as DcMotorEx
+    val rightBack: DcMotorEx = dcMotors["BR"] as DcMotorEx
 
     fun setModeAll(mode: DcMotor.RunMode) {
         leftFront.mode = mode

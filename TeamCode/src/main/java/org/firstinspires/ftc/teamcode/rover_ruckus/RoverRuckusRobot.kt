@@ -1,15 +1,17 @@
-package org.firstinspires.ftc.teamcode
+package org.firstinspires.ftc.teamcode.rover_ruckus
 
 import com.qualcomm.robotcore.hardware.HardwareMap
 import org.firstinspires.ftc.teamcode.detector.VuforiaManager
 import org.firstinspires.ftc.teamcode.motors.WheelMotors
 import kotlin.properties.Delegates
 
-class QubeRobot {
+class RoverRuckusRobot {
 
     var isOpModeActive = false
         private set
     var wheelsMotors by Delegates.notNull<WheelMotors>()
+        private set
+    var armMotors by Delegates.notNull<ArmMotors>()
         private set
     val vuforia = VuforiaManager()
 
@@ -22,6 +24,7 @@ class QubeRobot {
     fun init(hardwareMap: HardwareMap) {
         isOpModeActive = true
         wheelsMotors = WheelMotors(hardwareMap.dcMotor)
+        armMotors = ArmMotors(hardwareMap.dcMotor)
 
         INSTANCE = this
     }
@@ -34,14 +37,14 @@ class QubeRobot {
     }
 
     companion object {
-        private var INSTANCE: QubeRobot? = null
+        private var INSTANCE: RoverRuckusRobot? = null
 
         /*
-         * This function should only be called after TeamRobot::init has been called
-         * and before TeamRobot::stop was called
+         * This function should only be called after RoverRuckusRobot::init has been called
+         * and before RoverRuckusRobot::stop was called
          *
          * If it is called at any other time, the function will throw an NPE
          */
-        fun getRobot(): QubeRobot = INSTANCE!!
+        fun getRobot(): RoverRuckusRobot = INSTANCE!!
     }
 }

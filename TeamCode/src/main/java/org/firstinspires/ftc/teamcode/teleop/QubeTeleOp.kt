@@ -4,13 +4,13 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.Servo
-import org.firstinspires.ftc.teamcode.QubeRobot
+import org.firstinspires.ftc.teamcode.TeamRobot
 import org.firstinspires.ftc.teamcode.utils.fastLazy
 
 @TeleOp(name = "QubeTeleOp")
 class QubeTeleOp : OpMode() {
 
-    private val robot = QubeRobot()
+    private val robot = TeamRobot()
     private val wheelMotors by fastLazy { robot.wheelsMotors }
     private lateinit var leftIntake: DcMotor
     private lateinit var rightIntake: DcMotor

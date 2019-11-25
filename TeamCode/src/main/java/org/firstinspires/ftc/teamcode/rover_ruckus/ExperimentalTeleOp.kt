@@ -1,15 +1,14 @@
-package org.firstinspires.ftc.teamcode.teleop
+package org.firstinspires.ftc.teamcode.rover_ruckus
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
-import org.firstinspires.ftc.teamcode.TeamRobot
 import org.firstinspires.ftc.teamcode.utils.fastLazy
 
-@TeleOp(name = "Multi-Threaded", group = "Good")
-class MultiThreadedTeleOp : OpMode() {
+@TeleOp(name = "ExperimentalTeleOp")
+class ExperimentalTeleOp : OpMode() {
 
-    private val robot = TeamRobot()
+    private val robot = RoverRuckusRobot()
     private val wheelMotors by fastLazy { robot.wheelsMotors }
     private val armMotors by fastLazy { robot.armMotors }
     private var precisionModeOn = false
@@ -50,53 +49,44 @@ class MultiThreadedTeleOp : OpMode() {
         val x = gamepad1.left_stick_x.toDouble()
         val y = (-gamepad1.left_stick_y).toDouble()
 
-        var powerLeftBack = y + x
-        var powerLeftFront = y + x
-        var powerRightFront = -y + x
-        var powerRightBack = -y + x
+        var powerLeft = y + x
+        var powerRight = -y + x
 
-        // Find the biggest value
-        val max = maxOf(maxOf(powerLeftBack, powerLeftFront, powerRightFront), powerRightBack)
+        val max = maxOf(powerLeft, powerRight)
 
         if (max > 1) {
-            powerLeftFront /= max
-            powerRightFront /= max
-            powerLeftBack /= max
-            powerRightBack /= max
+            powerLeft /= max
+            powerRight /= max
         }
 
         precisionModeOn = gamepad1.a
 
         if (precisionModeOn) {
-            powerRightFront *= PRECISION_MODE_MULTIPLIER
-            powerLeftFront *= PRECISION_MODE_MULTIPLIER
-            powerRightBack *= PRECISION_MODE_MULTIPLIER
-            powerLeftBack *= PRECISION_MODE_MULTIPLIER
+            powerLeft *= PRECISION_MODE_MULTIPLIER
+            powerRight *= PRECISION_MODE_MULTIPLIER
         }
 
         with(wheelMotors) {
-            rightFront.power = powerRightFront * MOTOR_SPEED_MULTIPLIER
-            leftFront.power = powerLeftFront * MOTOR_SPEED_MULTIPLIER
-            rightBack.power = powerRightBack * MOTOR_SPEED_MULTIPLIER
-            leftBack.power = powerLeftBack * MOTOR_SPEED_MULTIPLIER
+            rightFront.power = powerRight * MOTOR_SPEED_MULTIPLIER
+            leftFront.power = powerLeft * MOTOR_SPEED_MULTIPLIER
+            rightBack.power = powerRight * MOTOR_SPEED_MULTIPLIER
+            leftBack.power = powerLeft * MOTOR_SPEED_MULTIPLIER
         }
     }
 
     private fun strafe() {
-        // Strafe Right
-        while (gamepad1.right_stick_x > 0) {
-            wheelMotors.rightFront.power = MOTOR_SPEED_STRAFE
-            wheelMotors.leftFront.power = MOTOR_SPEED_STRAFE
-            wheelMotors.rightBack.power = -MOTOR_SPEED_STRAFE
-            wheelMotors.leftBack.power = -MOTOR_SPEED_STRAFE
-        }
-
-        // Strafe Left
-        while (gamepad1.right_stick_x < 0) {
-            wheelMotors.rightFront.power = -MOTOR_SPEED_STRAFE
-            wheelMotors.leftFront.power = -MOTOR_SPEED_STRAFE
-            wheelMotors.rightBack.power = MOTOR_SPEED_STRAFE
-            wheelMotors.leftBack.power = MOTOR_SPEED_STRAFE
+        with(wheelMotors) {
+            if (gamepad1.right_stick_x > 0) { // Strafe Right
+                rightFront.power = rightFront.power + MOTOR_SPEED_STRAFE
+                leftFront.power = leftFront.power + MOTOR_SPEED_STRAFE
+                rightBack.power = rightBack.power - MOTOR_SPEED_STRAFE
+                leftBack.power = leftBack.power - MOTOR_SPEED_STRAFE
+            } else if (gamepad1.right_stick_x < 0) { // Strafe Left
+                rightFront.power = rightFront.power - MOTOR_SPEED_STRAFE
+                leftFront.power = leftFront.power - MOTOR_SPEED_STRAFE
+                rightBack.power = rightBack.power + MOTOR_SPEED_STRAFE
+                leftBack.power = leftBack.power + MOTOR_SPEED_STRAFE
+            }
         }
     }
 

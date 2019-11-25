@@ -1,15 +1,14 @@
-package org.firstinspires.ftc.teamcode.teleop
+package org.firstinspires.ftc.teamcode.rover_ruckus
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
-import org.firstinspires.ftc.teamcode.TeamRobot
 import org.firstinspires.ftc.teamcode.utils.fastLazy
 
 @TeleOp(name = "SimpleTeleOp", group = "Good")
 class SimpleTeleOp : OpMode()  {
 
-    private val robot = TeamRobot()
+    private val robot = RoverRuckusRobot()
     private val wheelMotors by fastLazy { robot.wheelsMotors }
 
     override fun init() {
