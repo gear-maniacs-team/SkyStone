@@ -3,8 +3,9 @@ package org.firstinspires.ftc.teamcode.autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
+import org.firstinspires.ftc.teamcode.TeamRobot
 import org.firstinspires.ftc.teamcode.detector.OpenCvManager
-import org.firstinspires.ftc.teamcode.rover_ruckus.RoverRuckusRobot
+import org.firstinspires.ftc.teamcode.detector.StoneDetector
 import org.firstinspires.ftc.teamcode.utils.fastLazy
 import org.firstinspires.ftc.teamcode.utils.mapToRange
 import org.opencv.core.Rect
@@ -32,7 +33,7 @@ class OpenCvStoneFollower : OpMode() {
         fun getDist(height: Float) = HEIGHT_COEFFICIENT / height
     }
 
-    private val robot = RoverRuckusRobot()
+    private val robot = TeamRobot()
     private val wheelMotors by fastLazy { robot.wheelsMotors }
     private lateinit var detector: StoneDetector
     private lateinit var detectorManager: OpenCvManager

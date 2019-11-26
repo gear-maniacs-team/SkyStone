@@ -6,6 +6,7 @@ import org.firstinspires.ftc.teamcode.TeamRobot
 import org.firstinspires.ftc.teamcode.sensors.Gyro
 import org.firstinspires.ftc.teamcode.utils.SimplePIDController
 import org.firstinspires.ftc.teamcode.utils.fastLazy
+import org.firstinspires.ftc.teamcode.utils.getVelocityForRpmAndEncoderCycles
 
 @TeleOp(name = "TestingGyro")
 class TestingGyro : OpMode() {
@@ -15,8 +16,8 @@ class TestingGyro : OpMode() {
     private val wheelMotors by fastLazy { robot.wheelsMotors }
     private val pid = SimplePIDController(1.0, 0.0, 0.0)
 
-    private val velocityFront = getVelocityForRpmAndEncoderCycles(220, 383.6)
-    private val velocityBack = getVelocityForRpmAndEncoderCycles(220, 753.2)
+    private val maxFrontVelocity = getVelocityForRpmAndEncoderCycles(220, 383.6)
+    private val maxBackVelocity = getVelocityForRpmAndEncoderCycles(220, 753.2)
 
     override fun init() {
         robot.init(hardwareMap)
@@ -29,7 +30,8 @@ class TestingGyro : OpMode() {
     }
 
     override fun loop() {
-        pid.target = Math.PI
+        if (gamepad1.right_bumper)
+            pid.target += Math.PI
         val currentAngle = gyro.angle.toDouble()
 
         val modifier = when {
@@ -47,19 +49,20 @@ class TestingGyro : OpMode() {
         val result = pid.computePID(currentAngle)
 
         with(wheelMotors) {
-            rightFront.velocity = velocityFront * 0.4
-            leftFront.velocity = velocityFront * 0.4
-            rightBack.velocity = velocityBack * 0.4
-            leftBack.velocity = velocityBack * 0.4
+            rightFront.velocity = maxFrontVelocity * 0.4
+            leftFront.velocity = maxFrontVelocity * 0.4
+            rightBack.velocity = maxBackVelocity * 0.4
+            leftBack.velocity = maxBackVelocity * 0.4
         }
 
+        telemetry.addData("PID", pid.toString())
+        telemetry.addData("PID Result", result)
         telemetry.addData("Current Angle", currentAngle)
+        telemetry.addData("Target Angle", pid.target)
         telemetry.update()
     }
 
     override fun stop() {
         robot.stop()
     }
-
-    private fun getVelocityForRpmAndEncoderCycles(rpm: Int, encoder: Double) = rpm * (encoder / 60)
 }

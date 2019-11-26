@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.teamcode.TeamRobot
 import org.firstinspires.ftc.teamcode.utils.fastLazy
+import org.firstinspires.ftc.teamcode.utils.getVelocityForRpmAndEncoderCycles
 
 @TeleOp(name = "QubeTeleOp")
 class QubeTeleOp : OpMode() {
@@ -19,8 +20,8 @@ class QubeTeleOp : OpMode() {
     private lateinit var rightExtension: Servo
     private var precisionModeOn = false
 
-    private val velocityFront = getVelocityForRpmAndEncoderCycles(220, 383.6)
-    private val velocityBack = getVelocityForRpmAndEncoderCycles(220, 753.2)
+    private val maxFrontVelocity = getVelocityForRpmAndEncoderCycles(223, 383.6)
+    private val maxBackVelocity = getVelocityForRpmAndEncoderCycles(223, 753.2)
 
     override fun init() {
         robot.init(hardwareMap)
@@ -40,7 +41,7 @@ class QubeTeleOp : OpMode() {
             while (robot.isOpModeActive) {
                 intake()
                 cargo()
-                extension()
+                //extension()
             }
         }.start()
     }
@@ -71,6 +72,9 @@ class QubeTeleOp : OpMode() {
             powerRight /= max
         }
 
+        powerRight *= MOTOR_SPEED_MULTIPLIER
+        powerLeft *= MOTOR_SPEED_MULTIPLIER
+
         precisionModeOn = gamepad1.a
 
         if (precisionModeOn) {
@@ -79,10 +83,10 @@ class QubeTeleOp : OpMode() {
         }
 
         with(wheelMotors) {
-            rightFront.velocity = velocityFront * MOTOR_SPEED_MULTIPLIER
-            leftFront.velocity = velocityFront * MOTOR_SPEED_MULTIPLIER
-            rightBack.velocity = velocityBack * MOTOR_SPEED_MULTIPLIER
-            leftBack.velocity = velocityBack * MOTOR_SPEED_MULTIPLIER
+            rightFront.velocity = maxFrontVelocity * powerRight
+            leftFront.velocity = maxFrontVelocity * powerLeft
+            rightBack.velocity = maxBackVelocity * powerRight
+            leftBack.velocity = maxBackVelocity * powerLeft
         }
     }
 
@@ -90,18 +94,18 @@ class QubeTeleOp : OpMode() {
         with(wheelMotors) {
             // Strafe Right
             while (gamepad1.right_stick_x > 0) {
-                rightFront.velocity = -velocityFront * MOTOR_SPEED_STRAFE
-                leftFront.velocity = -velocityFront * MOTOR_SPEED_STRAFE
-                rightBack.velocity = velocityBack * MOTOR_SPEED_STRAFE
-                leftBack.velocity = velocityBack * MOTOR_SPEED_STRAFE
+                rightFront.velocity = -maxFrontVelocity * MOTOR_SPEED_STRAFE
+                leftFront.velocity = -maxFrontVelocity * MOTOR_SPEED_STRAFE
+                rightBack.velocity = maxBackVelocity * MOTOR_SPEED_STRAFE
+                leftBack.velocity = maxBackVelocity * MOTOR_SPEED_STRAFE
             }
 
             // Strafe Left
             while (gamepad1.right_stick_x < 0) {
-                rightFront.velocity = velocityFront * MOTOR_SPEED_STRAFE
-                leftFront.velocity = velocityFront * MOTOR_SPEED_STRAFE
-                rightBack.velocity = -velocityBack * MOTOR_SPEED_STRAFE
-                leftBack.velocity = -velocityBack * MOTOR_SPEED_STRAFE
+                rightFront.velocity = maxFrontVelocity * MOTOR_SPEED_STRAFE
+                leftFront.velocity = maxFrontVelocity * MOTOR_SPEED_STRAFE
+                rightBack.velocity = -maxBackVelocity * MOTOR_SPEED_STRAFE
+                leftBack.velocity = -maxBackVelocity * MOTOR_SPEED_STRAFE
             }
         }
     }
@@ -128,10 +132,7 @@ class QubeTeleOp : OpMode() {
     }
 
     private fun cargo() {
-        if (gamepad2.x)
-            cargoServo.position = 0.1
-        else if (gamepad2.a)
-            cargoServo.position = 0.6
+        cargoServo.position = if (gamepad2.a) 1.0 else 0.0
     }
 
     private fun extension() {
@@ -143,8 +144,6 @@ class QubeTeleOp : OpMode() {
             rightExtension.position = 1.0
         }
     }
-
-    private fun getVelocityForRpmAndEncoderCycles(rpm: Int, encoder: Double) = rpm * (encoder / 60)
 
     private companion object {
         private const val PRECISION_MODE_MULTIPLIER = 0.45
