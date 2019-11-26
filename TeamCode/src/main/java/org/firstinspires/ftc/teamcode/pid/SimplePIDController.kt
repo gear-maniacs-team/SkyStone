@@ -14,7 +14,7 @@ class SimplePIDController(
     private var errorRate: Double = 0.0
     private var lastError: Double = 0.0
 
-    override fun computePID(input: Double): Double {
+    override fun compute(input: Double): Double {
         currentTime = System.currentTimeMillis()
         elapsedTime = (currentTime - previousTime)
 

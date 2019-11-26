@@ -3,8 +3,7 @@ package org.firstinspires.ftc.teamcode.autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.TeamRobot
-import org.firstinspires.ftc.teamcode.pid.PidController
-import org.firstinspires.ftc.teamcode.pid.SimplePIDController
+import org.firstinspires.ftc.teamcode.pid.RotationPidController
 import org.firstinspires.ftc.teamcode.sensors.Gyro
 import org.firstinspires.ftc.teamcode.utils.fastLazy
 import org.firstinspires.ftc.teamcode.utils.getVelocityForRpmAndEncoderCycles
@@ -16,14 +15,22 @@ class TestingGyro : OpMode() {
     private val robot = TeamRobot()
     private val gyro = Gyro()
     private val wheelMotors by fastLazy { robot.wheelsMotors }
-    private val pid: PidController = SimplePIDController(1.0, 0.01, 0.005)
+    private val pid = RotationPidController(1.0, 0.01, 0.005)
 
-    private val maxFrontVelocity = getVelocityForRpmAndEncoderCycles(220, 383.6)
-    private val maxBackVelocity = getVelocityForRpmAndEncoderCycles(220, 753.2)
+    private val maxFrontVelocity = getVelocityForRpmAndEncoderCycles(223, 383.6)
+    private val maxBackVelocity = getVelocityForRpmAndEncoderCycles(223, 753.2)
 
     override fun init() {
         robot.init(hardwareMap)
         gyro.init(hardwareMap)
+
+        with(pid) {
+            maxError = 200.0
+            setInputRange(0.0, Math.PI * 2)
+            setOutputRange(-1.0, 1.0)
+            target = Math.PI / 2
+        }
+
         gyro.waitForCalibration()
     }
 
@@ -32,8 +39,6 @@ class TestingGyro : OpMode() {
     }
 
     override fun loop() {
-        //if (gamepad1.right_bumper)
-        pid.target = Math.PI / 2
         val currentAngle = gyro.angle.toDouble()
 
         val modifier = when {
@@ -57,13 +62,13 @@ class TestingGyro : OpMode() {
             }
         }
 
-        val result = pid.computePID(currentAngle)
+        val result = pid.compute(currentAngle)
 
         with(wheelMotors) {
-            rightFront.velocity = maxFrontVelocity * (result / 100)
-            leftFront.velocity = maxFrontVelocity * (result / 100)
-            rightBack.velocity = maxBackVelocity * (result / 100)
-            leftBack.velocity = maxBackVelocity * (result / 100)
+            rightFront.velocity = maxFrontVelocity * result
+            leftFront.velocity = maxFrontVelocity * result
+            rightBack.velocity = maxBackVelocity * result
+            leftBack.velocity = maxBackVelocity * result
         }
 
         telemetry.addData("PID", pid.toString())
