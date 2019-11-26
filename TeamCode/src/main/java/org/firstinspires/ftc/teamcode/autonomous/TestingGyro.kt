@@ -13,10 +13,10 @@ class TestingGyro : OpMode() {
     private val robot = TeamRobot()
     private val gyro = Gyro()
     private val wheelMotors by fastLazy { robot.wheelsMotors }
-    private val pid = SimplePIDController(1.0, 0.0, 0.0)‬
+    private val pid = SimplePIDController(1.0, 0.0, 0.0)
 
-    private val velocityFront = velocityForRPM(220, 383.6)
-    private val velocityBack = velocityForRPM(220, 753.2)
+    private val velocityFront = getVelocityForRpmAndEncoderCycles(220, 383.6)
+    private val velocityBack = getVelocityForRpmAndEncoderCycles(220, 753.2)
 
     override fun init() {
         robot.init(hardwareMap)
@@ -29,7 +29,9 @@ class TestingGyro : OpMode() {
     }
 
     override fun loop() {
+        pid.target = Math.PI
         val currentAngle = gyro.angle.toDouble()
+
         val modifier = when {
             gamepad1.dpad_up -> 0.05
             gamepad1.dpad_down -> -0.05
@@ -42,6 +44,8 @@ class TestingGyro : OpMode() {
             gamepad1.b -> pid.kd += modifier
         }
 
+        val result = pid.computePID(currentAngle)
+
         with(wheelMotors) {
             rightFront.velocity = velocityFront * 0.4
             leftFront.velocity = velocityFront * 0.4
@@ -49,12 +53,13 @@ class TestingGyro : OpMode() {
             leftBack.velocity = velocityBack * 0.4
         }
 
-        pid.computePID(currentAngle, Math.PI)
-
         telemetry.addData("Current Angle", currentAngle)
-        telemetry.addData("PID", pid.toString())
         telemetry.update()
     }
 
-    private fun velocityForRPM(rpm: Int, magic: Double) = rpm * (magic / 60)
+    override fun stop() {
+        robot.stop()
+    }
+
+    private fun getVelocityForRpmAndEncoderCycles(rpm: Int, encoder: Double) = rpm * (encoder / 60)
 }
