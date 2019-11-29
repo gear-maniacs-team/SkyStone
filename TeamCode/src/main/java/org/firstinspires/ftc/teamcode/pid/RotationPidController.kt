@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.pid
 
 import com.qualcomm.robotcore.util.Range
+import kotlin.math.abs
 
 class RotationPidController(
     Kp: Double,
@@ -11,6 +12,8 @@ class RotationPidController(
     private var previousTime = 0L
     private var cumulativeError = 0.0
     private var lastError = 0.0
+    private var lastOutput = 0.0
+    private var actualOutput = 0.0
 
     var inputBounded = false
     var outputBounded = false
@@ -22,7 +25,6 @@ class RotationPidController(
         private set
     var maxOutput = 0.0
         private set
-    var maxError = 0.0
 
     fun setInputRange(min: Double, max: Double) {
         require(min < max)
@@ -41,32 +43,36 @@ class RotationPidController(
     }
 
     override fun compute(input: Double): Double {
-        val error = target - Range.clip(input, minInput, maxInput)
+        val direction = if (inputBounded) {
+            val average = (minInput + maxInput) / 2
+            if (average - input <= average + input) 1.0 else -1.0
+        } else 1.0
+
+        val clippedInput = Range.clip(input, minInput, maxInput)
+        val error = direction * abs(target - clippedInput)
 
         val currentTime = System.currentTimeMillis()
         val deltaTime = currentTime - previousTime
 
-        cumulativeError += error * deltaTime
-        if (cumulativeError > maxError)
-            cumulativeError = maxError
+        if (lastOutput > minOutput && lastOutput < maxOutput)
+            cumulativeError += error * deltaTime
 
         val derivative = (error - lastError) / deltaTime
 
-        var output = Kp * error + Ki * cumulativeError + Kd * derivative
+        var output = Kp * error + Ki * cumulativeError * direction + Kd * derivative
 
         lastError = error
         previousTime = currentTime
 
-        if (inputBounded) {
-            val average = (minInput + maxInput) / 2
-            val sign = if (average - input <= average + input) 1.0 else -1.0
-
-            output *= sign
-        }
-
+        actualOutput = output
         if (outputBounded)
             output = Range.clip(output, minOutput, maxOutput)
 
+        lastOutput = output
         return output
+    }
+
+    override fun toString(): String {
+        return super.toString() + " Cumulative=$cumulativeError Output=$actualOutput"
     }
 }

@@ -27,6 +27,7 @@ class Gyro {
         val parameters = BNO055IMU.Parameters().apply {
             mode = BNO055IMU.SensorMode.IMU
             angleUnit = BNO055IMU.AngleUnit.RADIANS
+
             accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC
             loggingEnabled = false
         }

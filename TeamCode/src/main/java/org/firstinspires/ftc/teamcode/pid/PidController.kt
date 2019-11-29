@@ -11,5 +11,5 @@ abstract class PidController(
 
     abstract fun compute(input: Double): Double
 
-    override fun toString(): String = Misc.formatForUser("p=%f i=%f d=%f", Kp, Ki, Kd)
+    override fun toString(): String = Misc.formatForUser("P=%f I=%f D=%f", Kp, Ki, Kd)
 }

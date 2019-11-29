@@ -20,8 +20,8 @@ class QubeTeleOp : OpMode() {
     private lateinit var rightExtension: Servo
     private var precisionModeOn = false
 
-    private val maxFrontVelocity = getVelocityForRpmAndEncoderCycles(223, 383.6)
-    private val maxBackVelocity = getVelocityForRpmAndEncoderCycles(223, 753.2)
+    private val maxFrontVelocity = getVelocityForRpmAndEncoderCycles(223.0, 383.6)
+    private val maxBackVelocity = getVelocityForRpmAndEncoderCycles(223.0, 753.2)
 
     override fun init() {
         robot.init(hardwareMap)
