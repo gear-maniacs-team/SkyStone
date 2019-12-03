@@ -6,8 +6,8 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import org.firstinspires.ftc.teamcode.TeamRobot
 import org.firstinspires.ftc.teamcode.detector.OpenCvManager
 import org.firstinspires.ftc.teamcode.detector.StoneDetector
+import org.firstinspires.ftc.teamcode.utils.Ranges
 import org.firstinspires.ftc.teamcode.utils.fastLazy
-import org.firstinspires.ftc.teamcode.utils.mapToRange
 import org.opencv.core.Rect
 
 @TeleOp(name = "AportCV")
@@ -87,8 +87,8 @@ class OpenCvStoneFollower : OpMode() {
         }*/
 
         move(
-            mapToRange(0.01, 0.99, -0.5, 0.5, cubePos.toDouble()),
-            mapToRange(100.0, 2000.0, 0.0, DEFAULT_POWER, minOf(cmToTicks(dist), 2000.0))
+            Ranges.map(0.01, 0.99, -0.5, 0.5, cubePos.toDouble()),
+            Ranges.map(100.0, 2000.0, 0.0, DEFAULT_POWER, minOf(cmToTicks(dist), 2000.0))
         )
 
         telemetry.addData("Cube Pos", cubePos)

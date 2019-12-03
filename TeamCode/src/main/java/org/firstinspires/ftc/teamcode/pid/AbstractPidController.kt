@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.pid
 
 import org.firstinspires.ftc.robotcore.internal.system.Misc
 
-abstract class PidController(
+abstract class AbstractPidController(
     var Kp: Double,
     var Ki: Double,
     var Kd: Double

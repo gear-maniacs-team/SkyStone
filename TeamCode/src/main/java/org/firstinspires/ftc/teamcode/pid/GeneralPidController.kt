@@ -2,23 +2,22 @@ package org.firstinspires.ftc.teamcode.pid
 
 import android.util.Log
 import com.qualcomm.robotcore.util.Range
-import kotlin.math.abs
+import org.firstinspires.ftc.teamcode.utils.Ranges
 import kotlin.math.sign
 
-class RotationPidController(
+class GeneralPidController(
     Kp: Double,
     Ki: Double,
-    Kd: Double,
-    Kf: Double
-) : PidController(Kp, Ki, Kd) {
+    Kd: Double
+) : AbstractPidController(Kp, Ki, Kd) {
 
     private var firstRun = true
     private var previousTime = 0L
     private var cumulativeError = 0.0
     private var lastError = 0.0
     private var lastOutput = 0.0
-    private var actualOutput = 0.0
 
+    var debugEnabled = false
     var inputBounded = false
     var outputBounded = false
     var minInput = 0.0
@@ -53,30 +52,28 @@ class RotationPidController(
             cumulativeError = 0.0
         }
 
-        val clippedInput = Range.clip(input, minInput, maxInput)
+        val clippedInput = if (inputBounded) Range.clip(input, minInput, maxInput) else input
         val error = target - clippedInput
 
         val currentTime = System.currentTimeMillis()
         val deltaTime = currentTime - previousTime
 
-        if ((lastOutput > minOutput && lastOutput < maxOutput) || (sign(cumulativeError) != sign(error)))
+        if (Ranges.isRangeValid(lastOutput, minOutput, maxOutput) || (sign(cumulativeError) != sign(error)))
             cumulativeError += error * deltaTime
 
         val derivative = (error - lastError) / deltaTime
 
-        var output = Kp * error + Ki * cumulativeError + Kd * derivative
+        val output = Kp * error + Ki * cumulativeError + Kd * derivative
+        lastOutput = output
 
         lastError = error
         previousTime = currentTime
 
-        actualOutput = output
-        if (outputBounded)
-            output = Range.clip(output, minOutput, maxOutput)
+        val clippedOutput = if (outputBounded) Range.clip(output, minOutput, maxOutput) else output
 
-        lastOutput = output
+        if (debugEnabled)
+            Log.d("PID", "Input=$input Error=$error CumulativeError=$cumulativeError Output=$output ClippedOutput=$output")
 
-        Log.d("PID", "Input=$input Error=$error CumulativeError=$cumulativeError ActualOutput=$actualOutput Output=$output")
-
-        return output
+        return clippedOutput
     }
 }
