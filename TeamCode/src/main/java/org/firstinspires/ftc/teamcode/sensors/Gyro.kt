@@ -37,16 +37,15 @@ class Gyro {
     }
 
     fun waitForCalibration() {
-        while (!firstImu.isGyroCalibrated || !secondImu.isGyroCalibrated) {
-            Thread.sleep(20)
-        }
+        while (!firstImu.isGyroCalibrated || !secondImu.isGyroCalibrated)
+            Thread.sleep(10)
     }
 
-    private fun updateValue() {
+    private fun getAngleValue(): Float {
         val firstAngle = firstImu.getAngularOrientation(reference, angleOrder, angleUnit).thirdAngle
         val secondAngle = secondImu.getAngularOrientation(reference, angleOrder, angleUnit).thirdAngle
 
-        angle = (firstAngle + secondAngle) / 2
+        return (firstAngle + secondAngle) / 2
     }
 
     fun start() {
@@ -55,8 +54,8 @@ class Gyro {
         val robot = TeamRobot.getRobot()
         Thread {
             while (robot.isOpModeActive) {
-                updateValue()
-                Thread.sleep(100)
+                angle = getAngleValue()
+                Thread.sleep(50)
             }
         }.start()
     }

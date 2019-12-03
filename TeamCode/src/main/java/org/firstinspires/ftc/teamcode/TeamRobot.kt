@@ -1,11 +1,18 @@
 package org.firstinspires.ftc.teamcode
 
 import com.qualcomm.robotcore.hardware.HardwareMap
+import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.teamcode.detector.VuforiaManager
 import org.firstinspires.ftc.teamcode.motors.WheelMotors
 import kotlin.properties.Delegates
 
 class TeamRobot {
+
+    // UPS Counter
+    private var lastTime = 0L
+    private var updatesCount = 0
+    private var updateRate = 30f
+    private var lastTelemetryItem: Telemetry.Item? = null
 
     var isOpModeActive = false
         private set
@@ -15,6 +22,7 @@ class TeamRobot {
 
     fun init() {
         isOpModeActive = true
+        lastTime = System.currentTimeMillis()
 
         INSTANCE = this
     }
@@ -22,8 +30,26 @@ class TeamRobot {
     fun init(hardwareMap: HardwareMap) {
         isOpModeActive = true
         wheelsMotors = WheelMotors(hardwareMap.dcMotor)
+        lastTime = System.currentTimeMillis()
 
         INSTANCE = this
+    }
+
+    fun update(telemetry: Telemetry) {
+        val currentTime = System.currentTimeMillis()
+        ++updatesCount
+
+        val deltaTime = currentTime - lastTime
+        if (deltaTime > 1000) { // if more than one second passed
+            updateRate = (updatesCount * 0.5 + updateRate * 0.5).toFloat()
+            updatesCount = 0
+            lastTime = currentTime
+        }
+
+        lastTelemetryItem?.let {
+            telemetry.removeItem(it)
+        }
+        lastTelemetryItem = telemetry.addData("UPS", updateRate)
     }
 
     fun stop() {

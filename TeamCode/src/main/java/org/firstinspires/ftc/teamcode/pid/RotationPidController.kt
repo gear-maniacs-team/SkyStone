@@ -1,14 +1,18 @@
 package org.firstinspires.ftc.teamcode.pid
 
+import android.util.Log
 import com.qualcomm.robotcore.util.Range
 import kotlin.math.abs
+import kotlin.math.sign
 
 class RotationPidController(
     Kp: Double,
     Ki: Double,
-    Kd: Double
+    Kd: Double,
+    Kf: Double
 ) : PidController(Kp, Ki, Kd) {
 
+    private var firstRun = true
     private var previousTime = 0L
     private var cumulativeError = 0.0
     private var lastError = 0.0
@@ -43,23 +47,24 @@ class RotationPidController(
     }
 
     override fun compute(input: Double): Double {
-        val direction = if (inputBounded) {
-            val average = (minInput + maxInput) / 2
-            if (average - input <= average + input) 1.0 else -1.0
-        } else 1.0
+        if (firstRun) {
+            firstRun = false
+            previousTime = System.currentTimeMillis()
+            cumulativeError = 0.0
+        }
 
         val clippedInput = Range.clip(input, minInput, maxInput)
-        val error = direction * abs(target - clippedInput)
+        val error = target - clippedInput
 
         val currentTime = System.currentTimeMillis()
         val deltaTime = currentTime - previousTime
 
-        if (lastOutput > minOutput && lastOutput < maxOutput)
+        if ((lastOutput > minOutput && lastOutput < maxOutput) || (sign(cumulativeError) != sign(error)))
             cumulativeError += error * deltaTime
 
         val derivative = (error - lastError) / deltaTime
 
-        var output = Kp * error + Ki * cumulativeError * direction + Kd * derivative
+        var output = Kp * error + Ki * cumulativeError + Kd * derivative
 
         lastError = error
         previousTime = currentTime
@@ -69,10 +74,9 @@ class RotationPidController(
             output = Range.clip(output, minOutput, maxOutput)
 
         lastOutput = output
-        return output
-    }
 
-    override fun toString(): String {
-        return super.toString() + " Cumulative=$cumulativeError Output=$actualOutput"
+        Log.d("PID", "Input=$input Error=$error CumulativeError=$cumulativeError ActualOutput=$actualOutput Output=$output")
+
+        return output
     }
 }
