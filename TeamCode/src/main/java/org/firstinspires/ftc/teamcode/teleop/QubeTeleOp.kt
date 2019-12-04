@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.teamcode.TeamRobot
 import org.firstinspires.ftc.teamcode.motors.Wheels
-import org.firstinspires.ftc.teamcode.utils.getVelocityForRpmAndEncoderCycles
+import org.firstinspires.ftc.teamcode.utils.rpmToTps
 
 @TeleOp(name = "QubeTeleOp")
 class QubeTeleOp : OpMode() {
@@ -20,8 +20,8 @@ class QubeTeleOp : OpMode() {
     private lateinit var rightExtension: Servo
     private var precisionModeOn = false
 
-    private val maxFrontVelocity = getVelocityForRpmAndEncoderCycles(223.0, 383.6)
-    private val maxBackVelocity = getVelocityForRpmAndEncoderCycles(223.0, 753.2)
+    private val maxFrontVelocity = rpmToTps(223.0, 383.6)
+    private val maxBackVelocity = rpmToTps(223.0, 753.2)
 
     override fun init() {
         robot.init(hardwareMap)

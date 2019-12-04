@@ -7,7 +7,7 @@ abstract class AbstractPidController(
     var Ki: Double,
     var Kd: Double
 ) {
-    var target: Double = 0.0
+    var setPoint: Double = 0.0
 
     abstract fun compute(input: Double): Double
 

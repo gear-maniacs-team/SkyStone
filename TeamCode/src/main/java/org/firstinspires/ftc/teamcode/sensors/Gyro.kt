@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference
+import org.firstinspires.ftc.teamcode.RobotPos
 import org.firstinspires.ftc.teamcode.utils.IHardware
 import org.firstinspires.ftc.teamcode.utils.IUpdatable
 import org.firstinspires.ftc.teamcode.utils.Ranges
@@ -22,10 +23,8 @@ class Gyro : IHardware, IUpdatable {
     private lateinit var firstImu: BNO055IMU
     private lateinit var secondImu: BNO055IMU
 
-    private var lastAngle: Float = 0f
-    @Volatile
-    var angle: Float = 0f
-        private set
+    private var lastAngle = 0f
+    private var angle = 0f
 
     override fun init(hardwareMap: HardwareMap) {
         firstImu = hardwareMap.get(BNO055IMU::class.java, "imu_1")
@@ -84,5 +83,6 @@ class Gyro : IHardware, IUpdatable {
 
     override fun update() {
         angle = getAngleValue()
+        RobotPos.currentAngle = angle.toDouble()
     }
 }

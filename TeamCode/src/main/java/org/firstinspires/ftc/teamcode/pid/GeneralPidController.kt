@@ -53,7 +53,7 @@ class GeneralPidController(
         }
 
         val clippedInput = if (inputBounded) Range.clip(input, minInput, maxInput) else input
-        val error = target - clippedInput
+        val error = setPoint - clippedInput
 
         val currentTime = System.currentTimeMillis()
         val deltaTime = currentTime - previousTime

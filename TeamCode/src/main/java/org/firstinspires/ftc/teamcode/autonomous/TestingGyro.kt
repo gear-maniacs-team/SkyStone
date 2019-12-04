@@ -2,14 +2,12 @@ package org.firstinspires.ftc.teamcode.autonomous
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import org.firstinspires.ftc.teamcode.RobotPos
 import org.firstinspires.ftc.teamcode.TeamRobot
 import org.firstinspires.ftc.teamcode.motors.Wheels
-import org.firstinspires.ftc.teamcode.pid.GeneralPidController
+import org.firstinspires.ftc.teamcode.pid.PidRotation
 import org.firstinspires.ftc.teamcode.sensors.Gyro
-import org.firstinspires.ftc.teamcode.utils.UPSCounter
-import org.firstinspires.ftc.teamcode.utils.getVelocityForRpmAndEncoderCycles
-import java.lang.Thread.sleep
-import kotlin.concurrent.thread
+import org.firstinspires.ftc.teamcode.utils.rpmToTps
 
 @TeleOp(name = "TestingGyro")
 class TestingGyro : OpMode() {
@@ -17,23 +15,17 @@ class TestingGyro : OpMode() {
     private val robot = TeamRobot()
     private val wheels = Wheels()
     private val gyro = Gyro()
-    private val pid = GeneralPidController(500.0, 0.01, 200.0)
-    @Volatile
-    private var pidResult = 0.0
+    private val pid = PidRotation().apply {
+        setOutputRange(-223.0, 223.0)
+        debugEnabled = true
+    }
 
     override fun init() {
         robot.init(
             hardwareMap,
             listOf(wheels, gyro),
-            listOf(gyro)
+            listOf(gyro, pid)
         )
-
-        with(pid) {
-            setInputRange(0.0, Math.PI * 2)
-            setOutputRange(-220.0, 220.0)
-            target = Math.PI / 2
-            debugEnabled = true
-        }
 
         gyro.waitForCalibration()
 
@@ -43,19 +35,12 @@ class TestingGyro : OpMode() {
 
     override fun start() {
         robot.start()
-
-        thread(start = true) {
-            val upsCounter = UPSCounter()
-
-            while (robot.isOpModeActive) {
-                upsCounter.update(telemetry, "PID UPS")
-                pidResult = pid.compute(gyro.angle.toDouble())
-                sleep(5)
-            }
-        }
     }
 
     override fun loop() {
+        val pidOutput = pid.output
+        val controller = pid.controller
+
         val modifier = when {
             gamepad1.dpad_up -> 1.0
             gamepad1.dpad_down -> -1.0
@@ -64,34 +49,37 @@ class TestingGyro : OpMode() {
 
         var valueModified = true
         when {
-            gamepad1.x -> pid.Kp += modifier
-            gamepad1.a -> pid.Ki += modifier
-            gamepad1.b -> pid.Kd += modifier
+            gamepad1.x -> controller.Kp += modifier
+            gamepad1.a -> controller.Ki += modifier
+            gamepad1.b -> controller.Kd += modifier
             gamepad1.y -> {
                 val deltaAngle = Math.PI * modifier
 
                 if (deltaAngle != 0.0) {
-                    val newTarget = (pid.target + deltaAngle) % Math.PI
-                    pid.target = newTarget
+                    val newTarget = (RobotPos.targetAngle + deltaAngle) % Math.PI
+                    RobotPos.targetAngle = newTarget
                 }
             }
             else -> valueModified = false
         }
 
         if (modifier != 0.0 && valueModified)
-            sleep(200) // Make sure that the value doesn't get updated several times
+            Thread.sleep(200) // Make sure that the value doesn't get updated several times
 
         with(wheels) {
-            rightFront.velocity = getVelocityForRpmAndEncoderCycles(pidResult, 383.6)
-            leftFront.velocity = getVelocityForRpmAndEncoderCycles(pidResult, 383.6)
-            rightBack.velocity = getVelocityForRpmAndEncoderCycles(pidResult, 753.2)
-            leftBack.velocity = getVelocityForRpmAndEncoderCycles(pidResult, 753.2)
+            val frontVelocity = rpmToTps(pidOutput, 383.6)
+            val backVelocity = rpmToTps(pidOutput, 753.2)
+
+            rightFront.velocity = frontVelocity
+            leftFront.velocity = frontVelocity
+            rightBack.velocity = backVelocity
+            leftBack.velocity = backVelocity
         }
 
         telemetry.addData("PID", pid.toString())
-        telemetry.addData("PID Result", pidResult)
-        telemetry.addData("Current Angle", gyro.angle)
-        telemetry.addData("Target Angle", pid.target)
+        telemetry.addData("PID Result", pidOutput)
+        telemetry.addData("Current Angle", RobotPos.currentAngle)
+        telemetry.addData("Target Angle", RobotPos.targetAngle)
         telemetry.update()
     }
 
