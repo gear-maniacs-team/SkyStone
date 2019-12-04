@@ -5,14 +5,14 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.teamcode.TeamRobot
-import org.firstinspires.ftc.teamcode.utils.fastLazy
+import org.firstinspires.ftc.teamcode.motors.Wheels
 import org.firstinspires.ftc.teamcode.utils.getVelocityForRpmAndEncoderCycles
 
 @TeleOp(name = "QubeTeleOp")
 class QubeTeleOp : OpMode() {
 
     private val robot = TeamRobot()
-    private val wheelMotors by fastLazy { robot.wheelsMotors }
+    private val wheels = Wheels()
     private lateinit var leftIntake: DcMotor
     private lateinit var rightIntake: DcMotor
     private lateinit var cargoServo: Servo
@@ -26,7 +26,7 @@ class QubeTeleOp : OpMode() {
     override fun init() {
         robot.init(hardwareMap)
 
-        wheelMotors.setModeAll(DcMotor.RunMode.RUN_USING_ENCODER)
+        wheels.setModeAll(DcMotor.RunMode.RUN_USING_ENCODER)
 
         leftIntake = hardwareMap.dcMotor["intake_left"]
         rightIntake = hardwareMap.dcMotor["intake_right"]
@@ -82,7 +82,7 @@ class QubeTeleOp : OpMode() {
             powerLeft *= PRECISION_MODE_MULTIPLIER
         }
 
-        with(wheelMotors) {
+        with(wheels) {
             rightFront.velocity = maxFrontVelocity * powerRight
             leftFront.velocity = maxFrontVelocity * powerLeft
             rightBack.velocity = maxBackVelocity * powerRight
@@ -91,7 +91,7 @@ class QubeTeleOp : OpMode() {
     }
 
     private fun strafe() {
-        with(wheelMotors) {
+        with(wheels) {
             // Strafe Right
             while (gamepad1.right_stick_x > 0) {
                 rightFront.velocity = -maxFrontVelocity * MOTOR_SPEED_STRAFE
@@ -123,7 +123,7 @@ class QubeTeleOp : OpMode() {
             gamepad2.right_bumper -> INTAKE_POWER
             gamepad2.left_bumper -> -INTAKE_POWER
             gamepad2.dpad_down -> INTAKE_POWER / 2
-            gamepad2.dpad_up-> -INTAKE_POWER / 2
+            gamepad2.dpad_up -> -INTAKE_POWER / 2
             else -> 0.0
         }
 

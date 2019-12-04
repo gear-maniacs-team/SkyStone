@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
 import org.firstinspires.ftc.teamcode.utils.fastLazy
 
+@Deprecated("Used in previous Season")
 @TeleOp(name = "ExperimentalTeleOp")
 class ExperimentalTeleOp : OpMode() {
 

@@ -6,8 +6,8 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import org.firstinspires.ftc.teamcode.TeamRobot
 import org.firstinspires.ftc.teamcode.detector.OpenCvManager
 import org.firstinspires.ftc.teamcode.detector.StoneDetector
+import org.firstinspires.ftc.teamcode.motors.Wheels
 import org.firstinspires.ftc.teamcode.utils.Ranges
-import org.firstinspires.ftc.teamcode.utils.fastLazy
 import org.opencv.core.Rect
 
 @TeleOp(name = "AportCV")
@@ -34,7 +34,7 @@ class OpenCvStoneFollower : OpMode() {
     }
 
     private val robot = TeamRobot()
-    private val wheelMotors by fastLazy { robot.wheelsMotors }
+    private val wheels = Wheels()
     private lateinit var detector: StoneDetector
     private lateinit var detectorManager: OpenCvManager
 
@@ -42,7 +42,7 @@ class OpenCvStoneFollower : OpMode() {
     private var foundRectangle: Rect? = null
 
     override fun init() {
-        robot.init(hardwareMap)
+        robot.init(hardwareMap, listOf(wheels))
 
         detector = StoneDetector().apply {
             useDefaults()
@@ -58,7 +58,7 @@ class OpenCvStoneFollower : OpMode() {
             startDetector(CAMERA_WIDTH, CAMERA_HEIGHT)
         }
 
-        with(wheelMotors) {
+        with(wheels) {
             setModeAll(DcMotor.RunMode.STOP_AND_RESET_ENCODER)
             setModeAll(DcMotor.RunMode.RUN_USING_ENCODER)
         }
@@ -68,7 +68,7 @@ class OpenCvStoneFollower : OpMode() {
         val cube = foundRectangle
 
         if (cube == null) {
-            wheelMotors.setPowerAll(0.0)
+            wheels.setPowerAll(0.0)
             telemetry.addData("Rect", "is null")
             return
         }
@@ -114,9 +114,9 @@ class OpenCvStoneFollower : OpMode() {
             powerRight /= max
         }
 
-        wheelMotors.leftBack.power = powerLeft
-        wheelMotors.leftFront.power = powerLeft
-        wheelMotors.rightBack.power = powerRight
-        wheelMotors.rightFront.power = powerRight
+        wheels.leftBack.power = powerLeft
+        wheels.leftFront.power = powerLeft
+        wheels.rightBack.power = powerRight
+        wheels.rightFront.power = powerRight
     }
 }

@@ -3,10 +3,10 @@ package org.firstinspires.ftc.teamcode.autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.TeamRobot
+import org.firstinspires.ftc.teamcode.motors.Wheels
 import org.firstinspires.ftc.teamcode.pid.GeneralPidController
 import org.firstinspires.ftc.teamcode.sensors.Gyro
 import org.firstinspires.ftc.teamcode.utils.UPSCounter
-import org.firstinspires.ftc.teamcode.utils.fastLazy
 import org.firstinspires.ftc.teamcode.utils.getVelocityForRpmAndEncoderCycles
 import java.lang.Thread.sleep
 import kotlin.concurrent.thread
@@ -15,18 +15,21 @@ import kotlin.concurrent.thread
 class TestingGyro : OpMode() {
 
     private val robot = TeamRobot()
+    private val wheels = Wheels()
     private val gyro = Gyro()
-    private val wheelMotors by fastLazy { robot.wheelsMotors }
     private val pid = GeneralPidController(500.0, 0.01, 200.0)
     @Volatile
     private var pidResult = 0.0
 
     override fun init() {
-        robot.init(hardwareMap)
-        gyro.init(hardwareMap)
+        robot.init(
+            hardwareMap,
+            listOf(wheels, gyro),
+            listOf(gyro)
+        )
 
         with(pid) {
-            setInputRange(0.0, Math.PI)
+            setInputRange(0.0, Math.PI * 2)
             setOutputRange(-220.0, 220.0)
             target = Math.PI / 2
             debugEnabled = true
@@ -39,13 +42,13 @@ class TestingGyro : OpMode() {
     }
 
     override fun start() {
-        gyro.start()
-
-        val upsCounter = UPSCounter()
+        robot.start()
 
         thread(start = true) {
+            val upsCounter = UPSCounter()
+
             while (robot.isOpModeActive) {
-                upsCounter.update(telemetry)
+                upsCounter.update(telemetry, "PID UPS")
                 pidResult = pid.compute(gyro.angle.toDouble())
                 sleep(5)
             }
@@ -78,7 +81,7 @@ class TestingGyro : OpMode() {
         if (modifier != 0.0 && valueModified)
             sleep(200) // Make sure that the value doesn't get updated several times
 
-        with(wheelMotors) {
+        with(wheels) {
             rightFront.velocity = getVelocityForRpmAndEncoderCycles(pidResult, 383.6)
             leftFront.velocity = getVelocityForRpmAndEncoderCycles(pidResult, 383.6)
             rightBack.velocity = getVelocityForRpmAndEncoderCycles(pidResult, 753.2)

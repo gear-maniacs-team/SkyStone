@@ -58,7 +58,7 @@ class GeneralPidController(
         val currentTime = System.currentTimeMillis()
         val deltaTime = currentTime - previousTime
 
-        if (Ranges.isRangeValid(lastOutput, minOutput, maxOutput) || (sign(cumulativeError) != sign(error)))
+        if (Ranges.isRangeValid(lastOutput, minOutput, maxOutput) || sign(cumulativeError) != sign(error))
             cumulativeError += error * deltaTime
 
         val derivative = (error - lastError) / deltaTime
@@ -71,8 +71,12 @@ class GeneralPidController(
 
         val clippedOutput = if (outputBounded) Range.clip(output, minOutput, maxOutput) else output
 
-        if (debugEnabled)
-            Log.d("PID", "Input=$input Error=$error CumulativeError=$cumulativeError Output=$output ClippedOutput=$output")
+        if (debugEnabled) {
+            Log.d(
+                "PID",
+                "Input=$input Error=$error CumulativeError=$cumulativeError Output=$output ClippedOutput=$output"
+            )
+        }
 
         return clippedOutput
     }

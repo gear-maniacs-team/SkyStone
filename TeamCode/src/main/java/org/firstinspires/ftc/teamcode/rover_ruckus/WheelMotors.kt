@@ -1,9 +1,10 @@
-package org.firstinspires.ftc.teamcode.motors
+package org.firstinspires.ftc.teamcode.rover_ruckus
 
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.HardwareMap
 
+@Deprecated("Used in previous Season")
 class WheelMotors(dcMotors: HardwareMap.DeviceMapping<DcMotor>) {
 
     val leftFront: DcMotorEx = dcMotors["TL"] as DcMotorEx

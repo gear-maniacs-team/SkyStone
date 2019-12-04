@@ -82,7 +82,7 @@ android {
             }
         }
         debug {
-            debuggable true
+            //debuggable true
             jniDebuggable true
             renderscriptDebuggable true
             ndk {
@@ -94,6 +94,10 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
     }
 
     sourceSets.main {

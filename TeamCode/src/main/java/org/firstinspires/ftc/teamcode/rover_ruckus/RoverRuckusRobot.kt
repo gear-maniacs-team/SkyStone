@@ -2,9 +2,9 @@ package org.firstinspires.ftc.teamcode.rover_ruckus
 
 import com.qualcomm.robotcore.hardware.HardwareMap
 import org.firstinspires.ftc.teamcode.detector.VuforiaManager
-import org.firstinspires.ftc.teamcode.motors.WheelMotors
 import kotlin.properties.Delegates
 
+@Deprecated("Used in previous Season")
 class RoverRuckusRobot {
 
     var isOpModeActive = false

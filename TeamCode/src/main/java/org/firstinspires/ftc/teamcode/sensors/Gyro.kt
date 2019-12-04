@@ -5,16 +5,17 @@ import com.qualcomm.robotcore.hardware.HardwareMap
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference
-import org.firstinspires.ftc.teamcode.TeamRobot
+import org.firstinspires.ftc.teamcode.utils.IHardware
+import org.firstinspires.ftc.teamcode.utils.IUpdatable
 import org.firstinspires.ftc.teamcode.utils.Ranges
 
-class Gyro {
+class Gyro : IHardware, IUpdatable {
 
     private companion object {
         private const val PI_F = Math.PI.toFloat()
     }
 
-    private val reference = AxesReference.EXTRINSIC
+    private val axesRef = AxesReference.EXTRINSIC
     private val angleOrder = AxesOrder.XYZ
     private val angleUnit = AngleUnit.RADIANS
 
@@ -26,7 +27,7 @@ class Gyro {
     var angle: Float = 0f
         private set
 
-    fun init(hardwareMap: HardwareMap) {
+    override fun init(hardwareMap: HardwareMap) {
         firstImu = hardwareMap.get(BNO055IMU::class.java, "imu_1")
         secondImu = hardwareMap.get(BNO055IMU::class.java, "imu_2")
 
@@ -48,7 +49,7 @@ class Gyro {
 
     /*
      * We have to process the angle because the imu works in euler angles so the Z axis is
-     * returned as 0 to 3.14 or 0 to -3.14 rolling back to -3.12 or +3.12 when rotation passes
+     * returned as 0 to 3.14 or 0 to -3.14 rolling back to -3.124 or +3.124 when rotation passes
      * 3.14 radians. We detect this transition and track the total cumulative angle of rotation.
      *
      * @return the average angle of both IMU sensors in Radians
@@ -58,14 +59,14 @@ class Gyro {
         lastAngle = currentAngle
 
         // The third angle is the Z angle, which is needed for heading
-        val firstAngle = firstImu.getAngularOrientation(reference, angleOrder, angleUnit).thirdAngle
-        val secondAngle = secondImu.getAngularOrientation(reference, angleOrder, angleUnit).thirdAngle
+        val firstAngle = firstImu.getAngularOrientation(axesRef, angleOrder, angleUnit).thirdAngle
+        val secondAngle = secondImu.getAngularOrientation(axesRef, angleOrder, angleUnit).thirdAngle
         val newAngle = (firstAngle + secondAngle) / 2
 
         if (!Ranges.isRangeValid(newAngle, -PI_F, PI_F))
             return currentAngle
 
-        var deltaAngle = newAngle - currentAngle
+        var deltaAngle = newAngle - currentAngle // - PI / 2
 
         if (deltaAngle < -PI_F)
             deltaAngle += PI_F * 2
@@ -77,15 +78,11 @@ class Gyro {
         return currentAngle
     }
 
-    fun start() {
+    override fun start() {
         waitForCalibration()
+    }
 
-        val robot = TeamRobot.getRobot()
-        Thread {
-            while (robot.isOpModeActive) {
-                angle = getAngleValue()
-                Thread.sleep(50)
-            }
-        }.start()
+    override fun update() {
+        angle = getAngleValue()
     }
 }

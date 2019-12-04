@@ -8,7 +8,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition
 import org.firstinspires.ftc.teamcode.TeamRobot
 import org.firstinspires.ftc.teamcode.detector.VuforiaManager
-import org.firstinspires.ftc.teamcode.utils.fastLazy
+import org.firstinspires.ftc.teamcode.motors.Wheels
+import org.firstinspires.ftc.teamcode.utils.Ranges
 import java.util.concurrent.Executors
 
 @TeleOp(name = "Aport")
@@ -29,13 +30,10 @@ class StoneFollowerMecanum : OpMode() {
         fun cmToTicks(cm: Double): Double = cm * TICKS_PER_CM
 
         fun getDist(height: Float) = HEIGHT_COEFFICIENT / height
-
-        fun mapToRange(inputStart: Double, inputEnd: Double, outputStart: Double, outputEnd: Double, input: Double) =
-            outputStart + ((outputEnd - outputStart) / (inputEnd - inputStart)) * (input - inputStart)
     }
 
     private val robot = TeamRobot()
-    private val wheelMotors by fastLazy { robot.wheelsMotors }
+    private val wheels = Wheels()
     private lateinit var distanceSensor: DistanceSensor
 
     private val executor = Executors.newFixedThreadPool(2)
@@ -47,7 +45,7 @@ class StoneFollowerMecanum : OpMode() {
         robot.vuforia.startDetectorAsync(hardwareMap)
         distanceSensor = hardwareMap.get(DistanceSensor::class.java, "camera_distance_sensor")
 
-        with(wheelMotors) {
+        with(wheels) {
             setModeAll(DcMotor.RunMode.STOP_AND_RESET_ENCODER)
             setModeAll(DcMotor.RunMode.RUN_USING_ENCODER)
         }
@@ -57,7 +55,9 @@ class StoneFollowerMecanum : OpMode() {
         executor.submit {
             while (robot.isOpModeActive) {
                 robot.vuforia.waitForDetector()
-                cube = robot.vuforia.recognitions.firstOrNull { it.label == VuforiaManager.LABEL_STONE }
+                cube = robot.vuforia.recognitions.firstOrNull {
+                    it.label == VuforiaManager.LABEL_STONE
+                }
                 Thread.sleep(100)
             }
         }
@@ -76,7 +76,7 @@ class StoneFollowerMecanum : OpMode() {
         val cube = cube
 
         if (cube == null) {
-            wheelMotors.setPowerAll(0.0)
+            wheels.setPowerAll(0.0)
             return
         }
 
@@ -86,13 +86,13 @@ class StoneFollowerMecanum : OpMode() {
         val dist = if (cubePos < 0.47 || cubePos > 0.53) distanceSensorUnit else cameraDistance
 
         if (distanceSensorUnit == Double.MAX_VALUE) {
-            wheelMotors.setPowerAll(0.0)
+            wheels.setPowerAll(0.0)
             return
         }
 
         move(
-            mapToRange(0.01, 0.99, -0.5, 0.5, cubePos.toDouble()),
-            mapToRange(100.0, 2000.0, 0.0, DEFAULT_POWER, minOf(cmToTicks(dist), 2000.0))
+            Ranges.map(0.01, 0.99, -0.5, 0.5, cubePos.toDouble()),
+            Ranges.map(100.0, 2000.0, 0.0, DEFAULT_POWER, minOf(cmToTicks(dist), 2000.0))
         )
 
         telemetry.addData("Camera Distance", cameraDistance)
@@ -112,9 +112,11 @@ class StoneFollowerMecanum : OpMode() {
             powerRight /= max
         }
 
-        wheelMotors.rightFront.power = powerRight
-        wheelMotors.leftFront.power = powerLeft
-        wheelMotors.rightBack.power = powerRight
-        wheelMotors.leftBack.power = powerLeft
+        with(wheels) {
+            rightFront.power = powerRight
+            leftFront.power = powerLeft
+            rightBack.power = powerRight
+            leftBack.power = powerLeft
+        }
     }
 }

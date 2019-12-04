@@ -7,11 +7,11 @@ class UPSCounter {
     private var firstRun = true
     private var lastTime = 0L
     private var updatesCount = 0
-    private var updateRate = 30f
+    private var lastUpdateRate = 0
 
     private var lastTelemetryItem: Telemetry.Item? = null
 
-    fun update(): Float {
+    fun update(): Int {
         val currentTime = System.currentTimeMillis()
         ++updatesCount
 
@@ -21,20 +21,20 @@ class UPSCounter {
 
         val deltaTime = currentTime - lastTime
         if (deltaTime > 1000) { // if more than one second passed
-            updateRate = updatesCount * 0.5f + updateRate * 0.5f
+            lastUpdateRate = updatesCount
             updatesCount = 0
             lastTime = currentTime
         }
 
-        return updateRate
+        return lastUpdateRate
     }
 
-    fun update(telemetry: Telemetry) {
+    fun update(telemetry: Telemetry, caption: String = "UPS") {
         val rate = update()
 
         lastTelemetryItem?.let {
             telemetry.removeItem(it)
         }
-        lastTelemetryItem = telemetry.addData("UPS", rate)
+        lastTelemetryItem = telemetry.addData(caption, rate)
     }
 }
