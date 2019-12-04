@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.pursuit
 import android.util.Log
 import com.qualcomm.robotcore.util.Range
 import org.firstinspires.ftc.teamcode.RobotPos
+import org.firstinspires.ftc.teamcode.pursuit.MathUtils.angleWrap
+import org.firstinspires.ftc.teamcode.pursuit.MathUtils.linesCircleIntersections
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -21,25 +23,46 @@ object RobotMovement {
             val current = allPoints[i]
             val next = allPoints[i + 1]
 
-            Log.v("Follow Curve", Point(current.x, current.y).toString() + " ; " + Point(next.x, next.y).toString())
+            Log.v(
+                "Follow Curve",
+                Point(current.x, current.y).toString() + " ; " + Point(next.x, next.y).toString()
+            )
         }
 
-        val destination = getFollowPointPath(allPoints, Point(RobotPos.currentX, RobotPos.currentY), allPoints.first().followDistance)
+        val destination = getFollowPointPath(
+            allPoints,
+            Point(RobotPos.currentX, RobotPos.currentY),
+            allPoints.first().followDistance
+        )
 
         Log.v("Follow Curve Dest", Point(destination.x, destination.y).toString())
 
-        goToPosition(destination.x, destination.y, destination.moveSpeed, preferredAngle, destination.turnSpeed)
+        goToPosition(
+            destination.x,
+            destination.y,
+            destination.moveSpeed,
+            preferredAngle,
+            destination.turnSpeed
+        )
     }
 
-    private fun getFollowPointPath(pathPoints: List<CurvePoint>, robotLocation: Point, followRadius: Double): CurvePoint {
+    private fun getFollowPointPath(
+        pathPoints: List<CurvePoint>,
+        robotLocation: Point,
+        followRadius: Double
+    ): CurvePoint {
         val result = pathPoints.first().copy()
 
         for (i in 0 until pathPoints.size - 1) {
             val startLine = pathPoints[i]
             val endLine = pathPoints[i + 1]
 
-            val intersections: List<Point> =
-                linesCircleIntersections(robotLocation, followRadius, startLine.toPoint(), endLine.toPoint())
+            val intersections: List<Point> = linesCircleIntersections(
+                robotLocation,
+                followRadius,
+                startLine.toPoint(),
+                endLine.toPoint()
+            )
 
             var closestAngle = 10_000_000.0
 
@@ -57,10 +80,17 @@ object RobotMovement {
         return result
     }
 
-    fun goToPosition(x: Double, y: Double, movementSpeed: Double, preferredAngle: Double, turnSpeed: Double) {
+    fun goToPosition(
+        x: Double,
+        y: Double,
+        movementSpeed: Double,
+        preferredAngle: Double,
+        turnSpeed: Double
+    ) {
         val distanceToTarget = hypot(x - RobotPos.currentX, y - RobotPos.currentY)
         val absoluteAngleToTarget = atan2(y - RobotPos.currentY, x - RobotPos.currentX)
-        val relativeAngleToPoint = angleWrap(absoluteAngleToTarget - (RobotPos.currentAngle - RADIANS_90))
+        val relativeAngleToPoint =
+            angleWrap(absoluteAngleToTarget - (RobotPos.currentAngle - RADIANS_90))
 
         val relativeXToPoint = cos(relativeAngleToPoint) * distanceToTarget
         val relativeYToPoint = sin(relativeAngleToPoint) * distanceToTarget
