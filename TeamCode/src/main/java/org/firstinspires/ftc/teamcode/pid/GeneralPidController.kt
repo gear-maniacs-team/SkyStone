@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.pid
 import android.util.Log
 import com.qualcomm.robotcore.util.Range
 import org.firstinspires.ftc.teamcode.utils.Ranges
+import kotlin.math.abs
 import kotlin.math.sign
 
 class GeneralPidController(
@@ -17,6 +18,10 @@ class GeneralPidController(
     private var lastError = 0.0
     private var lastOutput = 0.0
 
+    private var tolerance = 0.0
+    private var toleranceTimeOut = 0L
+    private var toleranceTimeReference = 0L
+
     var debugEnabled = false
     var inputBounded = false
     var outputBounded = false
@@ -28,6 +33,20 @@ class GeneralPidController(
         private set
     var maxOutput = 0.0
         private set
+
+    fun reset() {
+        previousTime = System.currentTimeMillis()
+        cumulativeError = 0.0
+        lastError = 0.0
+        lastOutput = 0.0
+        toleranceTimeReference = 0L
+    }
+
+    fun setTolerance(tolerance: Double, toleranceTimeOut: Long) {
+        require(toleranceTimeOut > 0L)
+        this.tolerance = abs(tolerance)
+        this.toleranceTimeOut = abs(toleranceTimeOut)
+    }
 
     fun setInputRange(min: Double, max: Double) {
         require(min < max)
@@ -48,8 +67,7 @@ class GeneralPidController(
     override fun compute(input: Double): Double {
         if (firstRun) {
             firstRun = false
-            previousTime = System.currentTimeMillis()
-            cumulativeError = 0.0
+            reset()
         }
 
         val clippedInput = if (inputBounded) Range.clip(input, minInput, maxInput) else input
@@ -69,12 +87,20 @@ class GeneralPidController(
         lastError = error
         previousTime = currentTime
 
+        if (tolerance != 0.0 && abs(output) < tolerance) {
+            if (toleranceTimeReference == 0L) {
+                toleranceTimeReference = currentTime
+            } else if (abs(currentTime - previousTime) > toleranceTimeOut) {
+                return 0.0
+            }
+        }
+
         val clippedOutput = if (outputBounded) Range.clip(output, minOutput, maxOutput) else output
 
         if (debugEnabled) {
             Log.d(
-                "PID",
-                "Input=$input Error=$error CumulativeError=$cumulativeError Output=$output ClippedOutput=$output"
+                "PID Debug",
+                "Input=$input Error=$error CumulativeError=$cumulativeError Output=$output"
             )
         }
 

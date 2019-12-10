@@ -8,7 +8,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference
 import org.firstinspires.ftc.teamcode.RobotPos
 import org.firstinspires.ftc.teamcode.utils.IHardware
 import org.firstinspires.ftc.teamcode.utils.IUpdatable
-import org.firstinspires.ftc.teamcode.utils.Ranges
+import java.util.concurrent.atomic.AtomicBoolean
 
 class Gyro : IHardware, IUpdatable {
 
@@ -23,6 +23,7 @@ class Gyro : IHardware, IUpdatable {
     private lateinit var firstImu: BNO055IMU
     private lateinit var secondImu: BNO055IMU
 
+    private var resetNextTime = AtomicBoolean()
     private var lastAngle = 0f
     private var angle = 0f
 
@@ -53,28 +54,33 @@ class Gyro : IHardware, IUpdatable {
      *
      * @return the average angle of both IMU sensors in Radians
      */
-    private fun getAngleValue(): Float {
-        var currentAngle = angle
-        lastAngle = currentAngle
-
+    private fun updateAngleValue() {
         // The third angle is the Z angle, which is needed for heading
         val firstAngle = firstImu.getAngularOrientation(axesRef, angleOrder, angleUnit).thirdAngle
         val secondAngle = secondImu.getAngularOrientation(axesRef, angleOrder, angleUnit).thirdAngle
         val newAngle = (firstAngle + secondAngle) / 2
 
-        if (!Ranges.isRangeValid(newAngle, -PI_F, PI_F))
-            return currentAngle
+        if (resetNextTime.get()) {
+            resetNextTime.set(false)
+            lastAngle = newAngle
+            angle = 0f
+            return
+        }
 
-        var deltaAngle = newAngle - currentAngle // - PI / 2
+        var deltaAngle = newAngle - lastAngle
 
         if (deltaAngle < -PI_F)
             deltaAngle += PI_F * 2
         else if (deltaAngle > PI_F)
             deltaAngle -= PI_F * 2
 
-        currentAngle += deltaAngle
+        angle += deltaAngle
 
-        return currentAngle
+        lastAngle = newAngle
+    }
+
+    fun resetAngle() {
+        resetNextTime.set(true)
     }
 
     override fun start() {
@@ -82,7 +88,7 @@ class Gyro : IHardware, IUpdatable {
     }
 
     override fun update() {
-        angle = getAngleValue()
+        updateAngleValue()
         RobotPos.currentAngle = angle.toDouble()
     }
 }
