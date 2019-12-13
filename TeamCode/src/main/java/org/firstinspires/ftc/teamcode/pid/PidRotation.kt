@@ -5,9 +5,9 @@ import org.firstinspires.ftc.teamcode.utils.IUpdatable
 
 class PidRotation : IUpdatable {
 
-    val controller = GeneralPidController(253.44, 0.215, 0.143333).apply {
+    val controller = GeneralPidController(153.6, 0.01, 0.01).apply {
         //setInputRange(-Math.PI, Math.PI)
-        setTolerance(2.5, 200L)
+        tolerance = 0.001
     }
 
     var debugEnabled: Boolean

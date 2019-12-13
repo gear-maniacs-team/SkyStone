@@ -23,7 +23,7 @@ class Gyro : IHardware, IUpdatable {
     private lateinit var firstImu: BNO055IMU
     private lateinit var secondImu: BNO055IMU
 
-    private var resetNextTime = AtomicBoolean()
+    private var resetNextTime = AtomicBoolean(true)
     private var lastAngle = 0f
     private var angle = 0f
 
@@ -64,14 +64,19 @@ class Gyro : IHardware, IUpdatable {
             resetNextTime.set(false)
             lastAngle = newAngle
             angle = 0f
+
+            // TODO: Test this
+            //val currentAngle = RobotPos.currentAngle
+            RobotPos.currentAngle = 0.0
+            //RobotPos.targetAngle -= currentAngle
             return
         }
 
         var deltaAngle = newAngle - lastAngle
 
-        if (deltaAngle < -PI_F)
+        if (deltaAngle < -PI_F) // < -180
             deltaAngle += PI_F * 2
-        else if (deltaAngle > PI_F)
+        else if (deltaAngle > PI_F) // > 180
             deltaAngle -= PI_F * 2
 
         angle += deltaAngle

@@ -18,10 +18,6 @@ class GeneralPidController(
     private var lastError = 0.0
     private var lastOutput = 0.0
 
-    private var tolerance = 0.0
-    private var toleranceTimeOut = 0L
-    private var toleranceTimeReference = 0L
-
     var debugEnabled = false
     var inputBounded = false
     var outputBounded = false
@@ -33,19 +29,16 @@ class GeneralPidController(
         private set
     var maxOutput = 0.0
         private set
+    var tolerance = 0.0
+        set(value) {
+            field = abs(value)
+        }
 
     fun reset() {
         previousTime = System.currentTimeMillis()
         cumulativeError = 0.0
         lastError = 0.0
         lastOutput = 0.0
-        toleranceTimeReference = 0L
-    }
-
-    fun setTolerance(tolerance: Double, toleranceTimeOut: Long) {
-        require(toleranceTimeOut > 0L)
-        this.tolerance = abs(tolerance)
-        this.toleranceTimeOut = abs(toleranceTimeOut)
     }
 
     fun setInputRange(min: Double, max: Double) {
@@ -87,12 +80,9 @@ class GeneralPidController(
         lastError = error
         previousTime = currentTime
 
-        if (tolerance != 0.0 && abs(output) < tolerance) {
-            if (toleranceTimeReference == 0L) {
-                toleranceTimeReference = currentTime
-            } else if (abs(currentTime - previousTime) > toleranceTimeOut) {
-                return 0.0
-            }
+        if (tolerance != 0.0 && abs(error) < tolerance) {
+            cumulativeError = 0.0
+            return 0.0
         }
 
         val clippedOutput = if (outputBounded) Range.clip(output, minOutput, maxOutput) else output

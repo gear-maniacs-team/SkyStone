@@ -39,17 +39,6 @@ class TestingGyro : OpMode() {
 
     override fun loop() {
         val pidOutput = pid.output
-
-        if (pidOutput == 0.0) {
-            with(wheels) {
-                rightFront.velocity = 0.0
-                leftFront.velocity = 0.0
-                rightBack.velocity = 0.0
-                leftBack.velocity = 0.0
-            }
-            return
-        }
-
         val controller = pid.controller
 
         val modifier = when {
@@ -69,9 +58,8 @@ class TestingGyro : OpMode() {
 
                     gyro.resetAngle()
                     controller.reset()
-                    RobotPos.currentAngle = 0.0
-                    //val newTarget = RobotPos.targetAngle + deltaAngle
                     RobotPos.targetAngle = deltaAngle
+                    return
                 }
             }
             else -> valueModified = false
