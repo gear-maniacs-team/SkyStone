@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import org.firstinspires.ftc.teamcode.utils.fastLazy
 
 @Deprecated("Used in previous Season")
-@TeleOp(name = "Multi-Threaded", group = "Good")
+@TeleOp(name = "Multi-Threaded", group = "Old")
 class MultiThreadedTeleOp : OpMode() {
 
     private val robot = RoverRuckusRobot()
