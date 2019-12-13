@@ -2,15 +2,16 @@ package org.firstinspires.ftc.teamcode.pid
 
 import android.util.Log
 import com.qualcomm.robotcore.util.Range
+import org.firstinspires.ftc.robotcore.internal.system.Misc
 import org.firstinspires.ftc.teamcode.utils.Ranges
 import kotlin.math.abs
 import kotlin.math.sign
 
 class GeneralPidController(
-    Kp: Double,
-    Ki: Double,
-    Kd: Double
-) : AbstractPidController(Kp, Ki, Kd) {
+    var Kp: Double,
+    var Ki: Double,
+    var Kd: Double
+) {
 
     private var firstRun = true
     private var previousTime = 0L
@@ -33,6 +34,8 @@ class GeneralPidController(
         set(value) {
             field = abs(value)
         }
+
+    var setPoint: Double = 0.0
 
     fun reset() {
         previousTime = System.currentTimeMillis()
@@ -57,7 +60,7 @@ class GeneralPidController(
         maxOutput = max
     }
 
-    override fun compute(input: Double): Double {
+    fun compute(input: Double): Double {
         if (firstRun) {
             firstRun = false
             reset()
@@ -96,4 +99,6 @@ class GeneralPidController(
 
         return clippedOutput
     }
+
+    override fun toString(): String = Misc.formatForUser("P=%f I=%f D=%f", Kp, Ki, Kd)
 }
