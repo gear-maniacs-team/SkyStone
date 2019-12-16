@@ -55,10 +55,8 @@ class TestingGyro : OpMode() {
             gamepad1.y -> {
                 if (modifier != 0.0) {
                     val deltaAngle = (Math.PI / 2) * modifier
-
-                    gyro.resetAngle()
                     controller.reset()
-                    RobotPos.targetAngle = deltaAngle
+                    RobotPos.targetAngle += deltaAngle
                     return
                 }
             }

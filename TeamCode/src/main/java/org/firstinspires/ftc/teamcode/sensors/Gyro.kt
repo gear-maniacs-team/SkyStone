@@ -8,12 +8,22 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference
 import org.firstinspires.ftc.teamcode.RobotPos
 import org.firstinspires.ftc.teamcode.utils.IHardware
 import org.firstinspires.ftc.teamcode.utils.IUpdatable
-import java.util.concurrent.atomic.AtomicBoolean
 
 class Gyro : IHardware, IUpdatable {
 
-    private companion object {
+    companion object {
         private const val PI_F = Math.PI.toFloat()
+
+        private fun computeAngle(lastAngle: Float, newAngle: Float): Float {
+            var deltaAngle = newAngle - lastAngle
+
+            if (deltaAngle < -PI_F) // < -180
+                deltaAngle += PI_F * 2
+            else if (deltaAngle > PI_F) // > 180
+                deltaAngle -= PI_F * 2
+
+            return deltaAngle
+        }
     }
 
     private val axesRef = AxesReference.EXTRINSIC
@@ -22,8 +32,6 @@ class Gyro : IHardware, IUpdatable {
 
     private lateinit var firstImu: BNO055IMU
     private lateinit var secondImu: BNO055IMU
-
-    private var resetNextTime = AtomicBoolean(true)
     private var lastAngle = 0f
     private var angle = 0f
 
@@ -58,34 +66,13 @@ class Gyro : IHardware, IUpdatable {
         // The third angle is the Z angle, which is needed for heading
         val firstAngle = firstImu.getAngularOrientation(axesRef, angleOrder, angleUnit).thirdAngle
         val secondAngle = secondImu.getAngularOrientation(axesRef, angleOrder, angleUnit).thirdAngle
-        val newAngle = (firstAngle + secondAngle) / 2
 
-        if (resetNextTime.get()) {
-            resetNextTime.set(false)
-            lastAngle = newAngle
-            angle = 0f
+        val deltaAngle1 = computeAngle(lastAngle, firstAngle)
+        val deltaAngle2 = computeAngle(lastAngle, secondAngle)
 
-            // TODO: Test this
-            //val currentAngle = RobotPos.currentAngle
-            RobotPos.currentAngle = 0.0
-            //RobotPos.targetAngle -= currentAngle
-            return
-        }
+        angle += (deltaAngle1 + deltaAngle2) / 2
 
-        var deltaAngle = newAngle - lastAngle
-
-        if (deltaAngle < -PI_F) // < -180
-            deltaAngle += PI_F * 2
-        else if (deltaAngle > PI_F) // > 180
-            deltaAngle -= PI_F * 2
-
-        angle += deltaAngle
-
-        lastAngle = newAngle
-    }
-
-    fun resetAngle() {
-        resetNextTime.set(true)
+        lastAngle = angle
     }
 
     override fun start() {
