@@ -7,7 +7,7 @@ import org.firstinspires.ftc.teamcode.utils.Ranges
 import kotlin.math.abs
 import kotlin.math.sign
 
-class GeneralPidController(
+class PidController(
     var Kp: Double,
     var Ki: Double,
     var Kd: Double

@@ -5,60 +5,54 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.teamcode.TeamRobot
+import org.firstinspires.ftc.teamcode.motors.Intake
 import org.firstinspires.ftc.teamcode.motors.Wheels
 import org.firstinspires.ftc.teamcode.utils.rpmToTps
 import kotlin.concurrent.thread
-import kotlin.math.abs
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.hypot
-import kotlin.math.min
-import kotlin.math.sin
+import kotlin.math.*
 
 @TeleOp(name = "DemoTeleOp")
 class DemoTeleOp : OpMode() {
 
     private val robot = TeamRobot()
     private val wheels = Wheels()
-    private lateinit var leftIntake: DcMotor
-    private lateinit var rightIntake: DcMotor
-    private lateinit var cargoServo: Servo
-    private lateinit var leftExtension: Servo
-    private lateinit var rightExtension: Servo
-    private var precisionModeOn = false
+    private val intake = Intake()
+
+    private var releaseServo: Servo? = null
+    private var cargoServo: Servo? = null
 
     private val maxFrontVelocity = getFrontVelocity(1.0)
     private val maxBackVelocity = getBackVelocity(1.0)
 
+    private var precisionModeOn = false
     private var rightFrontVelocity = 0.0
     private var leftFrontVelocity = 0.0
     private var rightBackVelocity = 0.0
     private var leftBackVelocity = 0.0
 
     override fun init() {
-        robot.init(hardwareMap, listOf(wheels))
+        robot.init(hardwareMap, listOf(wheels, intake))
         wheels.setModeAll(DcMotor.RunMode.RUN_USING_ENCODER)
 
-        leftIntake = hardwareMap.dcMotor["intake_left"]
-        rightIntake = hardwareMap.dcMotor["intake_right"]
-
+        releaseServo = hardwareMap.servo["front"]
         cargoServo = hardwareMap.servo["cargo"]
-        rightExtension = hardwareMap.servo["extension_right"]
     }
 
     override fun start() {
         robot.start()
+
+        releaseServo?.position = 0.0
+
         thread {
             while (robot.isOpModeActive) {
                 intake()
                 cargo()
-                extension()
             }
         }
     }
 
     override fun loop() {
-        precisionModeOn = gamepad1.a
+        precisionModeOn = gamepad1.right_bumper
 
         rightFrontVelocity = 0.0
         leftFrontVelocity = 0.0
@@ -75,8 +69,14 @@ class DemoTeleOp : OpMode() {
             leftBack.velocity = min(leftBackVelocity, maxBackVelocity)
         }
 
-        telemetry.addData("Precision Mode On", "%b\n", precisionModeOn)
-        telemetry.update()
+        with(telemetry) {
+            addData("Precision Mode On", "%b\n", precisionModeOn)
+            addData("Front Left Velocity", leftFrontVelocity)
+            addData("Front Right Velocity", rightFrontVelocity)
+            addData("Back Left Velocity", leftBackVelocity)
+            addData("Back Right Velocity", rightBackVelocity)
+            update()
+        }
     }
 
     override fun stop() {
@@ -97,12 +97,12 @@ class DemoTeleOp : OpMode() {
             speedRight /= max
         }
 
-        speedRight *= MOTOR_SPEED_MULTIPLIER
-        speedLeft *= MOTOR_SPEED_MULTIPLIER
-
         if (precisionModeOn) {
             speedRight *= PRECISION_MODE_MULTIPLIER
             speedLeft *= PRECISION_MODE_MULTIPLIER
+        } else {
+            speedRight *= MOTOR_SPEED_MULTIPLIER
+            speedLeft *= MOTOR_SPEED_MULTIPLIER
         }
 
         rightFrontVelocity += getFrontVelocity(speedRight)
@@ -119,8 +119,7 @@ class DemoTeleOp : OpMode() {
             return
 
         var magnitude = hypot(x, y)
-        if (precisionModeOn)
-            magnitude *= PRECISION_MODE_MULTIPLIER
+        magnitude *= if (precisionModeOn) PRECISION_MODE_MULTIPLIER else MOTOR_SPEED_MULTIPLIER
 
         val angle = atan2(x, y) - Math.PI / 4
 
@@ -135,10 +134,10 @@ class DemoTeleOp : OpMode() {
 
     private fun intake() {
         if (gamepad2.dpad_left) {
-            leftIntake.power = INTAKE_POWER
+            intake.left.power = INTAKE_POWER
             return
         } else if (gamepad2.dpad_right) {
-            rightIntake.power = -INTAKE_POWER
+            intake.right.power = -INTAKE_POWER
             return
         }
 
@@ -150,23 +149,23 @@ class DemoTeleOp : OpMode() {
             else -> 0.0
         }
 
-        leftIntake.power = intakePower
-        rightIntake.power = -intakePower
+        intake.left.power = intakePower
+        intake.right.power = -intakePower
     }
 
     private fun cargo() {
-        cargoServo.position = if (gamepad2.a) 1.0 else 0.0
+        cargoServo?.position = if (gamepad2.a) 1.0 else 0.0
     }
 
-    private fun extension() {
+    /*private fun extension() {
         if (gamepad2.y) {
-//            leftExtension.position = 0.0
+            leftExtension.position = 0.0
             rightExtension.position = 0.0
         } else if (gamepad2.b) {
-//            leftExtension.position = 1.0
+            leftExtension.position = 1.0
             rightExtension.position = 1.0
         }
-    }
+    }*/
 
     private fun getFrontVelocity(power: Double) =
         rpmToTps(MAX_RPM * power, FRONT_ENCODER_COUNT)
@@ -180,7 +179,7 @@ class DemoTeleOp : OpMode() {
         private const val BACK_ENCODER_COUNT = 753.2
 
         private const val PRECISION_MODE_MULTIPLIER = 0.45
-        private const val MOTOR_SPEED_MULTIPLIER = 0.9
+        private const val MOTOR_SPEED_MULTIPLIER = 0.85
         private const val INTAKE_POWER = 0.6
     }
 }
