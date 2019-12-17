@@ -9,6 +9,10 @@ import org.jetbrains.annotations.NotNull;
 
 public final class Wheels implements IHardware {
 
+    public static double rpmToTps(double rpm, double encoder) {
+        return rpm * (encoder / 60.0);
+    }
+
     private DcMotorEx leftFront;
     private DcMotorEx leftBack;
     private DcMotorEx rightFront;
