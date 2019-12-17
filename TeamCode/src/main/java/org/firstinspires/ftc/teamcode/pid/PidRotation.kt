@@ -5,7 +5,7 @@ import org.firstinspires.ftc.teamcode.utils.IUpdatable
 
 class PidRotation : IUpdatable {
 
-    val controller = PidController(153.6, 0.01, 0.01).apply {
+    val controller = PidController(169.0, 0.01, 7.5).apply {
         tolerance = 0.001
     }
 

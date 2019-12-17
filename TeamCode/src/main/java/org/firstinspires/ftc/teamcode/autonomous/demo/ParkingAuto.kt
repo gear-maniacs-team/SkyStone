@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import org.firstinspires.ftc.teamcode.TeamRobot
 import org.firstinspires.ftc.teamcode.motors.Wheels
-import org.firstinspires.ftc.teamcode.utils.rpmToTps
 
 abstract class ParkingAuto : LinearOpMode() {
 
@@ -65,10 +64,10 @@ abstract class ParkingAuto : LinearOpMode() {
     }
 
     private fun getFrontVelocity(power: Double) =
-        rpmToTps(MAX_RPM * power, FRONT_ENCODER_COUNT)
+        Wheels.rpmToTps(MAX_RPM * power, FRONT_ENCODER_COUNT)
 
     private fun getBackVelocity(power: Double) =
-        rpmToTps(            MAX_RPM * power, BACK_ENCODER_COUNT)
+        Wheels.rpmToTps(MAX_RPM * power, BACK_ENCODER_COUNT)
 
     private companion object {
         private const val MAX_RPM = 223.0

@@ -57,7 +57,7 @@ class TestingGyro : OpMode() {
                     val deltaAngle = (Math.PI / 2) * modifier
                     controller.reset()
                     RobotPos.targetAngle += deltaAngle
-                    Thread.sleep(100)
+                    Thread.sleep(200)
                     return
                 }
             }

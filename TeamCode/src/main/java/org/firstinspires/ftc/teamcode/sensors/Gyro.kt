@@ -68,11 +68,11 @@ class Gyro : IHardware, IUpdatable {
         val secondAngle = secondImu.getAngularOrientation(axesRef, angleOrder, angleUnit).thirdAngle
 
         val deltaAngle1 = computeAngle(lastAngle, firstAngle)
-        val deltaAngle2 = computeAngle(lastAngle, secondAngle)
+        //val deltaAngle2 = computeAngle(lastAngle, secondAngle)
 
-        angle += (deltaAngle1 + deltaAngle2) / 2
-
-        lastAngle = angle
+        //angle += (deltaAngle1 + deltaAngle2) / 2
+        angle += deltaAngle1
+        lastAngle = firstAngle
     }
 
     override fun start() {

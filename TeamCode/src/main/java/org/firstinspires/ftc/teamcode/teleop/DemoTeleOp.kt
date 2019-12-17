@@ -21,7 +21,7 @@ class DemoTeleOp : OpMode() {
     private val intake = Intake()
     private val gyro = Gyro()
 
-    private val strafePid = PidController(153.6, 0.01, 0.1).apply {
+    private val strafePid = PidController(153.6, 0.01, 0.01).apply {
         tolerance = 0.001
         setPoint = 0.0 // To keep a straight line
         setOutputRange(-MAX_RPM / 2, MAX_RPM / 2)
@@ -144,8 +144,8 @@ class DemoTeleOp : OpMode() {
         val front = getFrontVelocity(speed)
         val back = getBackVelocity(speed)
 
-        rightFrontVelocity -= front - frontCorrection
-        leftFrontVelocity -= front + frontCorrection
+        rightFrontVelocity += -front + frontCorrection
+        leftFrontVelocity += -front - frontCorrection
         rightBackVelocity += back + backCorrection
         leftBackVelocity += back - backCorrection
 
