@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.teleop
 
+import android.util.Log
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
@@ -21,10 +22,10 @@ class DemoTeleOp : OpMode() {
     private val intake = Intake()
     private val gyro = Gyro()
 
-    private val strafePid = PidController(153.6, 0.01, 0.01).apply {
-        tolerance = 0.001
+    private val strafePid = PidController(500.6, 0.0, 0.0).apply {
+        tolerance = 0.000001
         setPoint = 0.0 // To keep a straight line
-        setOutputRange(-MAX_RPM / 2, MAX_RPM / 2)
+        setOutputRange(-100.0, 100.0)
     }
 
     private var releaseServo: Servo? = null
@@ -115,16 +116,20 @@ class DemoTeleOp : OpMode() {
         speedRight *= percentage
         speedLeft *= percentage
 
-        rightFrontVelocity += getFrontVelocity(speedRight)
-        leftFrontVelocity += getFrontVelocity(speedLeft)
-        rightBackVelocity += getBackVelocity(speedRight)
-        leftBackVelocity += getBackVelocity(speedLeft)
+        rightFrontVelocity = getFrontVelocity(speedRight)
+        leftFrontVelocity = getFrontVelocity(speedLeft)
+        rightBackVelocity = getBackVelocity(speedRight)
+        leftBackVelocity = getBackVelocity(speedLeft)
     }
 
     private fun strafe() {
-        val x = gamepad1.right_stick_x.toDouble()
+        val x = -gamepad1.right_stick_x.toDouble()
+        val y = gamepad1.right_stick_y.toDouble()
 
-        if (abs(x) == 0.0) {
+        val tempX = gamepad1.left_stick_x.toDouble()
+        val tempY = gamepad1.left_stick_y.toDouble()
+
+        if (abs(x) == 0.0 && abs(y) == 0.0 ) {
             resetStrafePid = true
             return
         }
@@ -135,20 +140,25 @@ class DemoTeleOp : OpMode() {
             resetStrafePid = false
         }
 
-        val speed = x * if (precisionModeOn) PRECISION_MODE_MULTIPLIER else MOTOR_SPEED_MULTIPLIER
-
         val correction = strafePid.compute(RobotPos.currentAngle)
         val frontCorrection = Wheels.rpmToTps(correction, FRONT_ENCODER_COUNT)
         val backCorrection = Wheels.rpmToTps(correction, BACK_ENCODER_COUNT)
+        var magnitude = hypot(x, y)
+        if (precisionModeOn)
+            magnitude *= PRECISION_MODE_MULTIPLIER
 
-        val front = getFrontVelocity(speed)
-        val back = getBackVelocity(speed)
+        val angle = atan2(y, x) - Math.PI/2
 
-        rightFrontVelocity += -front + frontCorrection
-        leftFrontVelocity += -front - frontCorrection
-        rightBackVelocity += back + backCorrection
-        leftBackVelocity += back - backCorrection
+        val speedX = magnitude * sin(angle + Math.PI/4)
+        val speedY = magnitude * sin(angle - Math.PI/4)
 
+        rightFrontVelocity = -getFrontVelocity(speedX) + frontCorrection
+        leftFrontVelocity = -getFrontVelocity(speedY) + frontCorrection
+        rightBackVelocity = getBackVelocity(speedY) + backCorrection
+        leftBackVelocity = getBackVelocity(speedX) + backCorrection
+
+
+        Log.d("PLANE","Angle $angle X $x Y $y")
         telemetry.addData("Correction", correction)
     }
 
