@@ -37,13 +37,16 @@ class TeamRobot {
             it.start()
         }
 
-        updaterExecutor.submit {
-            while (isOpModeActive) {
-                updatableInstances.forEach {
-                    it.update()
-                }
-                Thread.yield()
+        if (updatableInstances.isNotEmpty())
+            updaterExecutor.submit(::updateAll)
+    }
+
+    private fun updateAll() {
+        while (isOpModeActive) {
+            updatableInstances.forEach {
+                it.update()
             }
+            Thread.yield()
         }
     }
 

@@ -62,6 +62,13 @@ public final class Wheels implements IHardware {
         rightBack.setMode(mode);
     }
 
+    public final void setZeroPowerBehaviorAll(@NotNull DcMotor.ZeroPowerBehavior behavior) {
+        leftFront.setZeroPowerBehavior(behavior);
+        leftBack.setZeroPowerBehavior(behavior);
+        rightFront.setZeroPowerBehavior(behavior);
+        rightBack.setZeroPowerBehavior(behavior);
+    }
+
     public final void setPowerAll(double power) {
         leftFront.setPower(power);
         leftBack.setPower(power);

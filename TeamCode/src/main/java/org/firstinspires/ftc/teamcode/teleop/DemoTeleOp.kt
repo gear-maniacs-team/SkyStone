@@ -24,7 +24,6 @@ class DemoTeleOp : OpMode() {
 
     private val strafePid = PidController(500.6, 0.0, 0.0).apply {
         tolerance = 0.000001
-        setPoint = 0.0 // To keep a straight line
         setOutputRange(-100.0, 100.0)
     }
 
@@ -35,6 +34,7 @@ class DemoTeleOp : OpMode() {
     private val maxBackVelocity = getBackVelocity(1.0)
 
     private var precisionModeOn = false
+    private var curvedMovement = false
     private var rightFrontVelocity = 0.0
     private var leftFrontVelocity = 0.0
     private var rightBackVelocity = 0.0
@@ -43,7 +43,9 @@ class DemoTeleOp : OpMode() {
 
     override fun init() {
         robot.init(hardwareMap, listOf(wheels, intake, gyro), listOf(gyro))
+
         wheels.setModeAll(DcMotor.RunMode.RUN_USING_ENCODER)
+        wheels.setZeroPowerBehaviorAll(DcMotor.ZeroPowerBehavior.BRAKE)
 
         releaseServo = hardwareMap.servo["front"]
         cargoServo = hardwareMap.servo["cargo"]
@@ -58,6 +60,7 @@ class DemoTeleOp : OpMode() {
             while (robot.isOpModeActive) {
                 intake()
                 cargo()
+                Thread.yield()
             }
         }
     }
@@ -65,13 +68,14 @@ class DemoTeleOp : OpMode() {
     override fun loop() {
         precisionModeOn = gamepad1.right_bumper
 
+        curvedMovement = false
         rightFrontVelocity = 0.0
         leftFrontVelocity = 0.0
         rightBackVelocity = 0.0
         leftBackVelocity = 0.0
 
         curveMovement()
-        strafe()
+        planeMovement()
 
         with(wheels) {
             rightFront.velocity = min(rightFrontVelocity, maxFrontVelocity)
@@ -101,6 +105,10 @@ class DemoTeleOp : OpMode() {
         val x = -gamepad1.left_stick_x.toDouble()
         val y = gamepad1.left_stick_y.toDouble()
 
+        if (abs(x) == 0.0 && abs(y) == 0.0) {
+            return
+        }
+
         var speedLeft = y + x
         var speedRight = -y + x
 
@@ -116,50 +124,46 @@ class DemoTeleOp : OpMode() {
         speedRight *= percentage
         speedLeft *= percentage
 
-        rightFrontVelocity = getFrontVelocity(speedRight)
-        leftFrontVelocity = getFrontVelocity(speedLeft)
-        rightBackVelocity = getBackVelocity(speedRight)
-        leftBackVelocity = getBackVelocity(speedLeft)
+        curvedMovement = true
+        rightFrontVelocity += getFrontVelocity(speedRight)
+        leftFrontVelocity += getFrontVelocity(speedLeft)
+        rightBackVelocity += getBackVelocity(speedRight)
+        leftBackVelocity += getBackVelocity(speedLeft)
     }
 
-    private fun strafe() {
+    private fun planeMovement() {
         val x = -gamepad1.right_stick_x.toDouble()
         val y = gamepad1.right_stick_y.toDouble()
 
-        val tempX = gamepad1.left_stick_x.toDouble()
-        val tempY = gamepad1.left_stick_y.toDouble()
-
-        if (abs(x) == 0.0 && abs(y) == 0.0 ) {
+        if (abs(x) == 0.0 && abs(y) == 0.0) {
             resetStrafePid = true
             return
         }
 
-        if (resetStrafePid) {
+        if (resetStrafePid && !curvedMovement) {
             strafePid.reset()
             strafePid.setPoint = RobotPos.currentAngle
             resetStrafePid = false
         }
 
-        val correction = strafePid.compute(RobotPos.currentAngle)
+        val correction = if (!curvedMovement) strafePid.compute(RobotPos.currentAngle) else 0.0
         val frontCorrection = Wheels.rpmToTps(correction, FRONT_ENCODER_COUNT)
         val backCorrection = Wheels.rpmToTps(correction, BACK_ENCODER_COUNT)
-        var magnitude = hypot(x, y)
-        if (precisionModeOn)
-            magnitude *= PRECISION_MODE_MULTIPLIER
 
-        val angle = atan2(y, x) - Math.PI/2
+        val magnitude = hypot(x, y) * if (precisionModeOn) PRECISION_MODE_MULTIPLIER else MOTOR_SPEED_MULTIPLIER
 
-        val speedX = magnitude * sin(angle + Math.PI/4)
-        val speedY = magnitude * sin(angle - Math.PI/4)
+        val angle = atan2(y, x) - Math.PI / 2
 
-        rightFrontVelocity = -getFrontVelocity(speedX) + frontCorrection
-        leftFrontVelocity = -getFrontVelocity(speedY) + frontCorrection
-        rightBackVelocity = getBackVelocity(speedY) + backCorrection
-        leftBackVelocity = getBackVelocity(speedX) + backCorrection
+        val speedX = magnitude * sin(angle + Math.PI / 4)
+        val speedY = magnitude * sin(angle - Math.PI / 4)
 
+        rightFrontVelocity += -getFrontVelocity(speedX) + frontCorrection
+        leftFrontVelocity += -getFrontVelocity(speedY) + frontCorrection
+        rightBackVelocity += getBackVelocity(speedY) + backCorrection
+        leftBackVelocity += getBackVelocity(speedX) + backCorrection
 
-        Log.d("PLANE","Angle $angle X $x Y $y")
-        telemetry.addData("Correction", correction)
+        Log.d("PLANE", "Angle $angle X $x Y $y")
+        telemetry.addData("Strafe Correction", correction)
     }
 
     private fun intake() {
@@ -209,7 +213,7 @@ class DemoTeleOp : OpMode() {
         private const val BACK_ENCODER_COUNT = 753.2
 
         private const val PRECISION_MODE_MULTIPLIER = 0.45
-        private const val MOTOR_SPEED_MULTIPLIER = 0.7
+        private const val MOTOR_SPEED_MULTIPLIER = 0.9
         private const val INTAKE_POWER = 0.6
     }
 }
