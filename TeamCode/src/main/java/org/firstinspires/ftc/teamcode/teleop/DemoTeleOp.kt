@@ -3,13 +3,16 @@ package org.firstinspires.ftc.teamcode.teleop
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
+import com.qualcomm.robotcore.hardware.DistanceSensor
 import com.qualcomm.robotcore.hardware.Servo
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
 import org.firstinspires.ftc.teamcode.RobotPos
 import org.firstinspires.ftc.teamcode.TeamRobot
 import org.firstinspires.ftc.teamcode.motors.Intake
 import org.firstinspires.ftc.teamcode.motors.Wheels
 import org.firstinspires.ftc.teamcode.pid.PidController
 import org.firstinspires.ftc.teamcode.sensors.Gyro
+import org.firstinspires.ftc.teamcode.utils.Ranges
 import kotlin.concurrent.thread
 import kotlin.math.*
 
@@ -20,6 +23,7 @@ class DemoTeleOp : OpMode() {
     private val wheels = Wheels()
     private val intake = Intake()
     private val gyro = Gyro()
+    private lateinit var distanceSensor: DistanceSensor
 
     private val strafePid = PidController(256.0, 0.0001, 0.5).apply {
         tolerance = 0.00001
@@ -40,6 +44,8 @@ class DemoTeleOp : OpMode() {
     private var orientationIndependentDrive = false
     private var resetStrafePid = true
 
+    private var distanceToStone = 0.0
+
     override fun init() {
         robot.init(hardwareMap, listOf(wheels, intake, gyro), listOf(gyro))
 
@@ -48,6 +54,7 @@ class DemoTeleOp : OpMode() {
 
         releaseServo = hardwareMap.servo["front"]
         cargoServo = hardwareMap.servo["cargo"]
+        distanceSensor = hardwareMap.get(DistanceSensor::class.java, "cargo_distance")
     }
 
     override fun start() {
@@ -57,6 +64,7 @@ class DemoTeleOp : OpMode() {
 
         thread {
             while (robot.isOpModeActive) {
+                distanceToStone = distanceSensor.getDistance(DistanceUnit.CM)
                 intake()
                 cargo()
                 Thread.yield()
@@ -65,6 +73,8 @@ class DemoTeleOp : OpMode() {
     }
 
     override fun loop() {
+        telemetry.addData("Distance", distanceToStone)
+
         precisionModeOn = gamepad1.right_bumper
         if (gamepad1.b) {
             orientationIndependentDrive = !orientationIndependentDrive
@@ -95,12 +105,6 @@ class DemoTeleOp : OpMode() {
         with(telemetry) {
             addData("Current Angle", RobotPos.currentAngle)
             addData("Target Angle", strafePid.setPoint)
-
-            addData("Precision Mode On", "%b\n", precisionModeOn)
-            addData("Front Left Velocity", leftFrontVelocity)
-            addData("Front Right Velocity", rightFrontVelocity)
-            addData("Back Left Velocity", leftBackVelocity)
-            addData("Back Right Velocity", rightBackVelocity)
             update()
         }
     }
@@ -175,12 +179,19 @@ class DemoTeleOp : OpMode() {
         telemetry.addData("Strafe Correction", correction)
     }
 
+    private fun autoIntake() {
+        val power = if (distanceToStone < 16) INTAKE_POWER else 0.0
+        intake.left.power = power
+        intake.right.power = -power
+
+        if (power != 0.0)
+            Thread.sleep(1200L)
+    }
+
     private fun intake() {
-        if (gamepad2.dpad_left) {
-            intake.left.power = INTAKE_POWER
-            return
-        } else if (gamepad2.dpad_right) {
-            intake.right.power = -INTAKE_POWER
+        // If the intake is not used by the driver, enter auto mode
+        if (!(gamepad2.left_bumper || gamepad2.right_bumper || gamepad2.dpad_down || gamepad2.dpad_up)) {
+            autoIntake()
             return
         }
 
@@ -197,7 +208,7 @@ class DemoTeleOp : OpMode() {
     }
 
     private fun cargo() {
-         cargoServo?.position = gamepad2.right_trigger.toDouble()
+        cargoServo?.position = gamepad2.right_trigger.toDouble()
     }
 
     /*private fun extension() {
@@ -217,7 +228,7 @@ class DemoTeleOp : OpMode() {
 
         private const val PRECISION_MODE_MULTIPLIER = 0.45
         private const val MOTOR_SPEED_MULTIPLIER = 0.95
-        private const val INTAKE_POWER = 0.6
+        private const val INTAKE_POWER = 0.7
 
         private fun getFrontVelocity(power: Double) =
             Wheels.rpmToTps(MAX_RPM * power, FRONT_ENCODER_COUNT)
