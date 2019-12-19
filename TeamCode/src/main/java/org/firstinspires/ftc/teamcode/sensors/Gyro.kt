@@ -30,14 +30,12 @@ class Gyro : IHardware, IUpdatable {
     private val angleOrder = AxesOrder.XYZ
     private val angleUnit = AngleUnit.RADIANS
 
-    private lateinit var firstImu: BNO055IMU
-    private lateinit var secondImu: BNO055IMU
+    private lateinit var imu: BNO055IMU
     private var lastAngle = 0f
     private var angle = 0f
 
     override fun init(hardwareMap: HardwareMap) {
-        firstImu = hardwareMap.get(BNO055IMU::class.java, "imu_1")
-        secondImu = hardwareMap.get(BNO055IMU::class.java, "imu_2")
+        imu = hardwareMap.get(BNO055IMU::class.java, "imu_1")
 
         val parameters = BNO055IMU.Parameters().apply {
             mode = BNO055IMU.SensorMode.IMU
@@ -46,12 +44,11 @@ class Gyro : IHardware, IUpdatable {
             loggingEnabled = false
         }
 
-        firstImu.initialize(parameters)
-        secondImu.initialize(parameters)
+        imu.initialize(parameters)
     }
 
     fun waitForCalibration() {
-        while (!firstImu.isGyroCalibrated || !secondImu.isGyroCalibrated)
+        while (!imu.isGyroCalibrated)
             Thread.sleep(10)
     }
 
@@ -64,14 +61,11 @@ class Gyro : IHardware, IUpdatable {
      */
     private fun updateAngleValue() {
         // The third angle is the Z angle, which is needed for heading
-        val firstAngle = firstImu.getAngularOrientation(axesRef, angleOrder, angleUnit).thirdAngle
-        val secondAngle = secondImu.getAngularOrientation(axesRef, angleOrder, angleUnit).thirdAngle
+        val firstAngle = imu.getAngularOrientation(axesRef, angleOrder, angleUnit).thirdAngle
 
-        val deltaAngle1 = computeAngle(lastAngle, firstAngle)
-        //val deltaAngle2 = computeAngle(lastAngle, secondAngle)
+        val deltaAngle = computeAngle(lastAngle, firstAngle)
 
-        //angle += (deltaAngle1 + deltaAngle2) / 2
-        angle += deltaAngle1
+        angle += deltaAngle
         lastAngle = firstAngle
     }
 
