@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.teleop
 
-import android.util.Log
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
@@ -14,7 +13,7 @@ import org.firstinspires.ftc.teamcode.sensors.Gyro
 import kotlin.concurrent.thread
 import kotlin.math.*
 
-@TeleOp(name = "DemoTeleOp")
+@TeleOp(name = "G.E.A.R.S.")
 class DemoTeleOp : OpMode() {
 
     private val robot = TeamRobot()
@@ -22,16 +21,13 @@ class DemoTeleOp : OpMode() {
     private val intake = Intake()
     private val gyro = Gyro()
 
-    private val strafePid = PidController(500.6, 0.0, 0.0).apply {
-        tolerance = 0.000001
+    private val strafePid = PidController(256.0, 0.0001, 0.5).apply {
+        tolerance = 0.00001
         setOutputRange(-100.0, 100.0)
     }
 
     private var releaseServo: Servo? = null
     private var cargoServo: Servo? = null
-
-    private val maxFrontVelocity = getFrontVelocity(1.0)
-    private val maxBackVelocity = getBackVelocity(1.0)
 
     private var precisionModeOn = false
     private var curvedMovement = false
@@ -39,6 +35,9 @@ class DemoTeleOp : OpMode() {
     private var leftFrontVelocity = 0.0
     private var rightBackVelocity = 0.0
     private var leftBackVelocity = 0.0
+
+    private var resetAngle = 0.0
+    private var orientationIndependentDrive = false
     private var resetStrafePid = true
 
     override fun init() {
@@ -67,6 +66,15 @@ class DemoTeleOp : OpMode() {
 
     override fun loop() {
         precisionModeOn = gamepad1.right_bumper
+        if (gamepad1.b) {
+            orientationIndependentDrive = !orientationIndependentDrive
+            Thread.sleep(200L)
+        }
+
+        if (gamepad1.left_stick_button && gamepad1.right_stick_button) {
+            resetAngle = RobotPos.currentAngle
+            Thread.sleep(200L)
+        }
 
         curvedMovement = false
         rightFrontVelocity = 0.0
@@ -78,10 +86,10 @@ class DemoTeleOp : OpMode() {
         planeMovement()
 
         with(wheels) {
-            rightFront.velocity = min(rightFrontVelocity, maxFrontVelocity)
-            leftFront.velocity = min(leftFrontVelocity, maxFrontVelocity)
-            rightBack.velocity = min(rightBackVelocity, maxBackVelocity)
-            leftBack.velocity = min(leftBackVelocity, maxBackVelocity)
+            rightFront.velocity = min(rightFrontVelocity, MAX_FRONT_VELOCITY)
+            leftFront.velocity = min(leftFrontVelocity, MAX_FRONT_VELOCITY)
+            rightBack.velocity = min(rightBackVelocity, MAX_BACK_VELOCITY)
+            leftBack.velocity = min(leftBackVelocity, MAX_BACK_VELOCITY)
         }
 
         with(telemetry) {
@@ -102,12 +110,11 @@ class DemoTeleOp : OpMode() {
     }
 
     private fun curveMovement() {
-        val x = -gamepad1.left_stick_x.toDouble()
-        val y = gamepad1.left_stick_y.toDouble()
+        val x = -gamepad1.right_stick_x.toDouble()
+        val y = gamepad1.right_stick_y.toDouble()
 
-        if (abs(x) == 0.0 && abs(y) == 0.0) {
+        if (abs(x) == 0.0 && abs(y) == 0.0)
             return
-        }
 
         var speedLeft = y + x
         var speedRight = -y + x
@@ -125,6 +132,8 @@ class DemoTeleOp : OpMode() {
         speedLeft *= percentage
 
         curvedMovement = true
+        resetStrafePid = true
+
         rightFrontVelocity += getFrontVelocity(speedRight)
         leftFrontVelocity += getFrontVelocity(speedLeft)
         rightBackVelocity += getBackVelocity(speedRight)
@@ -132,8 +141,8 @@ class DemoTeleOp : OpMode() {
     }
 
     private fun planeMovement() {
-        val x = -gamepad1.right_stick_x.toDouble()
-        val y = gamepad1.right_stick_y.toDouble()
+        val x = -gamepad1.left_stick_x.toDouble()
+        val y = gamepad1.left_stick_y.toDouble()
 
         if (abs(x) == 0.0 && abs(y) == 0.0) {
             resetStrafePid = true
@@ -152,7 +161,8 @@ class DemoTeleOp : OpMode() {
 
         val magnitude = hypot(x, y) * if (precisionModeOn) PRECISION_MODE_MULTIPLIER else MOTOR_SPEED_MULTIPLIER
 
-        val angle = atan2(y, x) - Math.PI / 2
+        val independentAngleCorrection = if (orientationIndependentDrive) RobotPos.currentAngle - resetAngle else 0.0
+        val angle = atan2(y, x) - Math.PI / 2 - independentAngleCorrection
 
         val speedX = magnitude * sin(angle + Math.PI / 4)
         val speedY = magnitude * sin(angle - Math.PI / 4)
@@ -162,7 +172,6 @@ class DemoTeleOp : OpMode() {
         rightBackVelocity += getBackVelocity(speedY) + backCorrection
         leftBackVelocity += getBackVelocity(speedX) + backCorrection
 
-        Log.d("PLANE", "Angle $angle X $x Y $y")
         telemetry.addData("Strafe Correction", correction)
     }
 
@@ -188,7 +197,7 @@ class DemoTeleOp : OpMode() {
     }
 
     private fun cargo() {
-        cargoServo?.position = if (gamepad2.a) 1.0 else 0.0
+         cargoServo?.position = gamepad2.right_trigger.toDouble()
     }
 
     /*private fun extension() {
@@ -201,19 +210,22 @@ class DemoTeleOp : OpMode() {
         }
     }*/
 
-    private fun getFrontVelocity(power: Double) =
-        Wheels.rpmToTps(MAX_RPM * power, FRONT_ENCODER_COUNT)
-
-    private fun getBackVelocity(power: Double) =
-        Wheels.rpmToTps(MAX_RPM * power, BACK_ENCODER_COUNT)
-
     private companion object {
         private const val MAX_RPM = 223.0
         private const val FRONT_ENCODER_COUNT = 383.6
         private const val BACK_ENCODER_COUNT = 753.2
 
         private const val PRECISION_MODE_MULTIPLIER = 0.45
-        private const val MOTOR_SPEED_MULTIPLIER = 0.9
+        private const val MOTOR_SPEED_MULTIPLIER = 0.95
         private const val INTAKE_POWER = 0.6
+
+        private fun getFrontVelocity(power: Double) =
+            Wheels.rpmToTps(MAX_RPM * power, FRONT_ENCODER_COUNT)
+
+        private fun getBackVelocity(power: Double) =
+            Wheels.rpmToTps(MAX_RPM * power, BACK_ENCODER_COUNT)
+
+        private val MAX_FRONT_VELOCITY = getFrontVelocity(1.0)
+        private val MAX_BACK_VELOCITY = getBackVelocity(1.0)
     }
 }
