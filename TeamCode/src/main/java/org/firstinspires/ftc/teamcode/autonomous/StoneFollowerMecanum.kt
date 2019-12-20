@@ -13,7 +13,6 @@ import org.firstinspires.ftc.teamcode.motors.Wheels
 import org.firstinspires.ftc.teamcode.utils.Ranges
 import java.util.concurrent.Executors
 
-@Disabled
 @TeleOp(name = "Aport")
 class StoneFollowerMecanum : OpMode() {
 
@@ -44,8 +43,9 @@ class StoneFollowerMecanum : OpMode() {
 
     override fun init() {
         robot.init(hardwareMap)
+        wheels.init(hardwareMap)
         robot.vuforia.startDetectorAsync(hardwareMap)
-        distanceSensor = hardwareMap.get(DistanceSensor::class.java, "camera_distance_sensor")
+        distanceSensor = hardwareMap.get(DistanceSensor::class.java, "cargo_distance")
 
         with(wheels) {
             setModeAll(DcMotor.RunMode.STOP_AND_RESET_ENCODER)

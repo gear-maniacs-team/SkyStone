@@ -22,7 +22,7 @@ class VuforiaManager {
 
     fun startDetectorAsync(hardwareMap: HardwareMap) {
         if (!this::webcamName.isInitialized)
-            webcamName = hardwareMap.get(WebcamName::class.java, "Webcam 1")
+            webcamName = hardwareMap.get(WebcamName::class.java, "Expensive Webcam")
 
         if (initializing) return
 
