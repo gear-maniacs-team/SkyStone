@@ -13,11 +13,6 @@ import kotlin.math.sin
 
 object RobotMovement {
 
-    // Store these here as they are needed in high-performance situations
-    private val RADIANS_30 = Math.toRadians(30.0)
-    private val RADIANS_90 = Math.toRadians(90.0)
-    private val RADIANS_180 = Math.toRadians(180.0)
-
     fun followCurve(allPoints: List<CurvePoint>, preferredAngle: Double) {
         for (i in 0 until allPoints.size - 1) {
             val current = allPoints[i]
@@ -87,10 +82,12 @@ object RobotMovement {
         preferredAngle: Double,
         turnSpeed: Double
     ) {
-        val distanceToTarget = hypot(x - RobotPos.currentX, y - RobotPos.currentY)
-        val absoluteAngleToTarget = atan2(y - RobotPos.currentY, x - RobotPos.currentX)
-        val relativeAngleToPoint =
-            angleWrap(absoluteAngleToTarget - (RobotPos.currentAngle - RADIANS_90))
+        val currentX = RobotPos.currentX
+        val currentY = RobotPos.currentY
+
+        val distanceToTarget = hypot(x - currentX, y - currentY)
+        val absoluteAngleToTarget = atan2(y - currentY, x - currentX)
+        val relativeAngleToPoint = angleWrap(absoluteAngleToTarget - (RobotPos.currentAngle - Math.PI / 2))
 
         val relativeXToPoint = cos(relativeAngleToPoint) * distanceToTarget
         val relativeYToPoint = sin(relativeAngleToPoint) * distanceToTarget
@@ -105,8 +102,8 @@ object RobotMovement {
         RobotPos.targetAngle = if (distanceToTarget < 10)
             0.0
         else {
-            val relativeTurnAngle = relativeAngleToPoint - RADIANS_180 + preferredAngle
-            Range.clip(relativeTurnAngle / RADIANS_30, -1.0, 1.0) * turnSpeed
+            val relativeTurnAngle = relativeAngleToPoint - Math.PI + preferredAngle
+            Range.clip(relativeTurnAngle / Math.PI / 6, -1.0, 1.0) * turnSpeed
         }
     }
 }

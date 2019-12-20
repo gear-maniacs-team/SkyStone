@@ -66,8 +66,7 @@ class DemoTeleOp : OpMode() {
             while (robot.isOpModeActive) {
                 distanceToStone = distanceSensor.getDistance(DistanceUnit.CM)
                 intake()
-                cargo()
-                Thread.yield()
+                Thread.sleep(10L)
             }
         }
     }
@@ -101,6 +100,8 @@ class DemoTeleOp : OpMode() {
             rightBack.velocity = min(rightBackVelocity, MAX_BACK_VELOCITY)
             leftBack.velocity = min(leftBackVelocity, MAX_BACK_VELOCITY)
         }
+
+        cargo()
 
         with(telemetry) {
             addData("Current Angle", RobotPos.currentAngle)

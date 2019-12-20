@@ -1,11 +1,14 @@
 package org.firstinspires.ftc.teamcode.pursuit
 
+import org.opencv.core.TermCriteria.EPS
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
 
+
 object MathUtils {
+
     fun angleWrap(angle: Double): Double {
         var newAngle = angle
 
@@ -19,20 +22,22 @@ object MathUtils {
     }
 
     fun linesCircleIntersections(
-        circleCenter: Point, radius: Double,
-        linePoint1: Point, linePoint2: Point
+        circleCenter: Point,
+        radius: Double,
+        startPoint: Point,
+        endPoint: Point
     ): List<Point> {
-        if (abs(linePoint1.y - linePoint2.y) < 0.003)
-            linePoint1.y = linePoint2.y + 0.003
-        if (abs(linePoint1.x - linePoint2.x) < 0.003)
-            linePoint1.x = linePoint2.x + 0.003
+        if (abs(startPoint.y - endPoint.y) < 0.003)
+            startPoint.y = endPoint.y + 0.003
+        if (abs(startPoint.x - endPoint.x) < 0.003)
+            startPoint.x = endPoint.x + 0.003
 
-        val m1 = (linePoint2.y - linePoint1.y) / (linePoint2.x - linePoint1.x)
+        val m1 = (endPoint.y - startPoint.y) / (endPoint.x - startPoint.x)
 
         val quadraticA = 1.0 + m1 * m1
 
-        val x1 = linePoint1.x - circleCenter.x
-        val y1 = linePoint1.y - circleCenter.y
+        val x1 = startPoint.x - circleCenter.x
+        val y1 = startPoint.y - circleCenter.y
 
         val quadraticB = (2.0 * m1 * y1) - (2.0 * (m1 * m1) * x1)
         val quadraticC = ((m1 * m1) * (x1 * x1)) - (2.0 * y1 * m1 * x1) + (y1 * y1) - (radius * radius)
@@ -48,8 +53,8 @@ object MathUtils {
             xRoot1 += circleCenter.x
             yRoot1 += circleCenter.y
 
-            val minX = min(linePoint1.x, linePoint2.x)
-            val maxX = max(linePoint1.x, linePoint2.x)
+            val minX = min(startPoint.x, endPoint.x)
+            val maxX = max(startPoint.x, endPoint.x)
 
             if (xRoot1 > minX && xRoot1 < maxX)
                 allPoints.add(Point(xRoot1, yRoot1))
