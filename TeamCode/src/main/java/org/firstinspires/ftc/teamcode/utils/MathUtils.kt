@@ -1,12 +1,14 @@
-package org.firstinspires.ftc.teamcode.pursuit
+package org.firstinspires.ftc.teamcode.utils
 
+import org.firstinspires.ftc.teamcode.pursuit.Point
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
 
-
 object MathUtils {
+
+    const val EPSILON = 1e-6
 
     fun angleWrap(angle: Double): Double {
         var newAngle = angle
@@ -73,3 +75,5 @@ object MathUtils {
         return allPoints
     }
 }
+
+infix fun Double.epsilonEquals(other: Double) = abs(this - other) < MathUtils.EPSILON

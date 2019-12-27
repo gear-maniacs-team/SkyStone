@@ -3,8 +3,8 @@ package org.firstinspires.ftc.teamcode.pursuit
 import android.util.Log
 import com.qualcomm.robotcore.util.Range
 import org.firstinspires.ftc.teamcode.RobotPos
-import org.firstinspires.ftc.teamcode.pursuit.MathUtils.angleWrap
-import org.firstinspires.ftc.teamcode.pursuit.MathUtils.linesCircleIntersections
+import org.firstinspires.ftc.teamcode.utils.MathUtils.angleWrap
+import org.firstinspires.ftc.teamcode.utils.MathUtils.linesCircleIntersections
 import kotlin.math.*
 
 object RobotMovement {

@@ -66,8 +66,8 @@ class Encoder : IHardware, IUpdatable {
         val rightPosition = right.currentPosition.toDouble()
         val backPosition = back.currentPosition.toDouble()
 
-        val leftChange = leftPosition - previousRightPosition
-        val rightChange = rightPosition - previousLeftPosition
+        val leftChange = leftPosition - previousLeftPosition
+        val rightChange = rightPosition - previousRightPosition
 
         // Calculate Angle
         changeInAngle = (leftChange - rightChange) / robotEncoderWheelDistance
