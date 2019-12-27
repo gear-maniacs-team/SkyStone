@@ -12,12 +12,15 @@ import org.firstinspires.ftc.teamcode.motors.Intake
 import org.firstinspires.ftc.teamcode.motors.Wheels
 import org.firstinspires.ftc.teamcode.pid.PidController
 import org.firstinspires.ftc.teamcode.sensors.Gyro
-import org.firstinspires.ftc.teamcode.utils.Ranges
 import kotlin.concurrent.thread
-import kotlin.math.*
+import kotlin.math.abs
+import kotlin.math.atan2
+import kotlin.math.hypot
+import kotlin.math.min
+import kotlin.math.sin
 
 @TeleOp(name = "G.E.A.R.S.")
-class DemoTeleOp : OpMode() {
+class GearsTeleOp : OpMode() {
 
     private val robot = TeamRobot()
     private val wheels = Wheels()
@@ -26,7 +29,6 @@ class DemoTeleOp : OpMode() {
     private lateinit var distanceSensor: DistanceSensor
 
     private val strafePid = PidController(256.0, 0.0001, 0.5).apply {
-        tolerance = 0.00001
         setOutputRange(-100.0, 100.0)
     }
 

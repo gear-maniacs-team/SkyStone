@@ -4,6 +4,7 @@ import android.util.Log
 import com.qualcomm.robotcore.util.Range
 import org.firstinspires.ftc.robotcore.internal.system.Misc
 import org.firstinspires.ftc.teamcode.utils.Ranges
+import org.firstinspires.ftc.teamcode.utils.epsilonEquals
 import kotlin.math.abs
 import kotlin.math.sign
 
@@ -30,10 +31,6 @@ class PidController(
         private set
     var maxOutput = 0.0
         private set
-    var tolerance = 0.0
-        set(value) {
-            field = abs(value)
-        }
 
     var setPoint: Double = 0.0
 
@@ -60,14 +57,29 @@ class PidController(
         maxOutput = max
     }
 
-    fun compute(input: Double): Double {
-        if (firstRun) {
-            firstRun = false
-            reset()
+    private fun getError(input: Double): Double {
+        var error = setPoint - input
+
+        if (inputBounded) {
+            val inputRange = maxInput - minInput
+
+            while (abs(error) > inputRange / 2.0)
+                error -= sign(error) * inputRange
         }
 
-        val clippedInput = if (inputBounded) Range.clip(input, minInput, maxInput) else input
-        val error = setPoint - clippedInput
+        return error
+    }
+
+    fun compute(input: Double): Double {
+        val error = getError(input)
+
+        if (firstRun) {
+            firstRun = false
+
+            lastError = error
+            previousTime = System.currentTimeMillis()
+            return 0.0
+        }
 
         val currentTime = System.currentTimeMillis()
         val deltaTime = currentTime - previousTime
@@ -77,18 +89,12 @@ class PidController(
 
         val derivative = (error - lastError) / deltaTime
 
-        val output = Kp * error + Ki * cumulativeError + Kd * derivative
-        lastOutput = output
+        val baseOutput = Kp * error + Ki * cumulativeError + Kd * derivative
+        val output = if (baseOutput epsilonEquals 0.0) 0.0 else baseOutput
 
+        lastOutput = output
         lastError = error
         previousTime = currentTime
-
-        if (tolerance != 0.0 && abs(error) < tolerance) {
-            cumulativeError = 0.0
-            return 0.0
-        }
-
-        val clippedOutput = if (outputBounded) Range.clip(output, minOutput, maxOutput) else output
 
         if (debugEnabled) {
             Log.d(
@@ -97,7 +103,7 @@ class PidController(
             )
         }
 
-        return clippedOutput
+        return if (outputBounded) Range.clip(output, minOutput, maxOutput) else output
     }
 
     override fun toString(): String = Misc.formatForUser("P=%f I=%f D=%f", Kp, Ki, Kd)

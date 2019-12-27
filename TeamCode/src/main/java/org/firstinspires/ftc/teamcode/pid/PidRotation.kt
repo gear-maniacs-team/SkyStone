@@ -5,9 +5,7 @@ import org.firstinspires.ftc.teamcode.utils.IUpdatable
 
 class PidRotation : IUpdatable {
 
-    val controller = PidController(169.0, 0.01, 7.5).apply {
-        tolerance = 0.001
-    }
+    val controller = PidController(169.0, 0.01, 7.5)
 
     var debugEnabled: Boolean
         get() = controller.debugEnabled
@@ -24,14 +22,7 @@ class PidRotation : IUpdatable {
     }
 
     override fun update() {
-        val currentTarget = controller.setPoint
-        val newAngle = RobotPos.targetAngle
-
-        if (currentTarget != newAngle) {
-            controller.reset()
-            controller.setPoint = newAngle
-        }
-
+        controller.setPoint = RobotPos.targetAngle
         output = controller.compute(RobotPos.currentAngle)
     }
 
