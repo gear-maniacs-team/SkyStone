@@ -5,11 +5,7 @@ import com.qualcomm.robotcore.util.Range
 import org.firstinspires.ftc.teamcode.RobotPos
 import org.firstinspires.ftc.teamcode.pursuit.MathUtils.angleWrap
 import org.firstinspires.ftc.teamcode.pursuit.MathUtils.linesCircleIntersections
-import kotlin.math.abs
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.hypot
-import kotlin.math.sin
+import kotlin.math.*
 
 object RobotMovement {
 
@@ -63,6 +59,7 @@ object RobotMovement {
 
             intersections.forEach {
                 val angle = atan2(it.y - RobotPos.currentY, it.x - RobotPos.currentX)
+                //TODO: Check the line underneath this if pursuit fails
                 val deltaAngle = abs(angleWrap(angle - RobotPos.currentAngle))
 
                 if (deltaAngle < closestAngle) {

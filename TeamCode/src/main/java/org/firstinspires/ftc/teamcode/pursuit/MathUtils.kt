@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.pursuit
 
-import org.opencv.core.TermCriteria.EPS
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
