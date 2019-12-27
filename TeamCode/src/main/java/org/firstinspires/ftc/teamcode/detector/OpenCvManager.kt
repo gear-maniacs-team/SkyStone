@@ -14,7 +14,7 @@ class OpenCvManager(private var pipeline: OpenCvPipeline) {
 
     fun startCamera(hardwareMap: HardwareMap) {
         val cameraMonitorViewId = hardwareMap.appContext.resources.getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.packageName)
-        camera = OpenCvWebcam(hardwareMap.get(WebcamName::class.java, "Webcam 1"), cameraMonitorViewId)
+        camera = OpenCvWebcam(hardwareMap.get(WebcamName::class.java, "Expensive Webcam"), cameraMonitorViewId)
 
         camera.openCameraDevice()
         camera.setPipeline(pipeline)
@@ -45,6 +45,8 @@ class OpenCvManager(private var pipeline: OpenCvPipeline) {
         camera.stopStreaming()
         camera.closeCameraDevice()
     }
+
+    fun getPipeline() = pipeline
 
     fun printTelemetry(telemetry: Telemetry) {
         telemetry.addData("Frame Count", camera.frameCount)

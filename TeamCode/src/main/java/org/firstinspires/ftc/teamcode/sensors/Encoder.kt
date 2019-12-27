@@ -35,16 +35,16 @@ class Encoder : IHardware, IUpdatable {
         back = dcMotors["TR"]
 
         robotEncoderWheelDistance = AppUtil.getInstance()
-            .getSettingsFile("wheelBaseSeparation.txt")
-            .readText()
-            .trim()
-            .toDouble()// * COUNTS_PER_INCH
+                .getSettingsFile("wheelBaseSeparation.txt")
+                .readText()
+                .trim()
+                .toDouble()// * COUNTS_PER_INCH
 
         horizontalEncoderTickPerDegreeOffset = AppUtil.getInstance()
-            .getSettingsFile("horizontalTickOffset.txt")
-            .readText()
-            .trim()
-            .toDouble()
+                .getSettingsFile("horizontalTickOffset.txt")
+                .readText()
+                .trim()
+                .toDouble()
 
         // Both lateral encoders should return a positive value when moving forwards
         left.direction = DcMotorSimple.Direction.REVERSE

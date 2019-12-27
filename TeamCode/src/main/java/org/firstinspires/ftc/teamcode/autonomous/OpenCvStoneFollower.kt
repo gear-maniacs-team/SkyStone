@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.autonomous
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
@@ -11,7 +10,6 @@ import org.firstinspires.ftc.teamcode.motors.Wheels
 import org.firstinspires.ftc.teamcode.utils.Ranges
 import org.opencv.core.Rect
 
-@Disabled
 @TeleOp(name = "AportCV")
 class OpenCvStoneFollower : OpMode() {
 
@@ -24,8 +22,8 @@ class OpenCvStoneFollower : OpMode() {
 
         private const val HEIGHT_COEFFICIENT = 20 * 271
 
-        const val CAMERA_WIDTH = 640
-        const val CAMERA_HEIGHT = 480
+        const val CAMERA_WIDTH = 1920
+        const val CAMERA_HEIGHT = 1080
 
         /*
          * Transforms CM into encoder ticks
@@ -106,8 +104,8 @@ class OpenCvStoneFollower : OpMode() {
     }
 
     private fun move(x: Double, y: Double) {
-        var powerLeft = y + x
-        var powerRight = -y + x
+        var powerLeft = -y + x
+        var powerRight = y + x
 
         val max = maxOf(powerLeft, powerRight)
 

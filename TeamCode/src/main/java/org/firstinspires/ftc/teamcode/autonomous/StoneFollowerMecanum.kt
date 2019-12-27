@@ -103,8 +103,8 @@ class StoneFollowerMecanum : OpMode() {
     }
 
     private fun move(x: Double, y: Double) {
-        var powerLeft = y + x
-        var powerRight = -y + x
+        var powerLeft = -y + x
+        var powerRight = y + x
 
         // Find the biggest value
         val max = maxOf(powerLeft, powerRight)
