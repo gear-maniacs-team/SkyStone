@@ -66,7 +66,7 @@ class OdometryCalibration : LinearOpMode() {
 
         val wheelBaseSeparation = 180 * verticalEncoderTickOffsetPerDegree / (Math.PI * COUNTS_PER_INCH)
 
-        horizontalTickOffset = encoders.back.currentPosition / Math.toRadians(RobotPos.currentAngle)
+        horizontalTickOffset = encoders.back.currentPosition / RobotPos.currentAngle
 
         // Write the constants to text files
         wheelBaseSeparationFile.writeText(wheelBaseSeparation.toString())
