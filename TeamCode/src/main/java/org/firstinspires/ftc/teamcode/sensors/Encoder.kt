@@ -27,6 +27,7 @@ class Encoder : IHardware, IUpdatable {
 
     private var robotEncoderWheelDistance = 0.0
     private var horizontalEncoderTickPerDegreeOffset = 0.0
+    private var robotBackEncoderWheelDistance = 0.0 // The distance to the tracking center
 
     override fun init(hardwareMap: HardwareMap) {
         val dcMotors = hardwareMap.dcMotor
@@ -61,7 +62,7 @@ class Encoder : IHardware, IUpdatable {
         back.mode = mode
     }
 
-    override fun update() {
+    fun updateUsingLines() {
         val leftPosition = left.currentPosition.toDouble()
         val rightPosition = right.currentPosition.toDouble()
         val backPosition = back.currentPosition.toDouble()
@@ -87,5 +88,42 @@ class Encoder : IHardware, IUpdatable {
         previousRightPosition = leftPosition
         previousLeftPosition = rightPosition
         previousBackPosition = backPosition
+    }
+
+    fun updateUsingArcs() {
+        val leftPosition = left.currentPosition.toDouble()
+        val rightPosition = right.currentPosition.toDouble()
+        val backPosition = back.currentPosition.toDouble()
+
+        val leftChange = leftPosition - previousLeftPosition
+        val rightChange = rightPosition - previousRightPosition
+        val backChange = backPosition - previousBackPosition
+
+        // Calculate Angle
+        changeInAngle = (leftChange - rightChange) / robotEncoderWheelDistance
+        val newCurrentAngle = RobotPos.currentAngle + changeInAngle
+
+        // Get the components of the motion
+        var newX = 2 * sin(RobotPos.currentAngle / 2) * (backChange / changeInAngle + robotBackEncoderWheelDistance)
+        var newY = 2 * sin(RobotPos.currentAngle / 2) * (rightChange / changeInAngle + robotEncoderWheelDistance / 2)
+        var averageOrientation = RobotPos.currentAngle + changeInAngle / 2
+
+        // Rotate the cartesian coordinate system by transforming into polar form, adding the angle and then
+        // transforming back into cartesian form.
+        newX = newX * cos(averageOrientation) + newY * sin(averageOrientation)
+        newY = -newX * sin(averageOrientation) + newY * cos(averageOrientation)
+
+        // Calculate and update the position values
+        RobotPos.currentX += newX
+        RobotPos.currentY += newY
+        RobotPos.currentAngle = newCurrentAngle
+
+        previousRightPosition = leftPosition
+        previousLeftPosition = rightPosition
+        previousBackPosition = backPosition
+    }
+
+    override fun update() {
+        updateUsingLines()
     }
 }
