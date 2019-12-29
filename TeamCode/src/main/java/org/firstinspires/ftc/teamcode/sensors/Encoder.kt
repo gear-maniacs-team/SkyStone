@@ -101,22 +101,18 @@ class Encoder : IHardware, IUpdatable {
 
         // Calculate Angle
         changeInAngle = (leftChange - rightChange) / robotEncoderWheelDistance
-        val newCurrentAngle = RobotPos.currentAngle + changeInAngle
 
         // Get the components of the motion
-        var newX = 2 * sin(RobotPos.currentAngle / 2) * (backChange / changeInAngle + robotBackEncoderWheelDistance)
-        var newY = 2 * sin(RobotPos.currentAngle / 2) * (rightChange / changeInAngle + robotEncoderWheelDistance / 2)
-        var averageOrientation = RobotPos.currentAngle + changeInAngle / 2
-
-        // Rotate the cartesian coordinate system by transforming into polar form, adding the angle and then
-        // transforming back into cartesian form.
-        newX = newX * cos(averageOrientation) + newY * sin(averageOrientation)
-        newY = -newX * sin(averageOrientation) + newY * cos(averageOrientation)
+        val newX = 2 * sin(RobotPos.currentAngle / 2) * (backChange / changeInAngle + robotBackEncoderWheelDistance)
+        val newY = 2 * sin(RobotPos.currentAngle / 2) * (rightChange / changeInAngle + robotEncoderWheelDistance / 2)
+        val averageOrientation = RobotPos.currentAngle + changeInAngle / 2
 
         // Calculate and update the position values
-        RobotPos.currentX += newX
-        RobotPos.currentY += newY
-        RobotPos.currentAngle = newCurrentAngle
+        // Rotate the cartesian coordinate system by transforming into polar form, adding the angle and then
+        // transforming back into cartesian form.
+        RobotPos.currentX += newX * cos(averageOrientation) + newY * sin(averageOrientation)
+        RobotPos.currentY += -newX * sin(averageOrientation) + newY * cos(averageOrientation)
+        RobotPos.currentAngle += changeInAngle
 
         previousRightPosition = leftPosition
         previousLeftPosition = rightPosition
