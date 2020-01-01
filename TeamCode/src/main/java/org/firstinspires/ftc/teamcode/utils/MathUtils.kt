@@ -10,16 +10,12 @@ object MathUtils {
 
     const val EPSILON = 1e-6
 
+    // wrapping in interval [-PI, PI]
     fun angleWrap(angle: Double): Double {
-        var newAngle = angle
-
-        while (newAngle < -Math.PI)
+        var newAngle = (angle + Math.PI) % (2 * Math.PI)
+        if (newAngle < 0)
             newAngle += 2 * Math.PI
-
-        while (angle > Math.PI)
-            newAngle -= 2 * Math.PI
-
-        return newAngle
+        return newAngle - Math.PI
     }
 
     fun linesCircleIntersections(
