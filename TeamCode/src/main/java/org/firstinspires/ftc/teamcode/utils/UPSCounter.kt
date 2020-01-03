@@ -5,28 +5,23 @@ import org.firstinspires.ftc.robotcore.external.Telemetry
 class UPSCounter {
 
     private var firstRun = true
-    private var lastTime = 0L
-    private var updatesCount = 0
-    private var lastUpdateRate = 0
+    private var oldTime = 0L
 
     private var lastTelemetryItem: Telemetry.Item? = null
 
-    fun update(): Int {
-        val currentTime = System.currentTimeMillis()
-        ++updatesCount
+    fun update(): Double {
+        val currentTime = System.nanoTime()
 
         if (firstRun) {
-            lastTime = currentTime
+            oldTime = currentTime
+            return 0.0
         }
 
-        val deltaTime = currentTime - lastTime
-        if (deltaTime > 1000) { // if more than one second passed
-            lastUpdateRate = updatesCount
-            updatesCount = 0
-            lastTime = currentTime
-        }
+        val delta = currentTime - oldTime
+        val ups: Double = 1.0 / (delta * 1000)
+        oldTime = currentTime
 
-        return lastUpdateRate
+        return ups
     }
 
     fun update(telemetry: Telemetry, caption: String = "UPS") {
@@ -35,6 +30,6 @@ class UPSCounter {
         lastTelemetryItem?.let {
             telemetry.removeItem(it)
         }
-        lastTelemetryItem = telemetry.addData(caption, rate)
+        lastTelemetryItem = telemetry.addData(caption, "%2.0f", rate)
     }
 }
