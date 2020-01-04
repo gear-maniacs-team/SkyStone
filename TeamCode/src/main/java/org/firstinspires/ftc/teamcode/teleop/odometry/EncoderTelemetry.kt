@@ -3,12 +3,12 @@ package org.firstinspires.ftc.teamcode.teleop.odometry
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
-import org.firstinspires.ftc.teamcode.utils.UPSCounter
+import org.firstinspires.ftc.teamcode.utils.PerformanceProfiler
 
 @TeleOp(name = "EncoderTelemetry")
 class EncoderTelemetry : OpMode() {
 
-    private val upsCounter = UPSCounter()
+    private val upsCounter = PerformanceProfiler()
     private lateinit var encoder: DcMotor
 
     override fun init() {
