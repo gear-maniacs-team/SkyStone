@@ -3,19 +3,19 @@ package org.firstinspires.ftc.teamcode.teleop
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
+import org.firstinspires.ftc.teamcode.TeamRobot
 import org.firstinspires.ftc.teamcode.utils.PerformanceProfiler
-import org.openftc.revextensions2.ExpansionHubEx
 import org.openftc.revextensions2.ExpansionHubMotor
 
 @TeleOp(name = "BulkEncoderTelemetry")
 class BulkReadEncoderTelemetry : OpMode() {
 
+    private val robot = TeamRobot()
     private val upsCounter = PerformanceProfiler()
-    private lateinit var expansionHub: ExpansionHubEx
     private lateinit var encoder: ExpansionHubMotor
 
     override fun init() {
-        expansionHub = hardwareMap.get(ExpansionHubEx::class.java, "Expansion Hub 2")
+        robot.init(hardwareMap)
 
         encoder = hardwareMap.dcMotor["intake_right"] as ExpansionHubMotor
 
@@ -25,9 +25,7 @@ class BulkReadEncoderTelemetry : OpMode() {
     override fun loop() {
         upsCounter.update(telemetry)
 
-        val bulkData = expansionHub.bulkInputData
-
-        telemetry.addData("Position", bulkData.getMotorCurrentPosition(encoder))
+        telemetry.addData("Position", robot.bulkInputData2.getMotorCurrentPosition(encoder))
         telemetry.update()
     }
 }

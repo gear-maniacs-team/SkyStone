@@ -4,6 +4,9 @@ import com.qualcomm.robotcore.hardware.HardwareMap
 import org.firstinspires.ftc.teamcode.detector.VuforiaManager
 import org.firstinspires.ftc.teamcode.utils.IHardware
 import org.firstinspires.ftc.teamcode.utils.IUpdatable
+import org.firstinspires.ftc.teamcode.utils.getDevice
+import org.openftc.revextensions2.ExpansionHubEx
+import org.openftc.revextensions2.RevBulkData
 import java.util.concurrent.Executors
 
 class TeamRobot {
@@ -11,6 +14,16 @@ class TeamRobot {
     private val updaterExecutor = Executors.newSingleThreadExecutor()
     private var hardwareInstances = emptyList<IHardware>()
     private var updatableInstances = emptyList<IUpdatable>()
+
+    // These fields are only initialized after init has been called
+    lateinit var expansionHub1: ExpansionHubEx
+        private set
+    lateinit var expansionHub2: ExpansionHubEx
+        private set
+    lateinit var bulkInputData1: RevBulkData
+        private set
+    lateinit var bulkInputData2: RevBulkData
+        private set
 
     var isOpModeActive = false
         private set
@@ -26,6 +39,9 @@ class TeamRobot {
         updatableInstances = updatableList
 
         INSTANCE = this
+
+        expansionHub1 = hardwareMap.getDevice(EXPANSION_HUB_1_NAME)
+        expansionHub2 = hardwareMap.getDevice(EXPANSION_HUB_2_NAME)
 
         hardwareInstances.forEach {
             it.init(hardwareMap)
@@ -43,6 +59,9 @@ class TeamRobot {
 
     private fun updateAll() {
         while (isOpModeActive) {
+            bulkInputData1 = expansionHub1.bulkInputData
+            bulkInputData2 = expansionHub2.bulkInputData
+
             updatableInstances.forEach {
                 it.update()
             }
@@ -62,6 +81,9 @@ class TeamRobot {
     }
 
     companion object {
+        private const val EXPANSION_HUB_1_NAME = "Expansion Hub 1"
+        private const val EXPANSION_HUB_2_NAME = "Expansion Hub 2"
+
         private var INSTANCE: TeamRobot? = null
 
         /*
@@ -70,6 +92,10 @@ class TeamRobot {
          *
          * If it is called at any other time, the function will throw an NPE
          */
-        fun getRobot(): TeamRobot = INSTANCE!!
+        private fun getRobot(): TeamRobot = INSTANCE!!
+
+        fun getBulkData1() = getRobot().bulkInputData1
+
+        fun getBulkData2() = getRobot().bulkInputData2
     }
 }
