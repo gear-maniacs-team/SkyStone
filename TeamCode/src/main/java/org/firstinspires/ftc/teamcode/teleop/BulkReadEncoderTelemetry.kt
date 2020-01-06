@@ -16,16 +16,20 @@ class BulkReadEncoderTelemetry : OpMode() {
 
     override fun init() {
         robot.init(hardwareMap)
-
+        robot.start()
+        Thread.sleep(1000)
         encoder = hardwareMap.dcMotor["intake_right"] as ExpansionHubMotor
 
         encoder.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+
     }
 
     override fun loop() {
         upsCounter.update(telemetry)
-
+        robot.updateExpansionHubs()
+        telemetry.addData("Position1", robot.bulkInputData1.getMotorCurrentPosition(0))
         telemetry.addData("Position", robot.bulkInputData2.getMotorCurrentPosition(encoder))
+
         telemetry.update()
     }
 }

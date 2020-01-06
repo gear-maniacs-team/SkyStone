@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.utils
 
 import org.firstinspires.ftc.robotcore.external.Telemetry
 
-class PerformanceProfiler {
+class  PerformanceProfiler {
 
     private var firstRun = true
     private var oldTime = 0L

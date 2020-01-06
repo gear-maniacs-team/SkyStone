@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.motors.Intake
 import org.firstinspires.ftc.teamcode.motors.Wheels
 import org.firstinspires.ftc.teamcode.pid.PidController
 import org.firstinspires.ftc.teamcode.sensors.Gyro
+import org.firstinspires.ftc.teamcode.utils.PerformanceProfiler
 import kotlin.concurrent.thread
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -22,6 +23,7 @@ import kotlin.math.sin
 @TeleOp(name = "G.E.A.R.S.")
 class GearsTeleOp : OpMode() {
 
+    private val upsCounter = PerformanceProfiler()
     private val robot = TeamRobot()
     private val wheels = Wheels()
     private val intake = Intake()
@@ -74,6 +76,7 @@ class GearsTeleOp : OpMode() {
     }
 
     override fun loop() {
+        upsCounter.update(telemetry)
         telemetry.addData("Distance", distanceToStone)
 
         precisionModeOn = gamepad1.right_bumper
@@ -96,12 +99,12 @@ class GearsTeleOp : OpMode() {
         curveMovement()
         planeMovement()
 
-        with(wheels) {
-            rightFront.velocity = min(rightFrontVelocity, MAX_FRONT_VELOCITY)
-            leftFront.velocity = min(leftFrontVelocity, MAX_FRONT_VELOCITY)
-            rightBack.velocity = min(rightBackVelocity, MAX_BACK_VELOCITY)
-            leftBack.velocity = min(leftBackVelocity, MAX_BACK_VELOCITY)
-        }
+//        with(wheels) {
+//            rightFront.velocity = min(rightFrontVelocity, MAX_FRONT_VELOCITY)
+//            leftFront.velocity = min(leftFrontVelocity, MAX_FRONT_VELOCITY)
+//            rightBack.velocity = min(rightBackVelocity, MAX_BACK_VELOCITY)
+//            leftBack.velocity = min(leftBackVelocity, MAX_BACK_VELOCITY)
+//        }
 
         cargo()
 

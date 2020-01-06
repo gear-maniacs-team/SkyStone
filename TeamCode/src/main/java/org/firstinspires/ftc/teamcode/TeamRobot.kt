@@ -7,7 +7,10 @@ import org.firstinspires.ftc.teamcode.utils.IUpdatable
 import org.firstinspires.ftc.teamcode.utils.getDevice
 import org.openftc.revextensions2.ExpansionHubEx
 import org.openftc.revextensions2.RevBulkData
+import java.lang.Exception
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicReference
+import kotlin.concurrent.thread
 
 class TeamRobot {
 
@@ -30,22 +33,26 @@ class TeamRobot {
     val vuforia = VuforiaManager()
 
     fun init(
-        hardwareMap: HardwareMap,
-        hardwareList: List<IHardware> = emptyList(),
-        updatableList: List<IUpdatable> = emptyList()
+            hardwareMap: HardwareMap,
+            hardwareList: List<IHardware> = emptyList(),
+            updatableList: List<IUpdatable> = emptyList()
     ) {
         isOpModeActive = true
         hardwareInstances = hardwareList
         updatableInstances = updatableList
+
+
 
         INSTANCE = this
 
         expansionHub1 = hardwareMap.getDevice(EXPANSION_HUB_1_NAME)
         expansionHub2 = hardwareMap.getDevice(EXPANSION_HUB_2_NAME)
 
+
         hardwareInstances.forEach {
             it.init(hardwareMap)
         }
+
     }
 
     fun start() {
@@ -54,14 +61,14 @@ class TeamRobot {
         }
 
         if (updatableInstances.isNotEmpty())
-            updaterExecutor.submit(::updateAll)
+            thread(
+                    block = ::updateAll
+            )
+
     }
 
     private fun updateAll() {
         while (isOpModeActive) {
-            bulkInputData1 = expansionHub1.bulkInputData
-            bulkInputData2 = expansionHub2.bulkInputData
-
             updatableInstances.forEach {
                 it.update()
             }
@@ -78,6 +85,11 @@ class TeamRobot {
 
         isOpModeActive = false
         vuforia.stopCamera()
+    }
+
+    fun updateExpansionHubs(){
+        bulkInputData1 = expansionHub1.bulkInputData
+        bulkInputData2 = expansionHub2.bulkInputData
     }
 
     companion object {
