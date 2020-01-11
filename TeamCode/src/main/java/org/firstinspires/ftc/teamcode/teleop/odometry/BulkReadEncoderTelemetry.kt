@@ -1,5 +1,6 @@
-package org.firstinspires.ftc.teamcode.teleop
+package org.firstinspires.ftc.teamcode.teleop.odometry
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
@@ -7,6 +8,7 @@ import org.firstinspires.ftc.teamcode.TeamRobot
 import org.firstinspires.ftc.teamcode.utils.PerformanceProfiler
 import org.openftc.revextensions2.ExpansionHubMotor
 
+@Disabled
 @TeleOp(name = "BulkEncoderTelemetry")
 class BulkReadEncoderTelemetry : OpMode() {
 

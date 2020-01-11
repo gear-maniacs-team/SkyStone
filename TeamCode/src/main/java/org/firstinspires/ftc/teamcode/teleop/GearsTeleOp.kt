@@ -28,7 +28,7 @@ class GearsTeleOp : OpMode() {
     private val wheels = Wheels()
     private val intake = Intake()
     private val gyro = Gyro()
-    private lateinit var distanceSensor: DistanceSensor
+//    private lateinit var distanceSensor: DistanceSensor
 
     private val strafePid = PidController(256.0, 0.0001, 0.5).apply {
         setOutputRange(-100.0, 100.0)
@@ -58,17 +58,16 @@ class GearsTeleOp : OpMode() {
 
         releaseServo = hardwareMap.servo["front"]
         cargoServo = hardwareMap.servo["cargo"]
-        distanceSensor = hardwareMap.get(DistanceSensor::class.java, "cargo_distance")
+//        distanceSensor = hardwareMap.get(DistanceSensor::class.java, "cargo_distance")
     }
 
     override fun start() {
         robot.start()
-
-        //releaseServo?.position = 0.0
+        RobotPos.reset()
 
         thread {
             while (robot.isOpModeActive) {
-                distanceToStone = distanceSensor.getDistance(DistanceUnit.CM)
+//                distanceToStone = distanceSensor.getDistance(DistanceUnit.CM)
                 intake()
                 Thread.sleep(10L)
             }
@@ -165,6 +164,7 @@ class GearsTeleOp : OpMode() {
             resetStrafePid = false
         }
 
+//        val correction = 0.0
         val correction = if (!curvedMovement) strafePid.compute(RobotPos.currentAngle) else 0.0
         val frontCorrection = Wheels.rpmToTps(correction, FRONT_ENCODER_COUNT)
         val backCorrection = Wheels.rpmToTps(correction, BACK_ENCODER_COUNT)
@@ -196,10 +196,10 @@ class GearsTeleOp : OpMode() {
 
     private fun intake() {
         // If the intake is not used by the driver, enter auto mode
-        if (!(gamepad2.left_bumper || gamepad2.right_bumper || gamepad2.dpad_down || gamepad2.dpad_up)) {
+        /*if (!(gamepad2.left_bumper || gamepad2.right_bumper || gamepad2.dpad_down || gamepad2.dpad_up)) {
             autoIntake()
             return
-        }
+        }*/
 
         val intakePower = when {
             gamepad2.right_bumper -> INTAKE_POWER
@@ -229,8 +229,10 @@ class GearsTeleOp : OpMode() {
 
     private companion object {
         private const val MAX_RPM = 223.0
-        private const val FRONT_ENCODER_COUNT = 383.6
-        private const val BACK_ENCODER_COUNT = 753.2
+//        private const val FRONT_ENCODER_COUNT = 383.6
+//        private const val BACK_ENCODER_COUNT = 753.2
+        private const val FRONT_ENCODER_COUNT = 753.2
+        private const val BACK_ENCODER_COUNT = 383.6
 
         private const val PRECISION_MODE_MULTIPLIER = 0.45
         private const val MOTOR_SPEED_MULTIPLIER = 0.95
