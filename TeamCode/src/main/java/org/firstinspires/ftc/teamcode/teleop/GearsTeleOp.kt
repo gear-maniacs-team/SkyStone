@@ -99,12 +99,12 @@ class GearsTeleOp : OpMode() {
         curveMovement()
         planeMovement()
 
-//        with(wheels) {
-//            rightFront.velocity = min(rightFrontVelocity, MAX_FRONT_VELOCITY)
-//            leftFront.velocity = min(leftFrontVelocity, MAX_FRONT_VELOCITY)
-//            rightBack.velocity = min(rightBackVelocity, MAX_BACK_VELOCITY)
-//            leftBack.velocity = min(leftBackVelocity, MAX_BACK_VELOCITY)
-//        }
+        with(wheels) {
+            rightFront.velocity = min(rightFrontVelocity, MAX_FRONT_VELOCITY)
+            leftFront.velocity = min(leftFrontVelocity, MAX_FRONT_VELOCITY)
+            rightBack.velocity = min(rightBackVelocity, MAX_BACK_VELOCITY)
+            leftBack.velocity = min(leftBackVelocity, MAX_BACK_VELOCITY)
+        }
 
         cargo()
 
