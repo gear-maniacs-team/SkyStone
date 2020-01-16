@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.teleop.odometry
+package org.firstinspires.ftc.teamcode.odometry
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
