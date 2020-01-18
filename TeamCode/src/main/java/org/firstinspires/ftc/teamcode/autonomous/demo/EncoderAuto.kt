@@ -85,12 +85,12 @@ abstract class EncoderAuto : LinearOpMode() {
         val speedX = magnitude * sin(angle + Math.PI / 4)
         val speedY = magnitude * sin(angle - Math.PI / 4)
 
-//        with(wheels) {
-//            rightFront.velocity = min(-getFrontVelocity(speedX) + frontCorrection, MAX_FRONT_VELOCITY)
-//            leftFront.velocity = min(-getFrontVelocity(speedY) + frontCorrection, MAX_FRONT_VELOCITY)
-//            rightBack.velocity = min(getBackVelocity(speedY) + backCorrection, MAX_BACK_VELOCITY)
-//            leftBack.velocity = min(getBackVelocity(speedX) + backCorrection, MAX_BACK_VELOCITY)
-//        }
+        with(wheels) {
+            rightFront.velocity = min(-getFrontVelocity(speedX) + frontCorrection, MAX_FRONT_VELOCITY)
+            leftFront.velocity = min(-getFrontVelocity(speedY) + frontCorrection, MAX_FRONT_VELOCITY)
+            rightBack.velocity = min(getBackVelocity(speedY) + backCorrection, MAX_BACK_VELOCITY)
+            leftBack.velocity = min(getBackVelocity(speedX) + backCorrection, MAX_BACK_VELOCITY)
+        }
 
         with(telemetry) {
             addData("Strafe Correction", correction)
@@ -122,5 +122,4 @@ class RedAutoEncoder : EncoderAuto() {
     override fun onRun() {
         setTarget(100, 100)
     }
-
 }

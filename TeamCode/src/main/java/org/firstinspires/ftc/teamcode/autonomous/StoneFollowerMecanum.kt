@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.motors.Wheels
 import org.firstinspires.ftc.teamcode.utils.Ranges
 import java.util.concurrent.Executors
 
+@Disabled
 @TeleOp(name = "Aport")
 class StoneFollowerMecanum : OpMode() {
 

@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
-import org.firstinspires.ftc.robotcore.internal.system.AppUtil
 import org.firstinspires.ftc.teamcode.RobotPos
 import org.firstinspires.ftc.teamcode.utils.IHardware
 import org.firstinspires.ftc.teamcode.utils.IUpdatable
@@ -25,33 +24,17 @@ class Encoder : IHardware, IUpdatable {
     private var previousRightPosition = 0.0
     private var previousBackPosition = 0.0
 
-    private var robotEncoderWheelDistance = 0.0
-    private var horizontalEncoderTickPerDegreeOffset = 0.0
-    private var robotBackEncoderWheelDistance = 0.0 // The distance to the tracking center
-
     override fun init(hardwareMap: HardwareMap) {
         val dcMotors = hardwareMap.dcMotor
         left = dcMotors["TL"]
-        right = dcMotors["BL"]
+        right = dcMotors["BR"]
         back = dcMotors["TR"]
 
-        robotEncoderWheelDistance = AppUtil.getInstance()
-                .getSettingsFile("wheelBaseSeparation.txt")
-                .readText()
-                .trim()
-                .toDouble()// * COUNTS_PER_INCH
+        left.direction = DcMotorSimple.Direction.FORWARD
+        right.direction = DcMotorSimple.Direction.FORWARD
+        back.direction = DcMotorSimple.Direction.FORWARD
 
-        horizontalEncoderTickPerDegreeOffset = AppUtil.getInstance()
-                .getSettingsFile("horizontalTickOffset.txt")
-                .readText()
-                .trim()
-                .toDouble()
-
-        // Both lateral encoders should return a positive value when moving forwards
-        left.direction = DcMotorSimple.Direction.REVERSE
-        // The back encoder should return a positive value when moving to the right
-        back.direction = DcMotorSimple.Direction.REVERSE
-
+        setModeAll(RunMode.RUN_USING_ENCODER)
         setModeAll(RunMode.STOP_AND_RESET_ENCODER)
         setModeAll(RunMode.RUN_USING_ENCODER)
     }
@@ -62,38 +45,9 @@ class Encoder : IHardware, IUpdatable {
         back.mode = mode
     }
 
-    fun updateUsingLines() {
-        var changeInAngle = 0.0
-        val leftPosition = left.currentPosition.toDouble()
-        val rightPosition = right.currentPosition.toDouble()
-        val backPosition = back.currentPosition.toDouble()
-
-        val leftChange = leftPosition - previousLeftPosition
-        val rightChange = rightPosition - previousRightPosition
-
-        // Calculate Angle
-        changeInAngle = (leftChange - rightChange) / robotEncoderWheelDistance
-        val newCurrentAngle = RobotPos.currentAngle + changeInAngle
-
-        // Get the components of the motion
-        val rawHorizontalChange = backPosition - previousBackPosition
-        val horizontalChange = rawHorizontalChange - changeInAngle * horizontalEncoderTickPerDegreeOffset
-
-        val averageChange = (leftChange + rightChange) / 2
-
-        // Calculate and update the position values
-        RobotPos.currentX += averageChange * sin(newCurrentAngle) + horizontalChange * cos(newCurrentAngle)
-        RobotPos.currentY += averageChange * cos(newCurrentAngle) - horizontalChange * sin(newCurrentAngle)
-        RobotPos.currentAngle = newCurrentAngle
-
-        previousRightPosition = leftPosition
-        previousLeftPosition = rightPosition
-        previousBackPosition = backPosition
-    }
-
     fun updateUsingArcs() {
-        var changeInAngle = 0.0
-        val leftPosition = left.currentPosition.toDouble()
+        val currentAngle = RobotPos.currentAngle
+        val leftPosition = left.currentPosition.toDouble()// Must return a positive value when moving forward
         val rightPosition = right.currentPosition.toDouble()
         val backPosition = back.currentPosition.toDouble()
 
@@ -102,19 +56,19 @@ class Encoder : IHardware, IUpdatable {
         val backChange = backPosition - previousBackPosition
 
         // Calculate Angle
-        changeInAngle = (leftChange - rightChange) / robotEncoderWheelDistance
+        val changeInAngle = (leftChange - rightChange) / DISTANCE_BETWEEN_ENCODER_WHEELS
 
         // Get the components of the motion
-        var newX = 0.0
-        var newY = 0.0
+        val newX: Double
+        val newY: Double
         if (changeInAngle epsilonEquals 0.0) {
             newX = backChange
             newY = rightChange
         } else {
-            newX = 2 * sin(RobotPos.currentAngle / 2) * (backChange / changeInAngle + robotBackEncoderWheelDistance)
-            newY = 2 * sin(RobotPos.currentAngle / 2) * (rightChange / changeInAngle + robotEncoderWheelDistance / 2)
+            newX = 2 * sin(currentAngle / 2) * (backChange / changeInAngle + DISTANCE_BETWEEN_BACK_ENCODER_AND_CENTER)
+            newY = 2 * sin(currentAngle / 2) * (rightChange / changeInAngle + DISTANCE_BETWEEN_ENCODER_WHEELS / 2)
         }
-        val averageOrientation = RobotPos.currentAngle + changeInAngle / 2
+        val averageOrientation = currentAngle + changeInAngle / 2
 
         // Calculate and update the position values
         // Rotate the cartesian coordinate system by transforming into polar form, adding the angle and then
@@ -123,12 +77,61 @@ class Encoder : IHardware, IUpdatable {
         RobotPos.currentY += -newX * sin(averageOrientation) + newY * cos(averageOrientation)
         RobotPos.currentAngle += changeInAngle
 
-        previousRightPosition = leftPosition
-        previousLeftPosition = rightPosition
+        previousLeftPosition = leftPosition
+        previousRightPosition = rightPosition
         previousBackPosition = backPosition
     }
 
+    fun updateUsingArcsPotentiallyActuallyWorking() {
+        val currentAngle = RobotPos.currentAngle
+        val backPos = back.currentPosition.toDouble()
+        val leftPos = -left.currentPosition.toDouble() // Must return a positive value when moving forward
+        val rightPos = right.currentPosition.toDouble()
+
+        val deltaBack = backPos - previousBackPosition
+        val deltaRight = rightPos - previousRightPosition
+        val deltaLeft = leftPos - previousLeftPosition
+
+        val wheelTravelLeft = ticksToCM(deltaLeft)
+        val wheelTravelRight = ticksToCM(deltaRight)
+
+        val deltaAngle = (wheelTravelLeft - wheelTravelRight) / DISTANCE_BETWEEN_ENCODER_WHEELS
+
+        val newX: Double
+        val newY: Double
+        if (deltaAngle epsilonEquals 0.0) {
+            newX = deltaBack
+            newY = deltaRight
+        } else {
+            newX = 2 * sin(deltaAngle / 2) * (deltaBack / deltaAngle + DISTANCE_BETWEEN_BACK_ENCODER_AND_CENTER)
+            newY = 2 * sin(deltaAngle / 2) * (deltaRight / deltaAngle + DISTANCE_BETWEEN_ENCODER_WHEELS / 2)
+        }
+
+        val averageOrientation = -(currentAngle + deltaAngle / 2)
+
+        // Calculate and update the position values
+        // Rotate the cartesian coordinate system by transforming into polar form, adding the angle and then
+        // transforming back into cartesian form.
+        RobotPos.currentX += newX * cos(averageOrientation) + newY * sin(averageOrientation)
+        RobotPos.currentY += -newX * sin(averageOrientation) + newY * cos(averageOrientation)
+        RobotPos.currentAngle += deltaAngle
+
+        previousBackPosition = backPos
+        previousLeftPosition = leftPos
+        previousRightPosition = rightPos
+    }
+
     override fun update() {
-        updateUsingLines()
+        updateUsingArcsPotentiallyActuallyWorking()
+    }
+
+    companion object {
+        private const val DIAMETER = 7.2
+        private const val TICKS_PER_REVOLUTION = 4096
+
+        private const val DISTANCE_BETWEEN_ENCODER_WHEELS = 19.772
+        private const val DISTANCE_BETWEEN_BACK_ENCODER_AND_CENTER = 9.0 // The distance to the tracking center
+
+        fun ticksToCM(x: Double) = (DIAMETER * Math.PI * x) / TICKS_PER_REVOLUTION
     }
 }

@@ -10,7 +10,7 @@ class PursuitOpMode : OpMode() {
 
     override fun init() {
         robot.init(hardwareMap)
-        RobotPos.reset()
+        RobotPos.resetAll()
     }
 
     override fun loop() {

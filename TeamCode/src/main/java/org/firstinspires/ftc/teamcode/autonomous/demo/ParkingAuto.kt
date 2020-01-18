@@ -28,10 +28,10 @@ abstract class ParkingAuto : LinearOpMode() {
     abstract fun onRun()
 
     protected fun moveForward(velocity: Double, time: Long) {
-        with(wheels) {
-            val frontVelocity = getFrontVelocity(velocity)
-            val backVelocity = getBackVelocity(velocity)
+        val frontVelocity = getFrontVelocity(velocity)
+        val backVelocity = getBackVelocity(velocity)
 
+        with(wheels) {
             rightFront.velocity = frontVelocity
             leftFront.velocity = -frontVelocity
             rightBack.velocity = backVelocity
@@ -42,10 +42,10 @@ abstract class ParkingAuto : LinearOpMode() {
     }
 
     protected fun strafe(velocity: Double, time: Long) {
-        with(wheels) {
-            val frontVelocity = getFrontVelocity(velocity)
-            val backVelocity = getBackVelocity(velocity)
+        val frontVelocity = getFrontVelocity(velocity)
+        val backVelocity = getBackVelocity(velocity)
 
+        with(wheels) {
             rightFront.velocity = -frontVelocity
             leftFront.velocity = -frontVelocity
             rightBack.velocity = backVelocity
@@ -56,43 +56,51 @@ abstract class ParkingAuto : LinearOpMode() {
     }
 
     private fun waitTime(time: Long) {
+        if (!opModeIsActive()) return
         val targetTime = System.currentTimeMillis() + time
 
         do {
             Thread.sleep(10)
-        } while (targetTime > System.currentTimeMillis())
+        } while (opModeIsActive() && targetTime > System.currentTimeMillis())
     }
-
-    private fun getFrontVelocity(power: Double) =
-        Wheels.rpmToTps(MAX_RPM * power, FRONT_ENCODER_COUNT)
-
-    private fun getBackVelocity(power: Double) =
-        Wheels.rpmToTps(MAX_RPM * power, BACK_ENCODER_COUNT)
 
     private companion object {
         private const val MAX_RPM = 223.0
         private const val FRONT_ENCODER_COUNT = 383.6
         private const val BACK_ENCODER_COUNT = 753.2
+
+        private fun getFrontVelocity(power: Double) =
+                Wheels.rpmToTps(MAX_RPM * power, FRONT_ENCODER_COUNT)
+
+        private fun getBackVelocity(power: Double) =
+                Wheels.rpmToTps(MAX_RPM * power, BACK_ENCODER_COUNT)
     }
 }
 
-
-@Autonomous(name = "Blue")
+@Autonomous(name = "Blue", group = "Parking")
 class BlueAuto : ParkingAuto() {
 
     override fun onRun() {
-        strafe(0.5, 1600L)
+        strafe(0.4, 900L)
         moveForward(0.4, 1000L)
-        strafe(0.3, 1800L)
+        strafe(0.3, 1500L)
     }
 }
 
-@Autonomous(name = "Red")
+@Autonomous(name = "Red", group = "Parking")
 class RedAuto : ParkingAuto() {
 
     override fun onRun() {
         strafe(-0.5, 1600L)
         moveForward(0.4, 1000L)
         strafe(-0.3, 1800L)
+    }
+}
+
+@Autonomous(name = "SimpleParking", group = "Parking")
+class SimpleAuto : ParkingAuto() {
+
+    override fun onRun() {
+        moveForward(0.4, 1200L)
     }
 }

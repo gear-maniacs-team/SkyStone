@@ -14,7 +14,6 @@ import kotlin.concurrent.thread
 
 class TeamRobot {
 
-    private val updaterExecutor = Executors.newSingleThreadExecutor()
     private var hardwareInstances = emptyList<IHardware>()
     private var updatableInstances = emptyList<IUpdatable>()
 
@@ -41,18 +40,14 @@ class TeamRobot {
         hardwareInstances = hardwareList
         updatableInstances = updatableList
 
-
-
         INSTANCE = this
 
         expansionHub1 = hardwareMap.getDevice(EXPANSION_HUB_1_NAME)
         expansionHub2 = hardwareMap.getDevice(EXPANSION_HUB_2_NAME)
 
-
         hardwareInstances.forEach {
             it.init(hardwareMap)
         }
-
     }
 
     fun start() {
@@ -61,10 +56,7 @@ class TeamRobot {
         }
 
         if (updatableInstances.isNotEmpty())
-            thread(
-                    block = ::updateAll
-            )
-
+            thread(block = ::updateAll)
     }
 
     private fun updateAll() {
