@@ -4,12 +4,14 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.Servo
+import com.qualcomm.robotcore.robot.Robot
 import org.firstinspires.ftc.teamcode.RobotPos
 import org.firstinspires.ftc.teamcode.TeamRobot
 import org.firstinspires.ftc.teamcode.motors.Intake
 import org.firstinspires.ftc.teamcode.motors.Wheels
 import org.firstinspires.ftc.teamcode.pid.PidController
-import org.firstinspires.ftc.teamcode.sensors.Gyro
+import org.firstinspires.ftc.teamcode.sensors.Encoder
+import org.firstinspires.ftc.teamcode.utils.MathUtils
 import org.firstinspires.ftc.teamcode.utils.PerformanceProfiler
 import kotlin.concurrent.thread
 import kotlin.math.abs
@@ -18,61 +20,43 @@ import kotlin.math.hypot
 import kotlin.math.min
 import kotlin.math.sin
 
-@TeleOp(name = "G.E.A.R.S.")
-class GearsTeleOp : OpMode() {
+@TeleOp(name = "Mark TeleOp")
+class NewTeleOp : OpMode() {
 
     private val upsCounter = PerformanceProfiler()
     private val robot = TeamRobot()
     private val wheels = Wheels()
     private val intake = Intake()
-    private val gyro = Gyro()
-//    private lateinit var distanceSensor: DistanceSensor
+    private val encoder = Encoder()
 
     private val strafePid = PidController(256.0, 0.0001, 0.5).apply {
         setOutputRange(-100.0, 100.0)
     }
 
-    private lateinit var cargoServo: Servo
-
     private var precisionModeOn = false
     private var curvedMovement = false
-    private var rightFrontVelocity = 0.0
-    private var leftFrontVelocity = 0.0
-    private var rightBackVelocity = 0.0
-    private var leftBackVelocity = 0.0
+    private var rightFrontPower = 0.0
+    private var leftFrontPower = 0.0
+    private var rightBackPower = 0.0
+    private var leftBackPower = 0.0
 
     private var resetAngle = 0.0
     private var orientationIndependentDrive = false
     private var resetStrafePid = true
 
-    private var distanceToStone = 0.0
-
     override fun init() {
-        robot.init(hardwareMap, listOf(wheels, intake, gyro), listOf(gyro))
+        robot.init(hardwareMap, listOf(wheels), listOf())
 
-        wheels.setModeAll(DcMotor.RunMode.RUN_USING_ENCODER)
         wheels.setZeroPowerBehaviorAll(DcMotor.ZeroPowerBehavior.BRAKE)
-
-        cargoServo = hardwareMap.servo["cargo"]
-//        distanceSensor = hardwareMap.get(DistanceSensor::class.java, "cargo_distance")
     }
 
     override fun start() {
         robot.start()
         RobotPos.resetAll()
-
-        thread {
-            while (robot.isOpModeActive) {
-//                distanceToStone = distanceSensor.getDistance(DistanceUnit.CM)
-                intake()
-                Thread.sleep(10L)
-            }
-        }
     }
 
     override fun loop() {
         upsCounter.update(telemetry)
-        telemetry.addData("Distance", distanceToStone)
 
         precisionModeOn = gamepad1.right_bumper
         if (gamepad1.b) {
@@ -86,26 +70,31 @@ class GearsTeleOp : OpMode() {
         }
 
         curvedMovement = false
-        rightFrontVelocity = 0.0
-        leftFrontVelocity = 0.0
-        rightBackVelocity = 0.0
-        leftBackVelocity = 0.0
+        rightFrontPower = 0.0
+        leftFrontPower = 0.0
+        rightBackPower = 0.0
+        leftBackPower = 0.0
 
         curveMovement()
         planeMovement()
 
         with(wheels) {
-            rightFront.velocity = min(rightFrontVelocity, MAX_FRONT_VELOCITY)
-            leftFront.velocity = min(leftFrontVelocity, MAX_FRONT_VELOCITY)
-            rightBack.velocity = min(rightBackVelocity, MAX_BACK_VELOCITY)
-            leftBack.velocity = min(leftBackVelocity, MAX_BACK_VELOCITY)
+            rightFront.power = min(rightFrontPower, MAX_MOTOR_POWER)
+            leftFront.power = min(leftFrontPower, MAX_MOTOR_POWER)
+            rightBack.power = min(rightBackPower, MAX_MOTOR_POWER)
+            leftBack.power = min(leftBackPower, MAX_MOTOR_POWER)
         }
 
-        cargo()
-
         with(telemetry) {
-            addData("Current Angle", RobotPos.currentAngle)
+            addData("X", Encoder.ticksToCM(RobotPos.currentX))
+            addData("Y", Encoder.ticksToCM(RobotPos.currentY))
+            addData("Current Angle", MathUtils.angleWrap(RobotPos.currentAngle))
             addData("Target Angle", strafePid.setPoint)
+
+            addData("rightFront power", wheels.rightFront.power)
+            addData("leftFront power", wheels.leftFront.power)
+            addData("rightBack power", wheels.rightBack.power)
+            addData("leftBack power", wheels.leftBack.power)
             update()
         }
     }
@@ -115,8 +104,8 @@ class GearsTeleOp : OpMode() {
     }
 
     private fun curveMovement() {
-        val x = -gamepad1.right_stick_x.toDouble()
-        val y = gamepad1.right_stick_y.toDouble()
+        val x = gamepad1.right_stick_x.toDouble()
+        val y = -gamepad1.right_stick_y.toDouble()
 
         if (abs(x) == 0.0 && abs(y) == 0.0)
             return
@@ -139,15 +128,15 @@ class GearsTeleOp : OpMode() {
         curvedMovement = true
         resetStrafePid = true
 
-        rightFrontVelocity += getFrontVelocity(speedRight)
-        leftFrontVelocity += getFrontVelocity(speedLeft)
-        rightBackVelocity += getBackVelocity(speedRight)
-        leftBackVelocity += getBackVelocity(speedLeft)
+        rightFrontPower += speedRight
+        leftFrontPower += speedLeft
+        rightBackPower += speedRight
+        leftBackPower += speedLeft
     }
 
     private fun planeMovement() {
-        val x = -gamepad1.left_stick_x.toDouble()
-        val y = gamepad1.left_stick_y.toDouble()
+        val x = gamepad1.left_stick_x.toDouble()
+        val y = -gamepad1.left_stick_y.toDouble()
 
         if (abs(x) == 0.0 && abs(y) == 0.0) {
             resetStrafePid = true
@@ -160,11 +149,7 @@ class GearsTeleOp : OpMode() {
             resetStrafePid = false
         }
 
-//        val correction = 0.0
         val correction = if (!curvedMovement) strafePid.compute(RobotPos.currentAngle) else 0.0
-        val frontCorrection = Wheels.rpmToTps(correction, FRONT_ENCODER_COUNT)
-        val backCorrection = Wheels.rpmToTps(correction, BACK_ENCODER_COUNT)
-
         val magnitude = hypot(x, y) * if (precisionModeOn) PRECISION_MODE_MULTIPLIER else MOTOR_SPEED_MULTIPLIER
 
         val independentAngleCorrection = if (orientationIndependentDrive) RobotPos.currentAngle - resetAngle else 0.0
@@ -173,21 +158,12 @@ class GearsTeleOp : OpMode() {
         val speedX = magnitude * sin(angle + Math.PI / 4)
         val speedY = magnitude * sin(angle - Math.PI / 4)
 
-        rightFrontVelocity += -getFrontVelocity(speedX) + frontCorrection
-        leftFrontVelocity += -getFrontVelocity(speedY) + frontCorrection
-        rightBackVelocity += getBackVelocity(speedY) + backCorrection
-        leftBackVelocity += getBackVelocity(speedX) + backCorrection
+        rightFrontPower += -speedX + correction
+        leftFrontPower += -speedY + correction
+        rightBackPower += speedY + correction
+        leftBackPower += speedX + correction
 
         telemetry.addData("Strafe Correction", correction)
-    }
-
-    private fun autoIntake() {
-        val power = if (distanceToStone < 16) INTAKE_POWER else 0.0
-        intake.left.power = power
-        intake.right.power = -power
-
-        if (power != 0.0)
-            Thread.sleep(1200L)
     }
 
     private fun intake() {
@@ -209,36 +185,10 @@ class GearsTeleOp : OpMode() {
         intake.right.power = -intakePower
     }
 
-    private fun cargo() {
-        cargoServo.position = gamepad2.right_trigger.toDouble()
-    }
-
-    /*private fun extension() {
-        if (gamepad2.y) {
-            leftExtension.position = 0.0
-            rightExtension.position = 0.0
-        } else if (gamepad2.b) {
-            leftExtension.position = 1.0
-            rightExtension.position = 1.0
-        }
-    }*/
-
     private companion object {
-        private const val MAX_RPM = 223.0
-        private const val FRONT_ENCODER_COUNT = 753.2
-        private const val BACK_ENCODER_COUNT = 383.6
-
-        private const val PRECISION_MODE_MULTIPLIER = 0.45
-        private const val MOTOR_SPEED_MULTIPLIER = 0.95
+        private const val PRECISION_MODE_MULTIPLIER = 0.3
+        private const val MOTOR_SPEED_MULTIPLIER = 0.6
+        private const val MAX_MOTOR_POWER = 0.9
         private const val INTAKE_POWER = 0.7
-
-        private fun getFrontVelocity(power: Double) =
-            Wheels.rpmToTps(MAX_RPM * power, FRONT_ENCODER_COUNT)
-
-        private fun getBackVelocity(power: Double) =
-            Wheels.rpmToTps(MAX_RPM * power, BACK_ENCODER_COUNT)
-
-        private val MAX_FRONT_VELOCITY = getFrontVelocity(1.0)
-        private val MAX_BACK_VELOCITY = getBackVelocity(1.0)
     }
 }
