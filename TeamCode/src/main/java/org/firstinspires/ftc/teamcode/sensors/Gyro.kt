@@ -35,7 +35,7 @@ class Gyro : IHardware, IUpdatable {
     private var angle = 0f
 
     override fun init(hardwareMap: HardwareMap) {
-        imu = hardwareMap.get(BNO055IMU::class.java, "imu_1")
+        imu = hardwareMap.get(BNO055IMU::class.java, "imu")
 
         val parameters = BNO055IMU.Parameters().apply {
             mode = BNO055IMU.SensorMode.IMU

@@ -1,12 +1,10 @@
 package org.firstinspires.ftc.teamcode.odometry
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
-import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
 import org.firstinspires.ftc.teamcode.RobotPos
 import org.firstinspires.ftc.teamcode.TeamRobot
-import org.firstinspires.ftc.teamcode.motors.Intake
 import org.firstinspires.ftc.teamcode.motors.Wheels
 import org.firstinspires.ftc.teamcode.sensors.Encoder
 import org.firstinspires.ftc.teamcode.sensors.Gyro
@@ -16,28 +14,36 @@ class GyroBasedCalibration : LinearOpMode() {
 
     private val robot = TeamRobot()
     private val wheels = Wheels()
-    private val encoder = Encoder()
     private val gyro = Gyro()
-    private val distance = 0.0
-    private lateinit var leftEnc: DcMotor
-    private lateinit var rightEnc: DcMotor
+    private val encoder = Encoder()
 
     override fun runOpMode() {
-        leftEnc = hardwareMap.dcMotor["TL"]
-        rightEnc = hardwareMap.dcMotor["BR"]
-        robot.init(hardwareMap, listOf(wheels,gyro), listOf(gyro))
+        robot.init(hardwareMap, listOf(wheels, gyro, encoder), listOf(gyro))
+        RobotPos.resetAll()
+
         waitForStart()
         robot.start()
 
-        wheels.leftBack.power = 0.5
-        wheels.leftFront.power = 0.5
-        wheels.rightBack.power = 0.5
-        wheels.rightFront.power = 0.5
+        wheels.setModeAll(DcMotor.RunMode.STOP_AND_RESET_ENCODER)
+        wheels.setModeAll(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
+        wheels.setZeroPowerBehaviorAll(DcMotor.ZeroPowerBehavior.FLOAT)
+
+        wheels.setPowerAll(0.5)
 
         Thread.sleep(1000)
+        wheels.setPowerAll(0.0)
+        Thread.sleep(1000)
 
-        telemetry.addData("Result", (leftEnc.currentPosition - rightEnc.currentPosition)/RobotPos.currentAngle)
-        telemetry.update()
+        val difference = (encoder.right.currentPosition - -encoder.left.currentPosition) / RobotPos.currentAngle
+        val result = (Encoder.ticksToCM(encoder.right.currentPosition.toDouble()) - Encoder.ticksToCM(-encoder.left.currentPosition.toDouble())) / RobotPos.currentAngle
+        while (opModeIsActive()) {
+            telemetry.addData("Right",encoder.right.currentPosition)
+            telemetry.addData("Left", encoder.left.currentPosition)
+            telemetry.addData("Gyro", RobotPos.currentAngle)
+            telemetry.addData("Difference", difference)
+            telemetry.addData("Result", result)
+            telemetry.update()
+        }
 
         robot.stop()
     }

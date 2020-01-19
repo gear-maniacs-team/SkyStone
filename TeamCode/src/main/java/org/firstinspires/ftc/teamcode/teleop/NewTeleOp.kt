@@ -3,17 +3,15 @@ package org.firstinspires.ftc.teamcode.teleop
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
-import com.qualcomm.robotcore.hardware.Servo
-import com.qualcomm.robotcore.robot.Robot
 import org.firstinspires.ftc.teamcode.RobotPos
 import org.firstinspires.ftc.teamcode.TeamRobot
 import org.firstinspires.ftc.teamcode.motors.Intake
+import org.firstinspires.ftc.teamcode.motors.Lift
 import org.firstinspires.ftc.teamcode.motors.Wheels
 import org.firstinspires.ftc.teamcode.pid.PidController
 import org.firstinspires.ftc.teamcode.sensors.Encoder
 import org.firstinspires.ftc.teamcode.utils.MathUtils
 import org.firstinspires.ftc.teamcode.utils.PerformanceProfiler
-import kotlin.concurrent.thread
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.hypot
@@ -28,11 +26,13 @@ class NewTeleOp : OpMode() {
     private val wheels = Wheels()
     private val intake = Intake()
     private val encoder = Encoder()
+    private val lift = Lift()
 
     private val strafePid = PidController(256.0, 0.0001, 0.5).apply {
         setOutputRange(-100.0, 100.0)
     }
 
+    private var liftTargetPosition = 0
     private var precisionModeOn = false
     private var curvedMovement = false
     private var rightFrontPower = 0.0
@@ -46,7 +46,7 @@ class NewTeleOp : OpMode() {
     private var resetStrafePid = true
 
     override fun init() {
-        robot.init(hardwareMap, listOf(wheels,encoder), listOf(encoder))
+        robot.init(hardwareMap, listOf(wheels, encoder, lift), listOf(encoder))
 
         wheels.setZeroPowerBehaviorAll(DcMotor.ZeroPowerBehavior.BRAKE)
     }
@@ -87,11 +87,12 @@ class NewTeleOp : OpMode() {
             leftBack.power = min(leftBackPower, MAX_MOTOR_POWER)
         }
 
+        lift()
+
         with(telemetry) {
             addData("X", Encoder.ticksToCM(RobotPos.currentX))
             addData("Y", Encoder.ticksToCM(RobotPos.currentY))
-            addData("Current Angle", MathUtils.angleWrap(RobotPos.currentAngle))
-            addData("Target Angle", strafePid.setPoint)
+            addData("Heading", Math.toDegrees(MathUtils.angleWrap(RobotPos.currentAngle)))
 
             addData("rightFront power", wheels.rightFront.power)
             addData("leftFront power", wheels.leftFront.power)
@@ -151,7 +152,8 @@ class NewTeleOp : OpMode() {
             resetStrafePid = false
         }
 
-        val correction = if (!curvedMovement) 0.0 else 0.0
+//        val correction = if (!curvedMovement) strafePid.compute(RobotPos.currentAngle) else 0.0
+        val correction = 0.0
         val magnitude = hypot(x, y) * if (precisionModeOn) PRECISION_MODE_MULTIPLIER else MOTOR_SPEED_MULTIPLIER
 
         val independentAngleCorrection = if (orientationIndependentDrive) RobotPos.currentAngle - resetAngle else 0.0
@@ -186,10 +188,32 @@ class NewTeleOp : OpMode() {
         intake.right.power = -intakePower
     }
 
+    private fun lift() {
+        val posChange = when {
+            gamepad2.dpad_down -> -100
+            gamepad2.dpad_up -> 100
+            else -> 0
+        }
+
+        liftTargetPosition += posChange
+        if (posChange != 0)
+            Thread.sleep(200)
+
+        with(lift) {
+            left.targetPosition = liftTargetPosition
+            right.targetPosition = -liftTargetPosition
+            left.power = LIFT_POWER
+            right.power = LIFT_POWER
+        }
+
+        telemetry.addData("Lift Target Position", liftTargetPosition)
+    }
+
     private companion object {
-        private const val PRECISION_MODE_MULTIPLIER = 0.3
-        private const val MOTOR_SPEED_MULTIPLIER = 0.9
+        private const val PRECISION_MODE_MULTIPLIER = 0.4
+        private const val MOTOR_SPEED_MULTIPLIER = 0.8
         private const val MAX_MOTOR_POWER = 0.9
         private const val INTAKE_POWER = 0.7
+        private const val LIFT_POWER = 0.5
     }
 }
