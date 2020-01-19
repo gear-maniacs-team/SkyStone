@@ -33,10 +33,9 @@ class Encoder : IHardware, IUpdatable {
         left.direction = DcMotorSimple.Direction.FORWARD
         right.direction = DcMotorSimple.Direction.FORWARD
         back.direction = DcMotorSimple.Direction.FORWARD
-
-        setModeAll(RunMode.RUN_USING_ENCODER)
         setModeAll(RunMode.STOP_AND_RESET_ENCODER)
-        setModeAll(RunMode.RUN_USING_ENCODER)
+        setModeAll(RunMode.RUN_WITHOUT_ENCODER)
+
     }
 
     fun setModeAll(mode: RunMode) {
@@ -114,7 +113,7 @@ class Encoder : IHardware, IUpdatable {
         // transforming back into cartesian form.
         RobotPos.currentX += newX * cos(averageOrientation) + newY * sin(averageOrientation)
         RobotPos.currentY += -newX * sin(averageOrientation) + newY * cos(averageOrientation)
-        RobotPos.currentAngle += deltaAngle
+        RobotPos.currentAngle -= deltaAngle
 
         previousBackPosition = backPos
         previousLeftPosition = leftPos
@@ -130,7 +129,7 @@ class Encoder : IHardware, IUpdatable {
         private const val TICKS_PER_REVOLUTION = 4096
 
         private const val DISTANCE_BETWEEN_ENCODER_WHEELS = 19.772
-        private const val DISTANCE_BETWEEN_BACK_ENCODER_AND_CENTER = 9.0 // The distance to the tracking center
+        private const val DISTANCE_BETWEEN_BACK_ENCODER_AND_CENTER = 14.2 // The distance to the tracking center
 
         fun ticksToCM(x: Double) = (DIAMETER * Math.PI * x) / TICKS_PER_REVOLUTION
     }

@@ -42,10 +42,11 @@ class NewTeleOp : OpMode() {
 
     private var resetAngle = 0.0
     private var orientationIndependentDrive = false
+
     private var resetStrafePid = true
 
     override fun init() {
-        robot.init(hardwareMap, listOf(wheels), listOf())
+        robot.init(hardwareMap, listOf(wheels,encoder), listOf(encoder))
 
         wheels.setZeroPowerBehaviorAll(DcMotor.ZeroPowerBehavior.BRAKE)
     }
@@ -53,6 +54,7 @@ class NewTeleOp : OpMode() {
     override fun start() {
         robot.start()
         RobotPos.resetAll()
+        wheels.setModeAll(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
     }
 
     override fun loop() {
@@ -149,12 +151,11 @@ class NewTeleOp : OpMode() {
             resetStrafePid = false
         }
 
-        val correction = if (!curvedMovement) strafePid.compute(RobotPos.currentAngle) else 0.0
+        val correction = if (!curvedMovement) 0.0 else 0.0
         val magnitude = hypot(x, y) * if (precisionModeOn) PRECISION_MODE_MULTIPLIER else MOTOR_SPEED_MULTIPLIER
 
         val independentAngleCorrection = if (orientationIndependentDrive) RobotPos.currentAngle - resetAngle else 0.0
         val angle = atan2(y, x) - Math.PI / 2 - independentAngleCorrection
-
         val speedX = magnitude * sin(angle + Math.PI / 4)
         val speedY = magnitude * sin(angle - Math.PI / 4)
 
@@ -187,7 +188,7 @@ class NewTeleOp : OpMode() {
 
     private companion object {
         private const val PRECISION_MODE_MULTIPLIER = 0.3
-        private const val MOTOR_SPEED_MULTIPLIER = 0.6
+        private const val MOTOR_SPEED_MULTIPLIER = 0.9
         private const val MAX_MOTOR_POWER = 0.9
         private const val INTAKE_POWER = 0.7
     }
