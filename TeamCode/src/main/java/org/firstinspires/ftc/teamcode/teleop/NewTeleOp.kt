@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.teleop
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
+import com.qualcomm.robotcore.util.Range
 import org.firstinspires.ftc.teamcode.RobotPos
 import org.firstinspires.ftc.teamcode.TeamRobot
 import org.firstinspires.ftc.teamcode.motors.Intake
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.teamcode.pid.PidController
 import org.firstinspires.ftc.teamcode.sensors.Encoder
 import org.firstinspires.ftc.teamcode.utils.MathUtils
 import org.firstinspires.ftc.teamcode.utils.PerformanceProfiler
+import org.firstinspires.ftc.teamcode.utils.Ranges
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.hypot
@@ -81,10 +83,10 @@ class NewTeleOp : OpMode() {
         planeMovement()
 
         with(wheels) {
-            rightFront.power = min(rightFrontPower, MAX_MOTOR_POWER)
-            leftFront.power = min(leftFrontPower, MAX_MOTOR_POWER)
-            rightBack.power = min(rightBackPower, MAX_MOTOR_POWER)
-            leftBack.power = min(leftBackPower, MAX_MOTOR_POWER)
+            rightFront.power = rightFrontPower
+            leftFront.power = leftFrontPower
+            rightBack.power = rightBackPower
+            leftBack.power = leftBackPower
         }
 
         lift()
@@ -152,8 +154,7 @@ class NewTeleOp : OpMode() {
             resetStrafePid = false
         }
 
-//        val correction = if (!curvedMovement) strafePid.compute(RobotPos.currentAngle) else 0.0
-        val correction = 0.0
+        val correction = if (!curvedMovement) strafePid.compute(RobotPos.currentAngle) else 0.0
         val magnitude = hypot(x, y) * if (precisionModeOn) PRECISION_MODE_MULTIPLIER else MOTOR_SPEED_MULTIPLIER
 
         val independentAngleCorrection = if (orientationIndependentDrive) RobotPos.currentAngle - resetAngle else 0.0
@@ -199,7 +200,7 @@ class NewTeleOp : OpMode() {
         if (posChange != 0)
             Thread.sleep(200)
 
-        val power = if (liftTargetPosition == 0 && lift.left.currentPosition < 500) 0.0 else LIFT_POWER
+        val power = if (liftTargetPosition == 0 && lift.left.currentPosition < 300) 0.0 else LIFT_POWER
 
         with(lift) {
             left.targetPosition = liftTargetPosition
@@ -213,8 +214,7 @@ class NewTeleOp : OpMode() {
 
     private companion object {
         private const val PRECISION_MODE_MULTIPLIER = 0.4
-        private const val MOTOR_SPEED_MULTIPLIER = 0.8
-        private const val MAX_MOTOR_POWER = 0.9
+        private const val MOTOR_SPEED_MULTIPLIER = 0.7
         private const val INTAKE_POWER = 0.7
         private const val LIFT_POWER = 0.5
     }

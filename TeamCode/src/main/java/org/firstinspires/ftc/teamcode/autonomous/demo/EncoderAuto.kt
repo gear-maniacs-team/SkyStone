@@ -2,35 +2,28 @@ package org.firstinspires.ftc.teamcode.autonomous.demo
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
-import com.qualcomm.robotcore.hardware.DcMotor
-import org.firstinspires.ftc.teamcode.RobotPos
 import org.firstinspires.ftc.teamcode.TeamRobot
 import org.firstinspires.ftc.teamcode.motors.Wheels
 import org.firstinspires.ftc.teamcode.pid.PidController
-import org.firstinspires.ftc.teamcode.utils.getDevice
-import kotlin.math.*
+import org.firstinspires.ftc.teamcode.sensors.Encoder
+import kotlin.math.atan2
+import kotlin.math.hypot
+import kotlin.math.sin
 
 abstract class EncoderAuto : LinearOpMode() {
 
     private val robot = TeamRobot()
     private val wheels = Wheels()
+    private val encoder = Encoder()
     private val leftPid = PidController(64.0, 0.00001, 0.05).apply {
         setOutputRange(-1.0, 1.0)
     }
     private val backPid = PidController(64.0, 0.00001, 0.05).apply {
         setOutputRange(-1.0, 1.0)
     }
-    private val strafePid = PidController(256.0, 0.0001, 0.5).apply {
-        setOutputRange(-100.0, 100.0)
-    }
-    private lateinit var encoderLeft: DcMotor
-    private lateinit var encoderBack: DcMotor
-    private var resetAngle = 0.0
 
     final override fun runOpMode() {
-        robot.init(hardwareMap, listOf(wheels))
-        encoderLeft = hardwareMap.getDevice("encoder_left")
-        encoderBack = hardwareMap.getDevice("encoder_back")
+        robot.init(hardwareMap, listOf(wheels, encoder), listOf(encoder))
 
         while (!isStarted) {
             telemetry.addData("Status", "Waiting for start")
@@ -52,8 +45,8 @@ abstract class EncoderAuto : LinearOpMode() {
         var back: Double
 
         do {
-            left = encoderLeft.currentPosition.toDouble()
-            back = encoderBack.currentPosition.toDouble()
+            left = encoder.left.currentPosition.toDouble()
+            back = encoder.back.currentPosition.toDouble()
             Thread.sleep(100)
 
             telemetry.addData("Left Encoder", left)
@@ -67,34 +60,17 @@ abstract class EncoderAuto : LinearOpMode() {
     }
 
     private fun planeMovement(x: Double, y: Double) {
-//        if (resetStrafePid && !curvedMovement) {
-//            strafePid.reset()
-//            strafePid.setPoint = RobotPos.currentAngle
-//            resetStrafePid = false
-//        }
-
-        val correction = strafePid.compute(RobotPos.currentAngle)
-        val frontCorrection = Wheels.rpmToTps(correction, FRONT_ENCODER_COUNT)
-        val backCorrection = Wheels.rpmToTps(correction, BACK_ENCODER_COUNT)
-
         val magnitude = hypot(x, y) * MOTOR_SPEED_MULTIPLIER
-
-        val independentAngleCorrection = RobotPos.currentAngle - resetAngle
-        val angle = atan2(y, x) - Math.PI / 2 - independentAngleCorrection
+        val angle = atan2(y, x) - Math.PI / 2
 
         val speedX = magnitude * sin(angle + Math.PI / 4)
         val speedY = magnitude * sin(angle - Math.PI / 4)
 
         with(wheels) {
-            rightFront.velocity = min(-getFrontVelocity(speedX) + frontCorrection, MAX_FRONT_VELOCITY)
-            leftFront.velocity = min(-getFrontVelocity(speedY) + frontCorrection, MAX_FRONT_VELOCITY)
-            rightBack.velocity = min(getBackVelocity(speedY) + backCorrection, MAX_BACK_VELOCITY)
-            leftBack.velocity = min(getBackVelocity(speedX) + backCorrection, MAX_BACK_VELOCITY)
-        }
-
-        with(telemetry) {
-            addData("Strafe Correction", correction)
-            update()
+            rightFront.power = -speedX
+            leftFront.power = -speedY
+            rightBack.power = speedY
+            leftBack.power = speedX
         }
     }
 
@@ -102,18 +78,6 @@ abstract class EncoderAuto : LinearOpMode() {
 
     private companion object {
         private const val MOTOR_SPEED_MULTIPLIER = 0.7
-        private const val MAX_RPM = 223.0
-        private const val FRONT_ENCODER_COUNT = 753.2
-        private const val BACK_ENCODER_COUNT = 383.6
-
-        private fun getFrontVelocity(power: Double) =
-                Wheels.rpmToTps(MAX_RPM * power, FRONT_ENCODER_COUNT)
-
-        private fun getBackVelocity(power: Double) =
-                Wheels.rpmToTps(MAX_RPM * power, BACK_ENCODER_COUNT)
-
-        private val MAX_FRONT_VELOCITY = getFrontVelocity(1.0)
-        private val MAX_BACK_VELOCITY = getBackVelocity(1.0)
     }
 }
 

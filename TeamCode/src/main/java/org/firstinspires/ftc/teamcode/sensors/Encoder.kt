@@ -45,10 +45,6 @@ class Encoder : IHardware, IUpdatable {
         back.mode = mode
     }
 
-    fun backup(){
-
-    }
-
     fun updateUsingArcs() {
         val currentAngle = RobotPos.currentAngle
         val backPos = back.currentPosition.toDouble()
@@ -84,7 +80,6 @@ class Encoder : IHardware, IUpdatable {
         previousBackPosition = backPos
         previousLeftPosition = leftPos
         previousRightPosition = rightPos
-
     }
 
     override fun update() {
