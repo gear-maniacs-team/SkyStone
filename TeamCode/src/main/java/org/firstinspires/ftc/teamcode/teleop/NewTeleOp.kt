@@ -90,8 +90,8 @@ class NewTeleOp : OpMode() {
         lift()
 
         with(telemetry) {
-            addData("X", Encoder.ticksToCM(RobotPos.currentX))
-            addData("Y", Encoder.ticksToCM(RobotPos.currentY))
+            addData("X", RobotPos.currentX)
+            addData("Y", RobotPos.currentY)
             addData("Heading", Math.toDegrees(MathUtils.angleWrap(RobotPos.currentAngle)))
 
             addData("rightFront power", wheels.rightFront.power)
@@ -199,11 +199,13 @@ class NewTeleOp : OpMode() {
         if (posChange != 0)
             Thread.sleep(200)
 
+        val power = if (liftTargetPosition == 0 && lift.left.currentPosition < 500) 0.0 else LIFT_POWER
+
         with(lift) {
             left.targetPosition = liftTargetPosition
             right.targetPosition = -liftTargetPosition
-            left.power = LIFT_POWER
-            right.power = LIFT_POWER
+            left.power = power
+            right.power = power
         }
 
         telemetry.addData("Lift Target Position", liftTargetPosition)

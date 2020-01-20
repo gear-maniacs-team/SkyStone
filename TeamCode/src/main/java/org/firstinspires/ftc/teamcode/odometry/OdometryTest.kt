@@ -28,8 +28,8 @@ class OdometryTest : OpMode() {
     override fun loop() {
         encoder.update()
 
-        telemetry.addData("X Position", Encoder.ticksToCM(RobotPos.currentX))
-        telemetry.addData("Y Position", Encoder.ticksToCM(RobotPos.currentY))
+        telemetry.addData("X Position", RobotPos.currentX)
+        telemetry.addData("Y Position", RobotPos.currentY)
         telemetry.addData("Orientation", angleWrap(RobotPos.currentAngle))
 
         telemetry.addData("Left encoder position", encoder.left.currentPosition)

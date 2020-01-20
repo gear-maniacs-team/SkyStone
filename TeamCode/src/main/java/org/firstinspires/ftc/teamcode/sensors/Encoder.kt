@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
+import org.firstinspires.ftc.robotcore.internal.opmode.OpModeManagerImpl
 import org.firstinspires.ftc.teamcode.RobotPos
 import org.firstinspires.ftc.teamcode.utils.IHardware
 import org.firstinspires.ftc.teamcode.utils.IUpdatable
@@ -44,20 +45,22 @@ class Encoder : IHardware, IUpdatable {
         back.mode = mode
     }
 
+    fun backup(){
+
+    }
+
     fun updateUsingArcs() {
         val currentAngle = RobotPos.currentAngle
         val backPos = back.currentPosition.toDouble()
         val leftPos = -left.currentPosition.toDouble() // Must return a positive value when moving forward
         val rightPos = right.currentPosition.toDouble()
 
-        val deltaBack = backPos - previousBackPosition
-        val deltaRight = rightPos - previousRightPosition
-        val deltaLeft = leftPos - previousLeftPosition
+        val deltaBack = ticksToCM(backPos - previousBackPosition)
+        val deltaRight = ticksToCM(rightPos - previousRightPosition)
+        val deltaLeft = ticksToCM(leftPos - previousLeftPosition)
 
-        val wheelTravelLeft = ticksToCM(deltaLeft)
-        val wheelTravelRight = ticksToCM(deltaRight)
 
-        val deltaAngle = (wheelTravelLeft - wheelTravelRight) / DISTANCE_BETWEEN_ENCODER_WHEELS
+        val deltaAngle = (deltaLeft - deltaRight) / DISTANCE_BETWEEN_ENCODER_WHEELS
 
         val newX: Double
         val newY: Double
@@ -74,13 +77,14 @@ class Encoder : IHardware, IUpdatable {
         // Calculate and update the position values
         // Rotate the cartesian coordinate system by transforming into polar form, adding the angle and then
         // transforming back into cartesian form.
-        RobotPos.currentX += newX * cos(averageOrientation) + newY * sin(averageOrientation)
-        RobotPos.currentY += -newX * sin(averageOrientation) + newY * cos(averageOrientation)
+        RobotPos.currentX += newX * cos(averageOrientation) - newY * sin(averageOrientation)
+        RobotPos.currentY += newX * sin(averageOrientation) + newY * cos(averageOrientation)
         RobotPos.currentAngle -= deltaAngle
 
         previousBackPosition = backPos
         previousLeftPosition = leftPos
         previousRightPosition = rightPos
+
     }
 
     override fun update() {
@@ -91,7 +95,7 @@ class Encoder : IHardware, IUpdatable {
         private const val DIAMETER = 7.2
         private const val TICKS_PER_REVOLUTION = 4096
 
-        private const val DISTANCE_BETWEEN_ENCODER_WHEELS = 19.80843775189216
+        private const val DISTANCE_BETWEEN_ENCODER_WHEELS = 19.6125
         private const val DISTANCE_BETWEEN_BACK_ENCODER_AND_CENTER = 14.2 // The distance to the tracking center
 
         fun ticksToCM(x: Double) = (DIAMETER * Math.PI * x) / TICKS_PER_REVOLUTION
