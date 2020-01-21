@@ -20,7 +20,7 @@ import kotlin.math.hypot
 import kotlin.math.min
 import kotlin.math.sin
 
-@TeleOp(name = "Mark TeleOp")
+@TeleOp(name = "Mark TeleOp", group = "Good")
 class NewTeleOp : OpMode() {
 
     private val upsCounter = PerformanceProfiler()
@@ -30,13 +30,8 @@ class NewTeleOp : OpMode() {
     private val encoder = Encoder()
     private val lift = Lift()
 
-    private val strafePid = PidController(256.0, 0.0001, 0.5).apply {
-        setOutputRange(-100.0, 100.0)
-    }
-
     private var liftTargetPosition = 0
     private var precisionModeOn = false
-    private var curvedMovement = false
     private var rightFrontPower = 0.0
     private var leftFrontPower = 0.0
     private var rightBackPower = 0.0
@@ -45,18 +40,14 @@ class NewTeleOp : OpMode() {
     private var resetAngle = 0.0
     private var orientationIndependentDrive = false
 
-    private var resetStrafePid = true
-
     override fun init() {
         robot.init(hardwareMap, listOf(wheels, encoder, lift), listOf(encoder))
-
-        wheels.setZeroPowerBehaviorAll(DcMotor.ZeroPowerBehavior.BRAKE)
+        wheels.setModeAll(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
     }
 
     override fun start() {
         robot.start()
         RobotPos.resetAll()
-        wheels.setModeAll(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
     }
 
     override fun loop() {
@@ -73,7 +64,6 @@ class NewTeleOp : OpMode() {
             Thread.sleep(200L)
         }
 
-        curvedMovement = false
         rightFrontPower = 0.0
         leftFrontPower = 0.0
         rightBackPower = 0.0
@@ -130,9 +120,6 @@ class NewTeleOp : OpMode() {
         speedRight *= percentage
         speedLeft *= percentage
 
-        curvedMovement = true
-        resetStrafePid = true
-
         rightFrontPower += speedRight
         leftFrontPower += speedLeft
         rightBackPower += speedRight
@@ -143,18 +130,8 @@ class NewTeleOp : OpMode() {
         val x = gamepad1.left_stick_x.toDouble()
         val y = -gamepad1.left_stick_y.toDouble()
 
-        if (abs(x) == 0.0 && abs(y) == 0.0) {
-            resetStrafePid = true
-            return
-        }
+        if (abs(x) == 0.0 && abs(y) == 0.0) return
 
-        if (resetStrafePid && !curvedMovement) {
-            strafePid.reset()
-            strafePid.setPoint = RobotPos.currentAngle
-            resetStrafePid = false
-        }
-
-        val correction = if (!curvedMovement) strafePid.compute(RobotPos.currentAngle) else 0.0
         val magnitude = hypot(x, y) * if (precisionModeOn) PRECISION_MODE_MULTIPLIER else MOTOR_SPEED_MULTIPLIER
 
         val independentAngleCorrection = if (orientationIndependentDrive) RobotPos.currentAngle - resetAngle else 0.0
@@ -162,12 +139,10 @@ class NewTeleOp : OpMode() {
         val speedX = magnitude * sin(angle + Math.PI / 4)
         val speedY = magnitude * sin(angle - Math.PI / 4)
 
-        rightFrontPower += -speedX + correction
-        leftFrontPower += -speedY + correction
-        rightBackPower += speedY + correction
-        leftBackPower += speedX + correction
-
-        telemetry.addData("Strafe Correction", correction)
+        rightFrontPower += -speedX
+        leftFrontPower += -speedY
+        rightBackPower += speedY
+        leftBackPower += speedX
     }
 
     private fun intake() {

@@ -33,7 +33,7 @@ class  PerformanceProfiler {
         return result
     }
 
-    fun update(telemetry: Telemetry, caption: String = "Ms/Updates") {
+    fun update(telemetry: Telemetry, caption: String = "Ms/Update") {
         val ms = update()
 
         lastTelemetryItem?.let {

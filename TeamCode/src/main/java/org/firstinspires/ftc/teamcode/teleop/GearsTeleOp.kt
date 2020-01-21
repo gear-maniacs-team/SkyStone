@@ -18,7 +18,7 @@ import kotlin.math.hypot
 import kotlin.math.min
 import kotlin.math.sin
 
-@TeleOp(name = "G.E.A.R.S.")
+@TeleOp(name = "G.E.A.R.S.", group = "Good")
 class GearsTeleOp : OpMode() {
 
     private val upsCounter = PerformanceProfiler()

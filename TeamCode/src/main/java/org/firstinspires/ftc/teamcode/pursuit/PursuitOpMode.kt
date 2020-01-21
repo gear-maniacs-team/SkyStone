@@ -17,8 +17,8 @@ class PursuitOpMode : OpMode() {
     private val robot = TeamRobot()
     private val wheels = Wheels()
     private val encoder = Encoder()
-    private val yPid = PidController(64.0, 0.0, 0.005)
     private val xPid = PidController(64.0, 0.0, 0.005)
+    private val yPid = PidController(64.0, 0.0, 0.005)
     private val rotationPid = PidController(64.0, 0.0, 0.005)
 
     override fun init() {

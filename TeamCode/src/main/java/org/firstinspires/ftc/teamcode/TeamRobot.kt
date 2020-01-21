@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode
 
 import com.qualcomm.robotcore.hardware.HardwareMap
+import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.teamcode.detector.VuforiaManager
 import org.firstinspires.ftc.teamcode.utils.IHardware
 import org.firstinspires.ftc.teamcode.utils.IUpdatable
+import org.firstinspires.ftc.teamcode.utils.PerformanceProfiler
 import org.firstinspires.ftc.teamcode.utils.getDevice
 import org.openftc.revextensions2.ExpansionHubEx
 import org.openftc.revextensions2.RevBulkData
@@ -14,8 +16,10 @@ import kotlin.concurrent.thread
 
 class TeamRobot {
 
+    private val performanceProfiler = PerformanceProfiler()
     private var hardwareInstances = emptyList<IHardware>()
     private var updatableInstances = emptyList<IUpdatable>()
+    private var telemetry: Telemetry? = null
 
     // These fields are only initialized after init has been called
     lateinit var expansionHub1: ExpansionHubEx
@@ -32,9 +36,9 @@ class TeamRobot {
     val vuforia = VuforiaManager()
 
     fun init(
-            hardwareMap: HardwareMap,
-            hardwareList: List<IHardware> = emptyList(),
-            updatableList: List<IUpdatable> = emptyList()
+        hardwareMap: HardwareMap,
+        hardwareList: List<IHardware> = emptyList(),
+        updatableList: List<IUpdatable> = emptyList()
     ) {
         isOpModeActive = true
         hardwareInstances = hardwareList
@@ -61,9 +65,14 @@ class TeamRobot {
 
     private fun updateAll() {
         while (isOpModeActive) {
+            telemetry?.let {
+                performanceProfiler.update(it, "Robot Thread Ms")
+            }
+
             updatableInstances.forEach {
                 it.update()
             }
+
             Thread.yield()
         }
     }
@@ -79,9 +88,13 @@ class TeamRobot {
         vuforia.stopCamera()
     }
 
-    fun updateExpansionHubs(){
+    fun updateExpansionHubs() {
         bulkInputData1 = expansionHub1.bulkInputData
         bulkInputData2 = expansionHub2.bulkInputData
+    }
+
+    fun showPerformance(telemetry: Telemetry?) {
+        this.telemetry = telemetry
     }
 
     companion object {
