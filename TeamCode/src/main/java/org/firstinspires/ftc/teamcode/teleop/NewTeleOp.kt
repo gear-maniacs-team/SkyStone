@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.teleop
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
+import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.teamcode.RobotPos
 import org.firstinspires.ftc.teamcode.TeamRobot
 import org.firstinspires.ftc.teamcode.motors.Intake
@@ -11,6 +12,8 @@ import org.firstinspires.ftc.teamcode.motors.Wheels
 import org.firstinspires.ftc.teamcode.sensors.Encoder
 import org.firstinspires.ftc.teamcode.utils.MathUtils
 import org.firstinspires.ftc.teamcode.utils.PerformanceProfiler
+import org.firstinspires.ftc.teamcode.utils.getDevice
+import kotlin.concurrent.thread
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.hypot
@@ -25,6 +28,12 @@ class NewTeleOp : OpMode() {
     private val intake = Intake()
     private val encoder = Encoder()
     private val lift = Lift()
+
+    private lateinit var outtakeLeft: Servo
+    private lateinit var outtakeRight: Servo
+    private lateinit var gripper: Servo
+    private lateinit var spinner: Servo
+
 
     private var liftTargetPosition = 0
     private var precisionModeOn = false
@@ -41,11 +50,25 @@ class NewTeleOp : OpMode() {
         wheels.setModeAll(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
 
         robot.showPerformance(telemetry)
+
+        outtakeLeft = hardwareMap.getDevice("out_left")
+        outtakeRight = hardwareMap.getDevice("out_right")
+        gripper = hardwareMap.getDevice("gripper")
+        spinner = hardwareMap.getDevice("spinner")
     }
 
     override fun start() {
         robot.start()
         RobotPos.resetAll()
+
+        thread {
+            while (robot.isOpModeActive) {
+                intake()
+                lift()
+                outtake()
+                Thread.yield()
+            }
+        }
     }
 
     override fun loop() {
@@ -76,9 +99,6 @@ class NewTeleOp : OpMode() {
             rightBack.power = rightBackPower
             leftBack.power = leftBackPower
         }
-
-        lift()
-        intake()
 
         with(telemetry) {
             addData("X", RobotPos.currentX)
@@ -166,7 +186,8 @@ class NewTeleOp : OpMode() {
         if (posChange != 0)
             Thread.sleep(200)
 
-        val power = if (liftTargetPosition == 0 && lift.left.currentPosition < 300) 0.0 else LIFT_POWER
+        //val power = if (liftTargetPosition == 0 && lift.left.currentPosition < 300) 0.0 else LIFT_POWER
+        val power = LIFT_POWER
 
         with(lift) {
             left.targetPosition = liftTargetPosition
@@ -178,10 +199,29 @@ class NewTeleOp : OpMode() {
         telemetry.addData("Lift Target Position", liftTargetPosition)
     }
 
+    private fun outtake() {
+        if (gamepad2.y) {
+            outtakeLeft.position = 0.0
+            outtakeRight.position = 1.0
+        } else {
+            outtakeLeft.position = 1.0
+            outtakeRight.position = 0.0
+        }
+        if(gamepad2.left_bumper){
+            gripper.position = 1.0
+        }
+        else gripper.position = 0.0
+        if(gamepad2.right_bumper){
+            spinner.position = 1.0
+        } else {
+            spinner.position = 0.0
+        }
+    }
+
     private companion object {
         private const val PRECISION_MODE_MULTIPLIER = 0.4
         private const val MOTOR_SPEED_MULTIPLIER = 0.7
-        private const val INTAKE_POWER = 0.8
+        private const val INTAKE_POWER = 1.0
         private const val LIFT_POWER = 0.5
     }
 }

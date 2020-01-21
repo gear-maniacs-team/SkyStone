@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
-import org.firstinspires.ftc.robotcore.internal.opmode.OpModeManagerImpl
 import org.firstinspires.ftc.teamcode.RobotPos
 import org.firstinspires.ftc.teamcode.TeamRobot
 import org.firstinspires.ftc.teamcode.utils.IHardware
@@ -48,7 +47,25 @@ class Encoder : IHardware, IUpdatable {
         back.mode = mode
     }
 
-    fun updateUsingArcs(leftPos: Double, rightPos: Double, backPos: Double) {
+    private fun linearUpdate(leftPos: Double, rightPos: Double, backPos: Double) {
+        val deltaBack = ticksToCM(backPos - previousBackPosition)
+        val deltaRight = ticksToCM(rightPos - previousRightPosition)
+        val deltaLeft = ticksToCM(leftPos - previousLeftPosition)
+
+        val deltaAngle = (deltaLeft - deltaRight) / DISTANCE_BETWEEN_ENCODER_WHEELS
+
+        val distance = (deltaLeft + deltaRight) / 2
+
+        RobotPos.currentAngle += deltaAngle
+        RobotPos.currentX += distance * cos(RobotPos.currentAngle) - deltaBack * sin(RobotPos.currentAngle)
+        RobotPos.currentY += distance * sin(RobotPos.currentAngle) + deltaBack * cos(RobotPos.currentAngle)
+
+        previousBackPosition = backPos
+        previousLeftPosition = leftPos
+        previousRightPosition = rightPos
+    }
+
+    private fun updateUsingArcs(leftPos: Double, rightPos: Double, backPos: Double) {
         val currentAngle = RobotPos.currentAngle
 
         val deltaBack = ticksToCM(backPos - previousBackPosition)
@@ -74,7 +91,7 @@ class Encoder : IHardware, IUpdatable {
         // transforming back into cartesian form.
         RobotPos.currentX += newX * cos(averageOrientation) - newY * sin(averageOrientation)
         RobotPos.currentY += newX * sin(averageOrientation) + newY * cos(averageOrientation)
-        RobotPos.currentAngle -= deltaAngle
+        RobotPos.currentAngle += deltaAngle
 
         previousBackPosition = backPos
         previousLeftPosition = leftPos
@@ -96,6 +113,7 @@ class Encoder : IHardware, IUpdatable {
             backPos = back.currentPosition.toDouble()
         }
 
+        //linearUpdate(leftPos, rightPos, backPos)
         updateUsingArcs(leftPos, rightPos, backPos)
     }
 

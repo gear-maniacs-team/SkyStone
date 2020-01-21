@@ -72,4 +72,4 @@ object MathUtils {
     }
 }
 
-infix fun Double.epsilonEquals(other: Double) = abs(this - other) < MathUtils.EPSILON
+infix fun Double. epsilonEquals(other: Double) = abs(this - other) < MathUtils.EPSILON

@@ -20,7 +20,7 @@ class OdometryTest : OpMode() {
         robot.init(hardwareMap, listOf(encoder), listOf(encoder))
         RobotPos.resetAll()
 
-        encoder.useBulkRead = true
+        encoder.useBulkRead = false
     }
 
     override fun start() {
