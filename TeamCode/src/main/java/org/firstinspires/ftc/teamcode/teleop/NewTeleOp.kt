@@ -33,6 +33,8 @@ class NewTeleOp : OpMode() {
     private lateinit var outtakeRight: Servo
     private lateinit var gripper: Servo
     private lateinit var spinner: Servo
+    private lateinit var foundation_left: Servo
+    private lateinit var foundation_right: Servo
 
 
     private var liftTargetPosition = 0
@@ -55,6 +57,8 @@ class NewTeleOp : OpMode() {
         outtakeRight = hardwareMap.getDevice("out_right")
         gripper = hardwareMap.getDevice("gripper")
         spinner = hardwareMap.getDevice("spinner")
+        foundation_left = hardwareMap.getDevice("foundation_left")
+        foundation_right = hardwareMap.getDevice("foundation_right")
     }
 
     override fun start() {
@@ -66,6 +70,7 @@ class NewTeleOp : OpMode() {
                 intake()
                 lift()
                 outtake()
+                foundation()
                 Thread.yield()
             }
         }
@@ -200,21 +205,40 @@ class NewTeleOp : OpMode() {
     }
 
     private fun outtake() {
+
+        //outtake extension
         if (gamepad2.y) {
             outtakeLeft.position = 0.0
             outtakeRight.position = 1.0
-        } else {
+        }
+        if (gamepad2.x) {
             outtakeLeft.position = 1.0
             outtakeRight.position = 0.0
         }
-        if(gamepad2.left_bumper){
+
+        //outtake gripper and spinner (rotation)
+        if (gamepad2.right_trigger > 0) {
             gripper.position = 1.0
-        }
-        else gripper.position = 0.0
-        if(gamepad2.right_bumper){
-            spinner.position = 1.0
         } else {
+            gripper.position = 0.0
+        }
+
+        if (gamepad2.a) {
+            spinner.position = 0.925
+        }
+        if (gamepad2.b) {
             spinner.position = 0.0
+        }
+    }
+
+    private fun foundation(){
+        //for foundation servos
+        if (gamepad2.left_trigger > 0) {
+            foundation_left.position = 0.0
+            foundation_right.position = 1.0
+        } else {
+            foundation_left.position = 1.0
+            foundation_right.position = 0.0
         }
     }
 
