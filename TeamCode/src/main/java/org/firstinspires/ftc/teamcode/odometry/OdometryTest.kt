@@ -50,6 +50,6 @@ class OdometryTest : OpMode() {
     }
 
     override fun stop() {
-//        robot.stop()
+        robot.stop()
     }
 }

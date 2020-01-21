@@ -3,27 +3,23 @@ package org.firstinspires.ftc.teamcode.teleop
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
-import com.qualcomm.robotcore.util.Range
 import org.firstinspires.ftc.teamcode.RobotPos
 import org.firstinspires.ftc.teamcode.TeamRobot
 import org.firstinspires.ftc.teamcode.motors.Intake
 import org.firstinspires.ftc.teamcode.motors.Lift
 import org.firstinspires.ftc.teamcode.motors.Wheels
-import org.firstinspires.ftc.teamcode.pid.PidController
 import org.firstinspires.ftc.teamcode.sensors.Encoder
 import org.firstinspires.ftc.teamcode.utils.MathUtils
 import org.firstinspires.ftc.teamcode.utils.PerformanceProfiler
-import org.firstinspires.ftc.teamcode.utils.Ranges
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.hypot
-import kotlin.math.min
 import kotlin.math.sin
 
 @TeleOp(name = "Mark TeleOp", group = "Good")
 class NewTeleOp : OpMode() {
 
-    private val upsCounter = PerformanceProfiler()
+    private val performanceProfiler = PerformanceProfiler()
     private val robot = TeamRobot()
     private val wheels = Wheels()
     private val intake = Intake()
@@ -41,8 +37,10 @@ class NewTeleOp : OpMode() {
     private var orientationIndependentDrive = false
 
     override fun init() {
-        robot.init(hardwareMap, listOf(wheels, encoder, lift), listOf(encoder))
+        robot.init(hardwareMap, listOf(wheels, encoder, intake, lift), listOf(encoder))
         wheels.setModeAll(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
+
+        robot.showPerformance(telemetry)
     }
 
     override fun start() {
@@ -51,7 +49,7 @@ class NewTeleOp : OpMode() {
     }
 
     override fun loop() {
-        upsCounter.update(telemetry)
+        performanceProfiler.update(telemetry)
 
         precisionModeOn = gamepad1.right_bumper
         if (gamepad1.b) {
@@ -80,6 +78,7 @@ class NewTeleOp : OpMode() {
         }
 
         lift()
+        intake()
 
         with(telemetry) {
             addData("X", RobotPos.currentX)
@@ -146,17 +145,9 @@ class NewTeleOp : OpMode() {
     }
 
     private fun intake() {
-        // If the intake is not used by the driver, enter auto mode
-        /*if (!(gamepad2.left_bumper || gamepad2.right_bumper || gamepad2.dpad_down || gamepad2.dpad_up)) {
-            autoIntake()
-            return
-        }*/
-
         val intakePower = when {
             gamepad2.right_bumper -> INTAKE_POWER
             gamepad2.left_bumper -> -INTAKE_POWER * 0.8
-            gamepad2.dpad_down -> INTAKE_POWER / 2
-            gamepad2.dpad_up -> -INTAKE_POWER / 2
             else -> 0.0
         }
 
@@ -190,7 +181,7 @@ class NewTeleOp : OpMode() {
     private companion object {
         private const val PRECISION_MODE_MULTIPLIER = 0.4
         private const val MOTOR_SPEED_MULTIPLIER = 0.7
-        private const val INTAKE_POWER = 0.7
+        private const val INTAKE_POWER = 0.8
         private const val LIFT_POWER = 0.5
     }
 }

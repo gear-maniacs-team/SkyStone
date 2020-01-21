@@ -11,8 +11,8 @@ object MathUtils {
     const val EPSILON = 1e-6
 
     // wrapping in interval [-PI, PI]
-    fun angleWrap(angle: Double): Double {
-        var newAngle = (angle + Math.PI) % (2 * Math.PI)
+    fun angleWrap(radians: Double): Double {
+        var newAngle = (radians + Math.PI) % (2 * Math.PI)
         if (newAngle < 0)
             newAngle += 2 * Math.PI
         return newAngle - Math.PI
