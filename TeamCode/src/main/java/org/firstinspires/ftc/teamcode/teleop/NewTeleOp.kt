@@ -20,7 +20,7 @@ import kotlin.math.hypot
 import kotlin.math.sin
 
 @TeleOp(name = "Mark TeleOp", group = "Good")
-class NewTeleOp : OpMode() {
+open class NewTeleOp : OpMode() {
 
     private val performanceProfiler = PerformanceProfiler()
     private val robot = TeamRobot()
@@ -33,9 +33,8 @@ class NewTeleOp : OpMode() {
     private lateinit var outtakeRight: Servo
     private lateinit var gripper: Servo
     private lateinit var spinner: Servo
-    private lateinit var foundation_left: Servo
-    private lateinit var foundation_right: Servo
-
+    private lateinit var foundationLeft: Servo
+    private lateinit var foundationRight: Servo
 
     private var liftTargetPosition = 0
     private var precisionModeOn = false
@@ -51,14 +50,12 @@ class NewTeleOp : OpMode() {
         robot.init(hardwareMap, listOf(wheels, encoder, intake, lift), listOf(encoder))
         wheels.setModeAll(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
 
-        robot.showPerformance(telemetry)
-
         outtakeLeft = hardwareMap.getDevice("out_left")
         outtakeRight = hardwareMap.getDevice("out_right")
         gripper = hardwareMap.getDevice("gripper")
         spinner = hardwareMap.getDevice("spinner")
-        foundation_left = hardwareMap.getDevice("foundation_left")
-        foundation_right = hardwareMap.getDevice("foundation_right")
+        foundationLeft = hardwareMap.getDevice("foundation_left")
+        foundationRight = hardwareMap.getDevice("foundation_right")
     }
 
     override fun start() {
@@ -205,40 +202,29 @@ class NewTeleOp : OpMode() {
     }
 
     private fun outtake() {
-
-        //outtake extension
+        // outtake extension
         if (gamepad2.y) {
             outtakeLeft.position = 0.0
             outtakeRight.position = 1.0
-        }
-        if (gamepad2.x) {
+        } else if (gamepad2.x) {
             outtakeLeft.position = 1.0
             outtakeRight.position = 0.0
         }
 
-        //outtake gripper and spinner (rotation)
-        if (gamepad2.right_trigger > 0) {
-            gripper.position = 1.0
-        } else {
-            gripper.position = 0.0
-        }
+        // outtake gripper and spinner (rotation)
+        gripper.position = if (gamepad2.right_trigger > 0) 1.0 else 0.0
 
-        if (gamepad2.a) {
-            spinner.position = 0.925
-        }
-        if (gamepad2.b) {
-            spinner.position = 0.0
-        }
+        spinner.position = if (gamepad2.a) 0.925 else 0.0
     }
 
-    private fun foundation(){
-        //for foundation servos
+    private fun foundation() {
+        // for foundation servos
         if (gamepad2.left_trigger > 0) {
-            foundation_left.position = 0.0
-            foundation_right.position = 1.0
+            foundationLeft.position = 0.0
+            foundationRight.position = 1.0
         } else {
-            foundation_left.position = 1.0
-            foundation_right.position = 0.0
+            foundationLeft.position = 1.0
+            foundationRight.position = 0.0
         }
     }
 

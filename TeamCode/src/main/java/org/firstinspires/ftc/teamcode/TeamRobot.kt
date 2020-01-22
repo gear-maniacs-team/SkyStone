@@ -109,7 +109,7 @@ class TeamRobot {
          *
          * If it is called at any other time, the function will throw an NPE
          */
-        private fun getRobot(): TeamRobot = INSTANCE!!
+        fun getRobot(): TeamRobot = INSTANCE!!
 
         fun getBulkData1() = getRobot().bulkInputData1
 

@@ -56,9 +56,9 @@ class Encoder : IHardware, IUpdatable {
 
         val distance = (deltaLeft + deltaRight) / 2
 
-        RobotPos.currentAngle += deltaAngle
         RobotPos.currentX += distance * cos(RobotPos.currentAngle) - deltaBack * sin(RobotPos.currentAngle)
         RobotPos.currentY += distance * sin(RobotPos.currentAngle) + deltaBack * cos(RobotPos.currentAngle)
+        RobotPos.currentAngle += deltaAngle
 
         previousBackPosition = backPos
         previousLeftPosition = leftPos
@@ -113,7 +113,7 @@ class Encoder : IHardware, IUpdatable {
             backPos = back.currentPosition.toDouble()
         }
 
-        //linearUpdate(leftPos, rightPos, backPos)
+//        linearUpdate(leftPos, rightPos, backPos)
         updateUsingArcs(leftPos, rightPos, backPos)
     }
 
@@ -122,7 +122,7 @@ class Encoder : IHardware, IUpdatable {
         private const val PULSES_PER_REVOLUTION = 4096
         private const val TICKS_PER_REVOLUTION = 4 * PULSES_PER_REVOLUTION
 
-        private const val DISTANCE_BETWEEN_ENCODER_WHEELS = 19.6125
+        private const val DISTANCE_BETWEEN_ENCODER_WHEELS = 19.6025
         private const val DISTANCE_BETWEEN_BACK_ENCODER_AND_CENTER = 14.2 // The distance to the tracking center
 
         fun ticksToCM(x: Double) = (DIAMETER * Math.PI * x) / TICKS_PER_REVOLUTION
