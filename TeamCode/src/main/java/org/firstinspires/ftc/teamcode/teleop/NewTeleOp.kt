@@ -28,6 +28,13 @@ open class NewTeleOp : OpMode() {
     private val intake = Intake()
     private val encoder = Encoder()
     private val lift = Lift()
+//    private val localizer = RoadrunnerOdometry(
+//        encoder, listOf(
+//            Pose2d(-14.2, 0.0, 0.0), //back
+//            Pose2d(0.0, 19.6125 / 2, -Math.PI / 2), //left
+//            Pose2d(0.0, -19.6125 / 2, Math.PI / 2) //right
+//        )
+//    )
 
     private lateinit var outtakeLeft: Servo
     private lateinit var outtakeRight: Servo
