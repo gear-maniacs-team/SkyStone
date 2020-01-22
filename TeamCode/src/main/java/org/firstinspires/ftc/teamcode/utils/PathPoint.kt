@@ -11,16 +11,16 @@ data class PathPoint(
 
     override fun toString(): String {
         return buildString {
-            append("JsonPoint(")
+            append("PathPoint(")
             append("cmX = ")
             append(cmX)
-            append("cmY = ")
+            append(", cmY = ")
             append(cmY)
-            append("angle = ")
+            append(", angle = ")
             append(angle)
 
             if (action != ACTION_NONE) {
-                append("action = PathPoint.")
+                append(", action = PathPoint.")
                 append(getActionName(action))
             }
 

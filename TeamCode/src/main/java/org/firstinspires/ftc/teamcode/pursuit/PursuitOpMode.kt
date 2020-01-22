@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.pursuit
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.RobotPos
@@ -11,6 +12,7 @@ import kotlin.math.atan2
 import kotlin.math.hypot
 import kotlin.math.sin
 
+@Disabled
 @TeleOp(name = "Pursuit")
 class PursuitOpMode : OpMode() {
 
