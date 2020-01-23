@@ -11,10 +11,7 @@ import org.firstinspires.ftc.teamcode.motors.Wheels
 import org.firstinspires.ftc.teamcode.pid.PidController
 import org.firstinspires.ftc.teamcode.sensors.Encoder
 import org.firstinspires.ftc.teamcode.utils.*
-import kotlin.math.abs
-import kotlin.math.atan2
-import kotlin.math.hypot
-import kotlin.math.sin
+import kotlin.math.*
 
 @Autonomous(name = "Path")
 open class PathAuto : LinearOpMode() {
@@ -35,34 +32,17 @@ open class PathAuto : LinearOpMode() {
 
     //private val path by fastLazy { PathParser.parseAsset(hardwareMap.appContext, "path/test.json") }
     private val path = listOf(
-        PathPoint(cmX = -106.91124687759908, cmY = 155.649507904549, angle = 1.9749674953960017),
-        PathPoint(
-            cmX = -14.00431359903669,
-            cmY = 119.8044292930338,
-            angle = 1.9348230166720977,
-            action = PathPoint.ACTION_START_INTAKE
-        ),
-        PathPoint(cmX = -102.77821898198754, cmY = 166.25925114813768, angle = 4.4766023800856285),
-        PathPoint(
-            cmX = 380.2288877851951,
-            cmY = 158.22497199722312,
-            angle = 4.844452577234671,
-            action = PathPoint.ACTION_STOP_INTAKE
-        ),
-        PathPoint(cmX = 383.4900979454124, cmY = 154.532476900059, angle = 9.320350668219872),
-        PathPoint(cmX = 381.13815906084494, cmY = 191.8652019842255, angle = 9.330069857805647),
-        PathPoint(
-            cmX = 432.3852251854324,
-            cmY = 207.26439619152274,
-            angle = 4.304614981763193,
-            action = PathPoint.ACTION_ATTACH_FOUNDATION
-        ),
-        PathPoint(
-            cmX = 490.63666967696616,
-            cmY = 252.84953765221667,
-            angle = 4.371592875213077,
-            action = PathPoint.ACTION_DETACH_FOUNDATION
-        )
+        PathPoint(cmX = -40.93695166138619, cmY = 51.45290146248186, angle = 0.6367750764304464),
+        PathPoint(cmX = -16.314492652020558, cmY = 85.76970429920864, angle = 0.5895413735468702),
+        PathPoint(cmX = -44.609871622265395, cmY = 62.622368725130976, angle = 1.4405223484493297),
+        PathPoint(cmX = -177.9415202761401, cmY = 43.027514277998186, angle = 1.5176730762591641),
+        PathPoint(cmX = -188.60256298054585, cmY = 45.10308159168387, angle = 3.03809147951157),
+        PathPoint(cmX = -189.4154104532654, cmY = 59.47519721960557, angle = 3.0633625664492796),
+        PathPoint(cmX = -158.4471993648067, cmY = 58.55019882874637, angle = 3.0078224895861823),
+        PathPoint(cmX = -161.76232529560542, cmY = 59.12988456929493, angle = 1.5591345531569811),
+        PathPoint(cmX = -185.84933846927575, cmY = 59.48316474960153, angle = 1.488952732329971),
+        PathPoint(cmX = -137.20332873835304, cmY = 53.99830296887041, angle = 1.587291753087581),
+        PathPoint(cmX = -85.54350723332526, cmY = 56.35628266990834, angle = 1.5456894901901252)
     )
 
     override fun runOpMode() {
@@ -90,9 +70,7 @@ open class PathAuto : LinearOpMode() {
             RobotPos.targetY = it.cmY
             RobotPos.targetAngle
 
-            strafe()
-            move()
-            rotate()
+            goToPoint()
             performAction(it.action)
 
             pointIndex++
@@ -105,56 +83,20 @@ open class PathAuto : LinearOpMode() {
     }
 
     private fun goToPoint() {
-        xPid.setPoint = RobotPos.targetX
-        yPid.setPoint = RobotPos.targetY
+        var distanceToTargetX = RobotPos.targetX - RobotPos.currentX
+        var distanceToTargetY = RobotPos.targetY - RobotPos.currentY
 
-        xPid.reset()
-        yPid.reset()
+        val distance = Math.hypot(distanceToTargetX, distanceToTargetY)
 
-        var count = 0
-        val startTime = System.currentTimeMillis()
+        while (opModeIsActive() && distance epsilonEquals 0.0) {
+            distanceToTargetX = RobotPos.targetX - RobotPos.currentX
+            distanceToTargetY = RobotPos.targetY - RobotPos.currentY
 
-        while (opModeIsActive()) {
-            val x = xPid.compute(RobotPos.currentX)
-            val y = yPid.compute(RobotPos.currentY)
-
-            with(telemetry) {
-                addData("Current X", RobotPos.currentX)
-                addData("Current Y", RobotPos.currentY)
-                addData("Current , angle", RobotPos.currentAngle)
-                addData("--", "--")
-                addData("Target X", RobotPos.targetX)
-                addData("Target Y", RobotPos.targetY)
-                addData("Target , angle", RobotPos.targetAngle)
-                addData("--", "--")
-                addData("PID X", x)
-                addData("PID Y", y)
-                update()
-            }
-
-            if (!movement(x, y) && count > 5)
-                break
-            if (x smaller 0.2 && y smaller 0.2 && count > 5)
-                break
-
-            if (System.currentTimeMillis() - startTime > 3000)
-                break
-
-            Thread.sleep(5)
-            count++
-        }
-    }
-
-    private fun strafe() {
-        var count = 0
-        xPid.setPoint = RobotPos.targetX
-
-        xPid.reset()
-
-        val startTime = System.currentTimeMillis()
-
-        while (opModeIsActive()) {
-            val x = xPid.compute(RobotPos.currentX)
+            val robotMovementAngle = Math.atan2(distanceToTargetX, distanceToTargetY)
+            val motionX = sin(robotMovementAngle) * MOTOR_SPEED
+            val motionY = cos(robotMovementAngle) * MOTOR_SPEED
+            val pivotCorrection = RobotPos.targetAngle - RobotPos.currentAngle
+            //movement()
 
             with(telemetry) {
                 addData("Current X", RobotPos.currentX)
@@ -164,83 +106,10 @@ open class PathAuto : LinearOpMode() {
                 addData("Target X", RobotPos.targetX)
                 addData("Target Y", RobotPos.targetY)
                 addData("Target , angle", RobotPos.targetAngle)
-                addData("--", "--")
-                addData("PID X", x)
                 update()
             }
 
-            movement(x, 0.0)
-
-            if (x smaller 0.1 && count > 5)
-                break
-
-            if (System.currentTimeMillis() - startTime > 3000)
-                break
-
             Thread.sleep(5)
-        }
-    }
-
-    private fun move() {
-        var count = 0
-        yPid.setPoint = RobotPos.targetY
-
-        yPid.reset()
-
-        val startTime = System.currentTimeMillis()
-
-        while (opModeIsActive()) {
-            val y = yPid.compute(RobotPos.currentY)
-
-            with(telemetry) {
-                addData("Current X", RobotPos.currentX)
-                addData("Current Y", RobotPos.currentY)
-                addData("Current , angle", RobotPos.currentAngle)
-                addData("--", "--")
-                addData("Target X", RobotPos.targetX)
-                addData("Target Y", RobotPos.targetY)
-                addData("Target , angle", RobotPos.targetAngle)
-                addData("--", "--")
-                addData("PID Y", y)
-                update()
-            }
-
-            movement(0.0, y)
-
-            if (y smaller 0.1 && count > 5)
-                break
-
-            if (System.currentTimeMillis() - startTime > 3000)
-                break
-
-            count++
-            Thread.sleep(5)
-        }
-    }
-
-    private fun rotate() {
-        if (RobotPos.currentAngle == RobotPos.targetAngle) return
-
-        var count = 0
-
-        rotationPid.setPoint = RobotPos.targetAngle
-        rotationPid.reset()
-
-        while (opModeIsActive()) {
-            val rotation = rotationPid.compute(RobotPos.currentAngle)
-
-            with(wheels) {
-                rightFront.power = rotation
-                leftFront.power = rotation
-                rightBack.power = rotation
-                leftBack.power = rotation
-            }
-
-            if (rotation smaller 0.1 && count > 5)
-                break
-
-            count++
-            Thread.yield()
         }
     }
 

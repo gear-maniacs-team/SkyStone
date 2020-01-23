@@ -29,7 +29,7 @@ class Encoder : IHardware, IUpdatable {
 
     override fun init(hardwareMap: HardwareMap) {
         val dcMotors = hardwareMap.dcMotor
-        left = dcMotors["TL"]
+        left = dcMotors["intake_right"]
         right = dcMotors["BR"]
         back = dcMotors["TR"]
 
@@ -70,7 +70,7 @@ class Encoder : IHardware, IUpdatable {
 
         val deltaBack = ticksToCM(backPos - previousBackPosition)
         val deltaRight = ticksToCM(rightPos - previousRightPosition)
-        val deltaLeft = ticksToCM(leftPos - previousLeftPosition)
+        val deltaLeft = -ticksToCM(leftPos - previousLeftPosition)
 
         val deltaAngle = (deltaLeft - deltaRight) / DISTANCE_BETWEEN_ENCODER_WHEELS
 
@@ -122,7 +122,7 @@ class Encoder : IHardware, IUpdatable {
         private const val PULSES_PER_REVOLUTION = 4096
         private const val TICKS_PER_REVOLUTION = 4 * PULSES_PER_REVOLUTION
 
-        private const val DISTANCE_BETWEEN_ENCODER_WHEELS = 19.6025
+        private const val DISTANCE_BETWEEN_ENCODER_WHEELS = 19.6125
         private const val DISTANCE_BETWEEN_BACK_ENCODER_AND_CENTER = 14.2 // The distance to the tracking center
 
         fun ticksToCM(x: Double) = (DIAMETER * Math.PI * x) / TICKS_PER_REVOLUTION

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.autonomous.demo
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.RobotPos
@@ -12,6 +13,7 @@ import kotlin.math.atan2
 import kotlin.math.hypot
 import kotlin.math.sin
 
+@Disabled
 @TeleOp(name = "StaiPăLoc")
 class PidAutoTuner : LinearOpMode() {
 
@@ -47,7 +49,6 @@ class PidAutoTuner : LinearOpMode() {
         while (opModeIsActive()) {
             val x = xPid.compute(RobotPos.currentX)
             val y = yPid.compute(RobotPos.currentY)
-//            val y = 0.0
 
             with(telemetry) {
                 addData("Current X", RobotPos.currentX)

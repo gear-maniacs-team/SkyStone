@@ -1,3 +1,4 @@
+/*
 package org.firstinspires.ftc.teamcode.autonomous
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
@@ -14,6 +15,8 @@ import org.firstinspires.ftc.robotcore.internal.camera.CameraManagerInternal
 import org.firstinspires.ftc.robotcore.internal.system.Deadline
 import org.firstinspires.ftc.robotcore.internal.vuforia.externalprovider.CameraMode
 import org.firstinspires.ftc.robotcore.internal.vuforia.externalprovider.FrameFormat
+import org.firstinspires.ftc.teamcode.detector.TFLiteClassifier
+import org.firstinspires.ftc.teamcode.utils.fastLazy
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
@@ -26,6 +29,7 @@ class TensorflowTest : OpMode() {
         const val HEIGHT = 1080
     }
 
+    private val classifier by fastLazy { TFLiteClassifier(hardwareMap.appContext) }
     private lateinit var cameraManager: CameraManagerInternal
     private lateinit var cameraName: WebcamName
     private lateinit var camera: Camera
@@ -106,3 +110,4 @@ class TensorflowTest : OpMode() {
     }
 }
 
+*/

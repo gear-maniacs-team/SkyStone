@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.TeamRobot
 import org.firstinspires.ftc.teamcode.motors.Intake
 import org.firstinspires.ftc.teamcode.motors.Lift
 import org.firstinspires.ftc.teamcode.motors.Wheels
+import org.firstinspires.ftc.teamcode.pid.PidController
 import org.firstinspires.ftc.teamcode.sensors.Encoder
 import org.firstinspires.ftc.teamcode.utils.MathUtils
 import org.firstinspires.ftc.teamcode.utils.PerformanceProfiler
@@ -52,6 +53,11 @@ open class NewTeleOp : OpMode() {
 
     private var resetAngle = 0.0
     private var orientationIndependentDrive = false
+    private var resetStrafePid = true
+    private var curvedMovement = false
+    private val strafePid = PidController(256.0, 0.0001, 0.5).apply {
+        setOutputRange(-100.0, 100.0)
+    }
 
     override fun init() {
         robot.init(hardwareMap, listOf(wheels, encoder, intake, lift), listOf(encoder))
@@ -143,6 +149,9 @@ open class NewTeleOp : OpMode() {
             speedRight /= max
         }
 
+        curvedMovement = true
+        resetStrafePid = true
+
         val percentage = if (precisionModeOn) PRECISION_MODE_MULTIPLIER else MOTOR_SPEED_MULTIPLIER
 
         speedRight *= percentage
@@ -158,19 +167,30 @@ open class NewTeleOp : OpMode() {
         val x = gamepad1.left_stick_x.toDouble()
         val y = -gamepad1.left_stick_y.toDouble()
 
-        if (abs(x) == 0.0 && abs(y) == 0.0) return
+        if (abs(x) == 0.0 && abs(y) == 0.0) {
+            resetStrafePid = true
+            return
+        }
+
+        if (resetStrafePid && !curvedMovement) {
+            strafePid.reset()
+            strafePid.setPoint = RobotPos.currentAngle
+            resetStrafePid = false
+        }
+
+        val correction = 0.0//if (!curvedMovement) strafePid.compute(RobotPos.currentAngle) else 0.0
 
         val magnitude = hypot(x, y) * if (precisionModeOn) PRECISION_MODE_MULTIPLIER else MOTOR_SPEED_MULTIPLIER
 
-        val independentAngleCorrection = if (orientationIndependentDrive) RobotPos.currentAngle - resetAngle else 0.0
-        val angle = atan2(y, x) - Math.PI / 2 - independentAngleCorrection
+       // val independentAngleCorrection = if (orientationIndependentDrive) RobotPos.currentAngle - resetAngle else 0.0
+        val angle = atan2(y, x) - Math.PI / 2 //- independentAngleCorrection
         val speedX = magnitude * sin(angle + Math.PI / 4)
         val speedY = magnitude * sin(angle - Math.PI / 4)
 
-        rightFrontPower += -speedX
-        leftFrontPower += -speedY
-        rightBackPower += speedY
-        leftBackPower += speedX
+        rightFrontPower += -speedX + correction
+        leftFrontPower += speedY + correction
+        rightBackPower += speedY + correction
+        leftBackPower += -speedX + correction
     }
 
     private fun intake() {
@@ -186,12 +206,19 @@ open class NewTeleOp : OpMode() {
 
     private fun lift() {
         val posChange = when {
-            gamepad2.dpad_down -> -100
-            gamepad2.dpad_up -> 100
+            gamepad2.dpad_down -> -150
+            gamepad2.dpad_up -> 150
             else -> 0
         }
 
         liftTargetPosition += posChange
+
+        // Let's be honest, we can't trust the drivers
+        if (liftTargetPosition > MAX_LIFT_HEIGHT_TICKS)
+            liftTargetPosition = MAX_LIFT_HEIGHT_TICKS
+        if (liftTargetPosition < 0)
+            liftTargetPosition = 0
+
         if (posChange != 0)
             Thread.sleep(200)
 
@@ -219,9 +246,11 @@ open class NewTeleOp : OpMode() {
         }
 
         // outtake gripper and spinner (rotation)
-        gripper.position = if (gamepad2.right_trigger > 0) 1.0 else 0.0
+        gripper.position = if (gamepad2.right_trigger > 0) 0.75 else 0.0
 
-        spinner.position = if (gamepad2.a) 0.925 else 0.0
+        if (gamepad2.a) spinner.position = 0.1
+
+        if (gamepad2.b) spinner.position = 0.95
     }
 
     private fun foundation() {
@@ -236,9 +265,11 @@ open class NewTeleOp : OpMode() {
     }
 
     private companion object {
-        private const val PRECISION_MODE_MULTIPLIER = 0.4
+        private const val PRECISION_MODE_MULTIPLIER = 0.3
         private const val MOTOR_SPEED_MULTIPLIER = 0.7
         private const val INTAKE_POWER = 1.0
         private const val LIFT_POWER = 0.5
+
+        private const val MAX_LIFT_HEIGHT_TICKS = 1200
     }
 }

@@ -59,6 +59,7 @@ class VuforiaManager {
         val tfodMonitorViewId =
             context.resources.getIdentifier("tfodMonitorViewId", "id", context.packageName)
         val tfodParams = TFObjectDetector.Parameters(tfodMonitorViewId)
+        tfodParams.minimumConfidence = 0.1
 
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParams, vuforia).apply {
             loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_STONE, LABEL_SKYSTONE)
