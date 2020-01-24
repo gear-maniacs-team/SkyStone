@@ -27,29 +27,23 @@ abstract class ParkingAuto : LinearOpMode() {
 
     abstract fun onRun()
 
-    protected fun moveForward(velocity: Double, time: Long) {
-        val frontVelocity = getFrontVelocity(velocity)
-        val backVelocity = getBackVelocity(velocity)
-
+    protected fun moveForward(power: Double, time: Long) {
         with(wheels) {
-            rightFront.velocity = frontVelocity
-            leftFront.velocity = -frontVelocity
-            rightBack.velocity = backVelocity
-            leftBack.velocity = -backVelocity
+            rightFront.power = power
+            leftFront.power = -power
+            rightBack.power = power
+            leftBack.power = -power
         }
 
         waitTime(time)
     }
 
-    protected fun strafe(velocity: Double, time: Long) {
-        val frontVelocity = getFrontVelocity(velocity)
-        val backVelocity = getBackVelocity(velocity)
-
+    protected fun strafe(power: Double, time: Long) {
         with(wheels) {
-            rightFront.velocity = -frontVelocity
-            leftFront.velocity = -frontVelocity
-            rightBack.velocity = backVelocity
-            leftBack.velocity = backVelocity
+            rightFront.power = -power
+            leftFront.power = -power
+            rightBack.power = power
+            leftBack.power = power
         }
 
         waitTime(time)
@@ -63,41 +57,29 @@ abstract class ParkingAuto : LinearOpMode() {
             Thread.sleep(10)
         } while (opModeIsActive() && targetTime > System.currentTimeMillis())
     }
-
-    private companion object {
-        private const val MAX_RPM = 223.0
-        private const val FRONT_ENCODER_COUNT = 383.6
-        private const val BACK_ENCODER_COUNT = 753.2
-
-        private fun getFrontVelocity(power: Double) =
-                Wheels.rpmToTps(MAX_RPM * power, FRONT_ENCODER_COUNT)
-
-        private fun getBackVelocity(power: Double) =
-                Wheels.rpmToTps(MAX_RPM * power, BACK_ENCODER_COUNT)
-    }
 }
 
-@Autonomous(name = "Blue", group = "Parking")
+@Autonomous(name = "Blue-Parking", group = "Parking")
 class BlueAuto : ParkingAuto() {
 
     override fun onRun() {
-        strafe(0.4, 900L)
-        moveForward(0.4, 1000L)
+        strafe(-0.4, 1800L)
+        moveForward(-0.4, 1200L)
+        strafe(-0.3, 1500L)
+    }
+}
+
+@Autonomous(name = "Red-Parking", group = "Parking")
+class RedAuto : ParkingAuto() {
+
+    override fun onRun() {
+        strafe(0.4, 1800L)
+        moveForward(-0.4, 1200L)
         strafe(0.3, 1500L)
     }
 }
 
-@Autonomous(name = "Red", group = "Parking")
-class RedAuto : ParkingAuto() {
-
-    override fun onRun() {
-        strafe(-0.5, 1600L)
-        moveForward(0.4, 1000L)
-        strafe(-0.3, 1800L)
-    }
-}
-
-@Autonomous(name = "SimpleParking", group = "Parking")
+@Autonomous(name = "Simple-Parking", group = "Parking")
 class SimpleAuto : ParkingAuto() {
 
     override fun onRun() {

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.teleop
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
@@ -18,6 +19,7 @@ import kotlin.math.hypot
 import kotlin.math.min
 import kotlin.math.sin
 
+@Disabled
 @TeleOp(name = "G.E.A.R.S.", group = "Good")
 class GearsTeleOp : OpMode() {
 
@@ -160,7 +162,6 @@ class GearsTeleOp : OpMode() {
             resetStrafePid = false
         }
 
-//        val correction = 0.0
         val correction = if (!curvedMovement) strafePid.compute(RobotPos.currentAngle) else 0.0
         val frontCorrection = Wheels.rpmToTps(correction, FRONT_ENCODER_COUNT)
         val backCorrection = Wheels.rpmToTps(correction, BACK_ENCODER_COUNT)

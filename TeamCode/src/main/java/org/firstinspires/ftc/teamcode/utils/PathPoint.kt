@@ -34,6 +34,7 @@ data class PathPoint(
         const val ACTION_STOP_INTAKE = 2
         const val ACTION_ATTACH_FOUNDATION = 3
         const val ACTION_DETACH_FOUNDATION = 4
+        const val ACTION_SIMPLE_OUTTAKE = 5
 
         fun getActionName(action: Int) = when (action) {
             ACTION_NONE -> ::ACTION_NONE.name
@@ -41,6 +42,7 @@ data class PathPoint(
             ACTION_STOP_INTAKE -> ::ACTION_STOP_INTAKE.name
             ACTION_ATTACH_FOUNDATION -> ::ACTION_ATTACH_FOUNDATION.name
             ACTION_DETACH_FOUNDATION -> ::ACTION_DETACH_FOUNDATION.name
+            ACTION_SIMPLE_OUTTAKE -> ::ACTION_SIMPLE_OUTTAKE.name
             else -> IllegalArgumentException("Unsupported Action")
         }
     }

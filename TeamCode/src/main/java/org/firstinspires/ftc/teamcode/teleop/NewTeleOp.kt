@@ -119,11 +119,13 @@ open class NewTeleOp : OpMode() {
             addData("X", RobotPos.currentX)
             addData("Y", RobotPos.currentY)
             addData("Heading", Math.toDegrees(MathUtils.angleWrap(RobotPos.currentAngle)))
-
+            addData("--", "--")
             addData("rightFront power", wheels.rightFront.power)
             addData("leftFront power", wheels.leftFront.power)
             addData("rightBack power", wheels.rightBack.power)
             addData("leftBack power", wheels.leftBack.power)
+            addData("Lift Target Position", liftTargetPosition)
+
             update()
         }
     }
@@ -188,9 +190,9 @@ open class NewTeleOp : OpMode() {
         val speedY = magnitude * sin(angle - Math.PI / 4)
 
         rightFrontPower += -speedX + correction
-        leftFrontPower += speedY + correction
+        leftFrontPower += -speedY + correction
         rightBackPower += speedY + correction
-        leftBackPower += -speedX + correction
+        leftBackPower += speedX + correction
     }
 
     private fun intake() {
@@ -206,8 +208,8 @@ open class NewTeleOp : OpMode() {
 
     private fun lift() {
         val posChange = when {
-            gamepad2.dpad_down -> -150
-            gamepad2.dpad_up -> 150
+            gamepad2.dpad_down -> -120
+            gamepad2.dpad_up -> 120
             else -> 0
         }
 
@@ -222,7 +224,6 @@ open class NewTeleOp : OpMode() {
         if (posChange != 0)
             Thread.sleep(200)
 
-        //val power = if (liftTargetPosition == 0 && lift.left.currentPosition < 300) 0.0 else LIFT_POWER
         val power = LIFT_POWER
 
         with(lift) {
@@ -231,8 +232,6 @@ open class NewTeleOp : OpMode() {
             left.power = power
             right.power = power
         }
-
-        telemetry.addData("Lift Target Position", liftTargetPosition)
     }
 
     private fun outtake() {
@@ -246,15 +245,14 @@ open class NewTeleOp : OpMode() {
         }
 
         // outtake gripper and spinner (rotation)
-        gripper.position = if (gamepad2.right_trigger > 0) 0.75 else 0.0
+        gripper.position = if (gamepad2.right_trigger > 0) 0.75 else 0.35
 
         if (gamepad2.a) spinner.position = 0.1
 
-        if (gamepad2.b) spinner.position = 0.95
+        if (gamepad2.b) spinner.position = 0.97
     }
 
     private fun foundation() {
-        // for foundation servos
         if (gamepad2.left_trigger > 0) {
             foundationLeft.position = 0.0
             foundationRight.position = 1.0
@@ -266,7 +264,7 @@ open class NewTeleOp : OpMode() {
 
     private companion object {
         private const val PRECISION_MODE_MULTIPLIER = 0.3
-        private const val MOTOR_SPEED_MULTIPLIER = 0.7
+        private const val MOTOR_SPEED_MULTIPLIER = 0.75
         private const val INTAKE_POWER = 1.0
         private const val LIFT_POWER = 0.5
 

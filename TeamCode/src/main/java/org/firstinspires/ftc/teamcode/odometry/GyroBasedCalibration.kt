@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.odometry
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
@@ -9,6 +10,7 @@ import org.firstinspires.ftc.teamcode.motors.Wheels
 import org.firstinspires.ftc.teamcode.sensors.Encoder
 import org.firstinspires.ftc.teamcode.sensors.Gyro
 
+@Disabled
 @TeleOp(name = "Actually calibrate")
 class GyroBasedCalibration : LinearOpMode() {
 
