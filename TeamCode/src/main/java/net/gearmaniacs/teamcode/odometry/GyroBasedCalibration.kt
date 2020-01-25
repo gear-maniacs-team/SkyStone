@@ -6,9 +6,9 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamRobot
-import net.gearmaniacs.teamcode.motors.Wheels
-import net.gearmaniacs.teamcode.sensors.Encoder
-import net.gearmaniacs.teamcode.sensors.Gyro
+import net.gearmaniacs.teamcode.hardware.motors.Wheels
+import net.gearmaniacs.teamcode.hardware.sensors.Encoder
+import net.gearmaniacs.teamcode.hardware.sensors.Gyro
 
 @Disabled
 @TeleOp(name = "Actually calibrate")

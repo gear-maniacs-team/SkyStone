@@ -9,7 +9,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition
 import net.gearmaniacs.teamcode.TeamRobot
 import net.gearmaniacs.teamcode.detector.VuforiaManager
-import net.gearmaniacs.teamcode.motors.Wheels
+import net.gearmaniacs.teamcode.hardware.motors.Wheels
 import net.gearmaniacs.teamcode.utils.Ranges
 import java.util.concurrent.Executors
 

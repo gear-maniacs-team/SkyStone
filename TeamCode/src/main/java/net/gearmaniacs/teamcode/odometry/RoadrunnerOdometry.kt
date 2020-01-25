@@ -7,7 +7,7 @@ import org.apache.commons.math3.linear.DecompositionSolver
 import org.apache.commons.math3.linear.LUDecomposition
 import org.apache.commons.math3.linear.MatrixUtils
 import net.gearmaniacs.teamcode.RobotPos
-import net.gearmaniacs.teamcode.sensors.Encoder
+import net.gearmaniacs.teamcode.hardware.sensors.Encoder
 import net.gearmaniacs.teamcode.utils.IUpdatable
 
 /**

@@ -5,14 +5,14 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.Servo
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamRobot
-import net.gearmaniacs.teamcode.motors.Intake
-import net.gearmaniacs.teamcode.motors.Lift
-import net.gearmaniacs.teamcode.motors.Wheels
+import net.gearmaniacs.teamcode.hardware.motors.Intake
+import net.gearmaniacs.teamcode.hardware.motors.Lift
+import net.gearmaniacs.teamcode.hardware.motors.Wheels
+import net.gearmaniacs.teamcode.hardware.sensors.Encoder
+import net.gearmaniacs.teamcode.hardware.sensors.Gyro
+import net.gearmaniacs.teamcode.hardware.servos.FoundationServos
+import net.gearmaniacs.teamcode.hardware.servos.OuttakeServos
 import net.gearmaniacs.teamcode.pid.PidController
-import net.gearmaniacs.teamcode.sensors.Encoder
-import net.gearmaniacs.teamcode.sensors.Gyro
-import net.gearmaniacs.teamcode.servos.FoundationServos
-import net.gearmaniacs.teamcode.servos.OuttakeServos
 import net.gearmaniacs.teamcode.utils.MathUtils
 import net.gearmaniacs.teamcode.utils.PerformanceProfiler
 import net.gearmaniacs.teamcode.utils.getDevice
@@ -39,6 +39,7 @@ abstract class MainTeleOp : OpMode() {
 
     private var liftTargetPosition = 0
     private var precisionModeOn = false
+
     private var rightFrontPower = 0.0
     private var leftFrontPower = 0.0
     private var rightBackPower = 0.0
@@ -109,10 +110,10 @@ abstract class MainTeleOp : OpMode() {
             addData("Y", RobotPos.currentY)
             addData("Heading", Math.toDegrees(MathUtils.angleWrap(RobotPos.currentAngle)))
             addData("--", "--")
-            addData("rightFront power", wheels.rightFront.power)
-            addData("leftFront power", wheels.leftFront.power)
-            addData("rightBack power", wheels.rightBack.power)
-            addData("leftBack power", wheels.leftBack.power)
+            addData("rightFront power", rightFrontPower)
+            addData("leftFront power", leftFrontPower)
+            addData("rightBack power", rightBackPower)
+            addData("leftBack power", leftBackPower)
             addData("Lift Target Position", liftTargetPosition)
 
             update()
@@ -143,7 +144,7 @@ abstract class MainTeleOp : OpMode() {
         curvedMovement = true
         resetStrafePid = true
 
-        val percentage = if (precisionModeOn) PRECISION_MODE_MULTIPLIER else MOTOR_SPEED_MULTIPLIER
+        val percentage = if (precisionModeOn) WHEELS_SPEED_PRECISION else WHEELS_SPEED_NORMAL
 
         speedRight *= percentage
         speedLeft *= percentage
@@ -171,7 +172,7 @@ abstract class MainTeleOp : OpMode() {
 
         val correction = if (!curvedMovement) strafePid.compute(RobotPos.currentAngle) else 0.0
 
-        val magnitude = hypot(x, y) * if (precisionModeOn) PRECISION_MODE_MULTIPLIER else MOTOR_SPEED_MULTIPLIER
+        val magnitude = hypot(x, y) * if (precisionModeOn) WHEELS_SPEED_PRECISION else WHEELS_SPEED_NORMAL
 
         val independentAngleCorrection = if (orientationIndependentDrive) RobotPos.currentAngle - resetAngle else 0.0
         val angle = atan2(y, x) - Math.PI / 2 - independentAngleCorrection
@@ -191,8 +192,7 @@ abstract class MainTeleOp : OpMode() {
             else -> 0.0
         }
 
-        intake.left.power = intakePower
-        intake.right.power = -intakePower
+        intake.setPowerAll(intakePower)
     }
 
     private fun lift() {
@@ -258,8 +258,9 @@ abstract class MainTeleOp : OpMode() {
     }
 
     private companion object {
-        private const val PRECISION_MODE_MULTIPLIER = 0.3
-        private const val MOTOR_SPEED_MULTIPLIER = 0.75
+        private const val WHEELS_SPEED_PRECISION = 0.3
+        private const val WHEELS_SPEED_NORMAL = 0.75
+        private const val WHEELS_SPEED_TURBO = 1.0
         private const val INTAKE_POWER = 1.0
         private const val LIFT_POWER = 0.5
 

@@ -6,10 +6,10 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.hardware.Servo
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamRobot
-import net.gearmaniacs.teamcode.motors.Intake
-import net.gearmaniacs.teamcode.motors.Wheels
+import net.gearmaniacs.teamcode.hardware.motors.Intake
+import net.gearmaniacs.teamcode.hardware.motors.Wheels
 import net.gearmaniacs.teamcode.pid.PidController
-import net.gearmaniacs.teamcode.sensors.Encoder
+import net.gearmaniacs.teamcode.hardware.sensors.Encoder
 import net.gearmaniacs.teamcode.utils.*
 import kotlin.math.*
 

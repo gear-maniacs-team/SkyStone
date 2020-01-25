@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import net.gearmaniacs.teamcode.TeamRobot
 import net.gearmaniacs.teamcode.detector.OpenCvManager
 import net.gearmaniacs.teamcode.detector.StoneDetector
-import net.gearmaniacs.teamcode.motors.Wheels
+import net.gearmaniacs.teamcode.hardware.motors.Wheels
 import net.gearmaniacs.teamcode.utils.Ranges
 import org.opencv.core.Rect
 

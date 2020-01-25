@@ -3,7 +3,7 @@ package net.gearmaniacs.teamcode.autonomous.demo
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import net.gearmaniacs.teamcode.TeamRobot
-import net.gearmaniacs.teamcode.motors.Wheels
+import net.gearmaniacs.teamcode.hardware.motors.Wheels
 
 abstract class ParkingAuto : LinearOpMode() {
 

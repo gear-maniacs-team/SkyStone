@@ -1,4 +1,4 @@
-package net.gearmaniacs.teamcode.sensors
+package net.gearmaniacs.teamcode.hardware.sensors
 
 import com.qualcomm.hardware.bosch.BNO055IMU
 import com.qualcomm.robotcore.hardware.HardwareMap

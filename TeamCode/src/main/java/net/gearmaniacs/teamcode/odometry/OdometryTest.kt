@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamRobot
-import net.gearmaniacs.teamcode.sensors.Encoder
+import net.gearmaniacs.teamcode.hardware.sensors.Encoder
 import net.gearmaniacs.teamcode.utils.MathUtils.angleWrap
 
 @TeleOp(name = "Odometry Test", group = "Odometry")
