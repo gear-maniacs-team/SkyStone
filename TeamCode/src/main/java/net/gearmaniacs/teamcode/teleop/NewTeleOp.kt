@@ -11,6 +11,8 @@ import net.gearmaniacs.teamcode.motors.Lift
 import net.gearmaniacs.teamcode.motors.Wheels
 import net.gearmaniacs.teamcode.pid.PidController
 import net.gearmaniacs.teamcode.sensors.Encoder
+import net.gearmaniacs.teamcode.servos.FoundationServos
+import net.gearmaniacs.teamcode.servos.OuttakeServos
 import net.gearmaniacs.teamcode.utils.MathUtils
 import net.gearmaniacs.teamcode.utils.PerformanceProfiler
 import net.gearmaniacs.teamcode.utils.getDevice
@@ -29,20 +31,11 @@ open class NewTeleOp : OpMode() {
     private val intake = Intake()
     private val encoder = Encoder()
     private val lift = Lift()
-//    private val localizer = RoadrunnerOdometry(
-//        encoder, listOf(
-//            Pose2d(-14.2, 0.0, 0.0), //back
-//            Pose2d(0.0, 19.6125 / 2, -Math.PI / 2), //left
-//            Pose2d(0.0, -19.6125 / 2, Math.PI / 2) //right
-//        )
-//    )
+    private val foundation = FoundationServos()
+    private val outtake = OuttakeServos()
 
-    private lateinit var outtakeLeft: Servo
-    private lateinit var outtakeRight: Servo
     private lateinit var gripper: Servo
     private lateinit var spinner: Servo
-    private lateinit var foundationLeft: Servo
-    private lateinit var foundationRight: Servo
 
     private var liftTargetPosition = 0
     private var precisionModeOn = false
@@ -60,15 +53,11 @@ open class NewTeleOp : OpMode() {
     }
 
     override fun init() {
-        robot.init(hardwareMap, listOf(wheels, encoder, intake, lift), listOf(encoder))
+        robot.init(hardwareMap, listOf(wheels, encoder, intake, lift, foundation, outtake), listOf(encoder))
         wheels.setModeAll(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
 
-        outtakeLeft = hardwareMap.getDevice("out_left")
-        outtakeRight = hardwareMap.getDevice("out_right")
         gripper = hardwareMap.getDevice("gripper")
         spinner = hardwareMap.getDevice("spinner")
-        foundationLeft = hardwareMap.getDevice("foundation_left")
-        foundationRight = hardwareMap.getDevice("foundation_right")
     }
 
     override fun start() {
@@ -224,7 +213,8 @@ open class NewTeleOp : OpMode() {
         if (posChange != 0)
             Thread.sleep(200)
 
-        val power = LIFT_POWER
+        val power = if (liftTargetPosition == 0 && lift.left.currentPosition < 300 && lift.right.currentPosition < 300)
+            0.0 else LIFT_POWER
 
         with(lift) {
             left.targetPosition = liftTargetPosition
@@ -235,31 +225,36 @@ open class NewTeleOp : OpMode() {
     }
 
     private fun outtake() {
-        // outtake extension
-        if (gamepad2.y) {
-            outtakeLeft.position = 0.0
-            outtakeRight.position = 1.0
-        } else if (gamepad2.x) {
-            outtakeLeft.position = 1.0
-            outtakeRight.position = 0.0
-        }
+        if (gamepad2.y)
+            outtake.extend()
+        else if (gamepad2.x)
+            outtake.retract()
 
-        // outtake gripper and spinner (rotation)
         gripper.position = if (gamepad2.right_trigger > 0) 0.75 else 0.35
 
-        if (gamepad2.a) spinner.position = 0.1
+        if (gamepad2.a)
+            spinner.position = 0.15
+        else if (gamepad2.b)
+            spinner.position = 0.97
 
-        if (gamepad2.b) spinner.position = 0.97
+        if (gamepad2.right_stick_button) {
+            outtake.extend()
+            Thread.sleep(600)
+            spinner.position = 0.15
+        }
+
+        if (gamepad2.left_stick_button) {
+            spinner.position = 0.97
+            Thread.sleep(400)
+            outtake.retract()
+        }
     }
 
     private fun foundation() {
-        if (gamepad2.left_trigger > 0) {
-            foundationLeft.position = 0.0
-            foundationRight.position = 1.0
-        } else {
-            foundationLeft.position = 1.0
-            foundationRight.position = 0.0
-        }
+        if (gamepad2.left_trigger > 0)
+            foundation.attach()
+        else
+            foundation.detach()
     }
 
     private companion object {

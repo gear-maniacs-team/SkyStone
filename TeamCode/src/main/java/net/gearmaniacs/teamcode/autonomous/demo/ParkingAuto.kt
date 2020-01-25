@@ -63,8 +63,8 @@ abstract class ParkingAuto : LinearOpMode() {
 class BlueAuto : ParkingAuto() {
 
     override fun onRun() {
-        strafe(-0.4, 1800L)
-        moveForward(-0.4, 1200L)
+        strafe(-0.4, 1600L)
+        moveForward(-0.4, 1400L)
         strafe(-0.3, 1500L)
     }
 }
@@ -73,9 +73,9 @@ class BlueAuto : ParkingAuto() {
 class RedAuto : ParkingAuto() {
 
     override fun onRun() {
-        strafe(0.4, 1800L)
-        moveForward(-0.4, 1200L)
-        strafe(0.3, 1500L)
+        strafe(0.4, 1600L)
+        moveForward(-0.4, 1400L)
+        strafe(0.25, 1500L)
     }
 }
 
