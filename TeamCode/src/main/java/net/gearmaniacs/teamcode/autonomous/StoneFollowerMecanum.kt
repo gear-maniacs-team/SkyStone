@@ -5,12 +5,12 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DistanceSensor
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition
 import net.gearmaniacs.teamcode.TeamRobot
 import net.gearmaniacs.teamcode.detector.VuforiaManager
 import net.gearmaniacs.teamcode.hardware.motors.Wheels
 import net.gearmaniacs.teamcode.utils.Ranges
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition
 import java.util.concurrent.Executors
 
 @Disabled
@@ -35,6 +35,7 @@ class StoneFollowerMecanum : OpMode() {
     }
 
     private val robot = TeamRobot()
+    private val vuforia = VuforiaManager()
     private val wheels = Wheels()
     private lateinit var distanceSensor: DistanceSensor
 
@@ -43,9 +44,8 @@ class StoneFollowerMecanum : OpMode() {
     private var distanceSensorUnit = 0.0
 
     override fun init() {
-        robot.init(hardwareMap)
-        wheels.init(hardwareMap)
-        robot.vuforia.startDetectorAsync(hardwareMap)
+        robot.init(hardwareMap, listOf(wheels))
+        vuforia.startDetectorAsync(hardwareMap)
         distanceSensor = hardwareMap.get(DistanceSensor::class.java, "cargo_distance")
 
         with(wheels) {
@@ -57,8 +57,8 @@ class StoneFollowerMecanum : OpMode() {
     override fun start() {
         executor.submit {
             while (robot.isOpModeActive) {
-                robot.vuforia.waitForDetector()
-                cube = robot.vuforia.recognitions.firstOrNull {
+                vuforia.waitForDetector()
+                cube = vuforia.recognitions.firstOrNull {
                     it.label == VuforiaManager.LABEL_STONE
                 }
                 Thread.sleep(100)
@@ -72,7 +72,7 @@ class StoneFollowerMecanum : OpMode() {
             }
         }
 
-        robot.vuforia.waitForDetector()
+        vuforia.waitForDetector()
     }
 
     override fun loop() {
@@ -121,5 +121,9 @@ class StoneFollowerMecanum : OpMode() {
             rightBack.power = powerRight
             leftBack.power = powerLeft
         }
+    }
+
+    override fun stop() {
+        vuforia.stopCamera()
     }
 }

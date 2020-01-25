@@ -43,7 +43,7 @@ data class PathPoint(
             ACTION_ATTACH_FOUNDATION -> ::ACTION_ATTACH_FOUNDATION.name
             ACTION_DETACH_FOUNDATION -> ::ACTION_DETACH_FOUNDATION.name
             ACTION_SIMPLE_OUTTAKE -> ::ACTION_SIMPLE_OUTTAKE.name
-            else -> IllegalArgumentException("Unsupported Action")
+            else -> IllegalArgumentException("Unsupported Path Action")
         }
     }
 }

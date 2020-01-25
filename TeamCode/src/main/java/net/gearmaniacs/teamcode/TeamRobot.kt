@@ -1,7 +1,6 @@
 package net.gearmaniacs.teamcode
 
 import com.qualcomm.robotcore.hardware.HardwareMap
-import net.gearmaniacs.teamcode.detector.VuforiaManager
 import net.gearmaniacs.teamcode.utils.IHardware
 import net.gearmaniacs.teamcode.utils.IUpdatable
 import net.gearmaniacs.teamcode.utils.getDevice
@@ -26,7 +25,6 @@ class TeamRobot {
 
     var isOpModeActive = false
         private set
-    val vuforia = VuforiaManager()
 
     fun init(
         hardwareMap: HardwareMap,
@@ -74,7 +72,6 @@ class TeamRobot {
         }
 
         isOpModeActive = false
-        vuforia.stopCamera()
     }
 
     fun updateExpansionHubs() {

@@ -1,6 +1,5 @@
 package net.gearmaniacs.teamcode.autonomous
 
-import android.util.Log
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.hardware.Servo
@@ -8,10 +7,17 @@ import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamRobot
 import net.gearmaniacs.teamcode.hardware.motors.Intake
 import net.gearmaniacs.teamcode.hardware.motors.Wheels
-import net.gearmaniacs.teamcode.pid.PidController
 import net.gearmaniacs.teamcode.hardware.sensors.Encoder
-import net.gearmaniacs.teamcode.utils.*
-import kotlin.math.*
+import net.gearmaniacs.teamcode.hardware.servos.FoundationServos
+import net.gearmaniacs.teamcode.hardware.servos.OuttakeServos
+import net.gearmaniacs.teamcode.pid.PidController
+import net.gearmaniacs.teamcode.utils.PathPoint
+import net.gearmaniacs.teamcode.utils.getDevice
+import kotlin.math.abs
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.hypot
+import kotlin.math.sin
 
 @Autonomous(name = "Blue-Path", group = "Path")
 open class PathAuto : LinearOpMode() {
@@ -20,19 +26,14 @@ open class PathAuto : LinearOpMode() {
     private val wheels = Wheels()
     private val encoder = Encoder()
     private val intake = Intake()
+    private val foundation = FoundationServos()
+    private val outtake = OuttakeServos()
 
     private val rotationPid = PidController(0.45, 0.0, 20.0)
 
-    private lateinit var outtakeLeft: Servo
-    private lateinit var outtakeRight: Servo
     private lateinit var gripper: Servo
     private lateinit var spinner: Servo
-    private lateinit var foundationLeft: Servo
-    private lateinit var foundationRight: Servo
 
-    private var pointIndex = 0
-
-    //private val path by fastLazy { PathParser.parseAsset(hardwareMap.appContext, "path/test.json") }
     private val path = listOf(
         PathPoint(
             cmX = -33.63255745421882,
@@ -74,17 +75,13 @@ open class PathAuto : LinearOpMode() {
     )
 
     override fun runOpMode() {
-        robot.init(hardwareMap, listOf(wheels, intake, encoder), listOf(encoder))
+        robot.init(hardwareMap, listOf(wheels, intake, foundation, outtake, encoder), listOf(encoder))
         RobotPos.resetAll()
 
-        rotationPid.setOutputRange(-0.3, 0.3)
+        rotationPid.setOutputRange(-MOTOR_SPEED_ROTATION, MOTOR_SPEED_ROTATION)
 
-        outtakeLeft = hardwareMap.getDevice("out_left")
-        outtakeRight = hardwareMap.getDevice("out_right")
         gripper = hardwareMap.getDevice("gripper")
         spinner = hardwareMap.getDevice("spinner")
-        foundationLeft = hardwareMap.getDevice("foundation_left")
-        foundationRight = hardwareMap.getDevice("foundation_right")
 
         while (!isStarted) {
             telemetry.addData("Status", "Waiting for start")
@@ -93,20 +90,16 @@ open class PathAuto : LinearOpMode() {
         }
         robot.start()
 
-        path.forEach {
-            Log.v(TAG, "Reached Position $pointIndex")
-            RobotPos.targetX = it.cmX
-            RobotPos.targetY = it.cmY
-            RobotPos.targetAngle = it.angle
+        path.forEachIndexed { index, point ->
+            telemetry.addData("Destination Index", index)
+            
+            RobotPos.targetX = point.cmX
+            RobotPos.targetY = point.cmY
+            RobotPos.targetAngle = point.angle
 
             goToPoint()
-            performAction(it.action)
-
-            pointIndex++
+            performAction(point.action)
         }
-
-        intake.left.power = 0.0
-        intake.right.power = 0.0
 
         robot.stop()
     }
@@ -117,17 +110,17 @@ open class PathAuto : LinearOpMode() {
         val startTime = System.currentTimeMillis()
 
         while (opModeIsActive()) {
-            val distanceToTargetX = RobotPos.targetX - RobotPos.currentX
-            val distanceToTargetY = RobotPos.targetY - RobotPos.currentY
-            val distance = hypot(distanceToTargetX, distanceToTargetY)
-            val deltaAngle = RobotPos.targetAngle - RobotPos.currentAngle
+            val distanceToX = RobotPos.targetX - RobotPos.currentX
+            val distanceToY = RobotPos.targetY - RobotPos.currentY
+            val distanceToAngle = RobotPos.targetAngle - RobotPos.currentAngle
+            val distance = hypot(distanceToX, distanceToY)
 
-            if (distance smaller 2.0 && deltaAngle smaller Math.toRadians(12.0))
+            if (distance smaller DISTANCE_ERROR && distanceToAngle smaller ANGLE_ERROR)
                 break
 
-            val robotMovementAngle = atan2(distanceToTargetX, distanceToTargetY)
-            val motionX = sin(robotMovementAngle) * MOTOR_SPEED
-            val motionY = cos(robotMovementAngle) * MOTOR_SPEED
+            val robotMovementAngle = atan2(distanceToX, distanceToY)
+            val motionX = sin(robotMovementAngle) * MOTOR_SPEED_MOVEMENT
+            val motionY = cos(robotMovementAngle) * MOTOR_SPEED_MOVEMENT
 
             rotationPid.setPoint = RobotPos.targetAngle
             val rotation = rotationPid.compute(RobotPos.currentAngle)
@@ -149,16 +142,14 @@ open class PathAuto : LinearOpMode() {
             }
 
             if (System.currentTimeMillis() - startTime > 3000)
-                break
+                break // Skip this point if it takes more than 3 seconds to arrive
 
             Thread.sleep(5)
         }
     }
 
-    private fun movement(x: Double, y: Double, rotation: Double): Boolean {
-        val magnitude = hypot(x, y) * MOTOR_SPEED
-
-        if (magnitude smaller 0.05) return false
+    private fun movement(x: Double, y: Double, rotation: Double) {
+        val magnitude = hypot(x, y) * MOTOR_SPEED_MOVEMENT
 
         val angle = atan2(y, x) - Math.PI / 2
 
@@ -171,8 +162,6 @@ open class PathAuto : LinearOpMode() {
             rightBack.power = speedY + rotation
             leftBack.power = speedX + rotation
         }
-
-        return true
     }
 
     private fun performAction(action: Int) {
@@ -183,7 +172,7 @@ open class PathAuto : LinearOpMode() {
             PathPoint.ACTION_ATTACH_FOUNDATION -> foundation(true)
             PathPoint.ACTION_DETACH_FOUNDATION -> foundation(false)
             PathPoint.ACTION_SIMPLE_OUTTAKE -> outtake()
-            else -> Log.e(TAG, "Unsupported Action!")
+            else -> throw IllegalArgumentException("Unsupported Path Action")
         }
     }
 
@@ -194,16 +183,14 @@ open class PathAuto : LinearOpMode() {
     }
 
     private fun foundation(attach: Boolean) {
-        foundationLeft.position = if (attach) 0.0 else 1.0
-        foundationRight.position = if (attach) 1.0 else 0.0
+        if (attach) foundation.attach() else foundation.detach()
     }
 
     private fun outtake() {
         gripper.position = 0.75
         Thread.sleep(500)
 
-        outtakeLeft.position = 0.0
-        outtakeRight.position = 1.0
+        outtake.extend()
         Thread.sleep(500)
 
         spinner.position = 1.0
@@ -216,15 +203,18 @@ open class PathAuto : LinearOpMode() {
         spinner.position = 0.1
         Thread.sleep(500)
 
-        outtakeLeft.position = 1.0
-        outtakeRight.position = 0.0
+        outtake.retract()
         Thread.sleep(500)
     }
 
     private companion object {
-        const val TAG = "PathAuto"
-        const val MOTOR_SPEED = 0.6
+        private const val TAG = "PathAuto"
+        private const val MOTOR_SPEED_MOVEMENT = 0.6
+        private const val MOTOR_SPEED_ROTATION = 0.3
 
-        infix fun Double.smaller(other: Double) = abs(this) < other
+        private const val DISTANCE_ERROR = 1.5
+        private val ANGLE_ERROR = Math.toRadians(5.0)
+
+        private infix fun Double.smaller(other: Double) = abs(this) < other
     }
 }

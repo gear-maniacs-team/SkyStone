@@ -18,8 +18,7 @@ data class Recognition(
         if (confidence != null)
             resultString += String.format("(%.1f%%) ", confidence * 100.0f)
         if (location != null)
-            resultString += location.toString() + " "
-        return resultString.trim { it <= ' ' }
+            resultString += location.toString()
+        return resultString.trim()
     }
-
 }
