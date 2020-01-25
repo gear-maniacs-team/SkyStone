@@ -1,7 +1,6 @@
 package net.gearmaniacs.teamcode.teleop
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.Servo
 import net.gearmaniacs.teamcode.RobotPos
@@ -11,6 +10,7 @@ import net.gearmaniacs.teamcode.motors.Lift
 import net.gearmaniacs.teamcode.motors.Wheels
 import net.gearmaniacs.teamcode.pid.PidController
 import net.gearmaniacs.teamcode.sensors.Encoder
+import net.gearmaniacs.teamcode.sensors.Gyro
 import net.gearmaniacs.teamcode.servos.FoundationServos
 import net.gearmaniacs.teamcode.servos.OuttakeServos
 import net.gearmaniacs.teamcode.utils.MathUtils
@@ -22,17 +22,17 @@ import kotlin.math.atan2
 import kotlin.math.hypot
 import kotlin.math.sin
 
-@TeleOp(name = "Mark TeleOp", group = "Good")
-open class NewTeleOp : OpMode() {
+abstract class MainTeleOp : OpMode() {
 
     private val performanceProfiler = PerformanceProfiler()
-    private val robot = TeamRobot()
-    private val wheels = Wheels()
-    private val intake = Intake()
-    private val encoder = Encoder()
-    private val lift = Lift()
-    private val foundation = FoundationServos()
-    private val outtake = OuttakeServos()
+    protected val robot = TeamRobot()
+    protected val wheels = Wheels()
+    protected val intake = Intake()
+    protected val encoder = Encoder()
+    protected val gyro = Gyro()
+    protected val lift = Lift()
+    protected val foundation = FoundationServos()
+    protected val outtake = OuttakeServos()
 
     private lateinit var gripper: Servo
     private lateinit var spinner: Servo
@@ -53,7 +53,7 @@ open class NewTeleOp : OpMode() {
     }
 
     override fun init() {
-        robot.init(hardwareMap, listOf(wheels, encoder, intake, lift, foundation, outtake), listOf(encoder))
+        // TeamRobot::init must be called in child classes
         wheels.setModeAll(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
 
         gripper = hardwareMap.getDevice("gripper")
@@ -169,12 +169,12 @@ open class NewTeleOp : OpMode() {
             resetStrafePid = false
         }
 
-        val correction = 0.0//if (!curvedMovement) strafePid.compute(RobotPos.currentAngle) else 0.0
+        val correction = if (!curvedMovement) strafePid.compute(RobotPos.currentAngle) else 0.0
 
         val magnitude = hypot(x, y) * if (precisionModeOn) PRECISION_MODE_MULTIPLIER else MOTOR_SPEED_MULTIPLIER
 
-       // val independentAngleCorrection = if (orientationIndependentDrive) RobotPos.currentAngle - resetAngle else 0.0
-        val angle = atan2(y, x) - Math.PI / 2 //- independentAngleCorrection
+        val independentAngleCorrection = if (orientationIndependentDrive) RobotPos.currentAngle - resetAngle else 0.0
+        val angle = atan2(y, x) - Math.PI / 2 - independentAngleCorrection
         val speedX = magnitude * sin(angle + Math.PI / 4)
         val speedY = magnitude * sin(angle - Math.PI / 4)
 

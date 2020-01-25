@@ -4,12 +4,12 @@ import android.util.Log
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamRobot
-import net.gearmaniacs.teamcode.teleop.NewTeleOp
+import net.gearmaniacs.teamcode.teleop.MainTeleOp
 import net.gearmaniacs.teamcode.utils.PathPoint
 import kotlin.concurrent.thread
 
 @TeleOp(name = "Path Planner")
-class PathPlanner : NewTeleOp() {
+class PathPlanner : MainTeleOp() {
 
     private val list = ArrayList<PathPoint>()
 
