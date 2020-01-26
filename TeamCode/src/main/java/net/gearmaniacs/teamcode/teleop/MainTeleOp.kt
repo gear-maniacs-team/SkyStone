@@ -155,9 +155,11 @@ abstract class MainTeleOp : OpMode() {
         leftBackPower += speedLeft
     }
 
+    private fun expo(input: Double, expo_factor: Double): Double = expo_factor * input * input * input + (1 - expo_factor) * input
+
     private fun planeMovement() {
-        val x = gamepad1.left_stick_x.toDouble()
-        val y = -gamepad1.left_stick_y.toDouble()
+        val x = expo(gamepad1.left_stick_x.toDouble(), 0.5)
+        val y = expo(-gamepad1.left_stick_y.toDouble(), 0.5)
 
         if (abs(x) == 0.0 && abs(y) == 0.0) {
             resetStrafePid = true
@@ -175,14 +177,14 @@ abstract class MainTeleOp : OpMode() {
         val magnitude = hypot(x, y) * if (precisionModeOn) WHEELS_SPEED_PRECISION else WHEELS_SPEED_NORMAL
 
         val independentAngleCorrection = if (orientationIndependentDrive) RobotPos.currentAngle - resetAngle else 0.0
-        val angle = atan2(y, x) - Math.PI / 2 - independentAngleCorrection
+        val angle = atan2(y, x) - independentAngleCorrection
         val speedX = magnitude * sin(angle + Math.PI / 4)
         val speedY = magnitude * sin(angle - Math.PI / 4)
 
-        rightFrontPower += -speedX + correction
-        leftFrontPower += -speedY + correction
-        rightBackPower += speedY + correction
-        leftBackPower += speedX + correction
+        rightFrontPower -= speedX + correction
+        leftFrontPower += speedY - correction
+        rightBackPower -= speedY + correction
+        leftBackPower += speedX - correction
     }
 
     private fun intake() {
