@@ -181,10 +181,15 @@ abstract class MainTeleOp : OpMode() {
         val speedX = magnitude * sin(angle + Math.PI / 4)
         val speedY = magnitude * sin(angle - Math.PI / 4)
 
-        rightFrontPower -= speedX + correction
-        leftFrontPower += speedY - correction
-        rightBackPower -= speedY + correction
-        leftBackPower += speedX - correction
+        val scalingFactor = magnitude / if (abs(speedX) == 0.0) abs(speedY) else abs(speedX)
+
+        val scaledXSpeed = speedX * scalingFactor
+        val scaledYSpeed = speedY * scalingFactor
+
+        rightFrontPower -= scaledXSpeed + correction
+        leftFrontPower += scaledYSpeed - correction
+        rightBackPower -= scaledYSpeed + correction
+        leftBackPower += scaledXSpeed - correction
     }
 
     private fun intake() {
