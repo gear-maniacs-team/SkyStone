@@ -34,13 +34,13 @@ class OdometryTest : OpMode() {
         telemetry.addData("--", "--")
 
         if (encoder.useBulkRead) {
-            telemetry.addData("Left encoder", -robot.bulkInputData2.getMotorCurrentPosition(encoder.left))
-            telemetry.addData("Right encoder", robot.bulkInputData1.getMotorCurrentPosition(encoder.right))
-            telemetry.addData("Back encoder", robot.bulkInputData1.getMotorCurrentPosition(encoder.back))
+            telemetry.addData("Left encoder", robot.bulkInputData2.getMotorCurrentPosition(encoder.left))
+            telemetry.addData("Right encoder", -robot.bulkInputData1.getMotorCurrentPosition(encoder.right))
+            telemetry.addData("Back encoder", -robot.bulkInputData1.getMotorCurrentPosition(encoder.back))
         } else {
-            telemetry.addData("Left encoder", -encoder.left.currentPosition)
-            telemetry.addData("Right encoder", encoder.right.currentPosition)
-            telemetry.addData("Back encoder", encoder.back.currentPosition)
+            telemetry.addData("Left encoder", encoder.left.currentPosition)
+            telemetry.addData("Right encoder", -encoder.right.currentPosition)
+            telemetry.addData("Back encoder", -encoder.back.currentPosition)
         }
 
         telemetry.update()

@@ -29,9 +29,9 @@ class Encoder : IHardware, IUpdatable {
 
     override fun init(hardwareMap: HardwareMap) {
         val dcMotors = hardwareMap.dcMotor
-        left = dcMotors["intake_right"]
-        right = dcMotors["BR"]
-        back = dcMotors["TR"]
+        left = dcMotors["TL"]
+        right = dcMotors["TR"]
+        back = dcMotors["BL"]
 
         left.direction = DcMotorSimple.Direction.FORWARD
         right.direction = DcMotorSimple.Direction.FORWARD
@@ -72,7 +72,7 @@ class Encoder : IHardware, IUpdatable {
 
         val deltaBack = ticksToCM(backPos - previousBackPosition)
         val deltaRight = ticksToCM(rightPos - previousRightPosition)
-        val deltaLeft = -ticksToCM(leftPos - previousLeftPosition)
+        val deltaLeft = ticksToCM(leftPos - previousLeftPosition)
 
         val deltaAngle = (deltaLeft - deltaRight) / DISTANCE_BETWEEN_ENCODER_WHEELS
 
@@ -110,9 +110,10 @@ class Encoder : IHardware, IUpdatable {
             rightPos = TeamRobot.getBulkData1().getMotorCurrentPosition(right).toDouble()
             backPos = TeamRobot.getBulkData1().getMotorCurrentPosition(back).toDouble()
         } else {
-            leftPos = -left.currentPosition.toDouble() // Must return a positive value when moving forward
-            rightPos = right.currentPosition.toDouble()
-            backPos = back.currentPosition.toDouble()
+            // All must return a positive value when moving forward
+            leftPos = left.currentPosition.toDouble()
+            rightPos = -right.currentPosition.toDouble()
+            backPos = -back.currentPosition.toDouble()
         }
 
 //        linearUpdate(leftPos, rightPos, backPos)
@@ -121,8 +122,7 @@ class Encoder : IHardware, IUpdatable {
 
     companion object {
         private const val DIAMETER = 7.2
-        private const val PULSES_PER_REVOLUTION = 4096
-        private const val TICKS_PER_REVOLUTION = 4 * PULSES_PER_REVOLUTION
+        private const val TICKS_PER_REVOLUTION = 8192
 
         private const val DISTANCE_BETWEEN_ENCODER_WHEELS = 19.6125
         private const val DISTANCE_BETWEEN_BACK_ENCODER_AND_CENTER = 14.2 // The distance to the tracking center

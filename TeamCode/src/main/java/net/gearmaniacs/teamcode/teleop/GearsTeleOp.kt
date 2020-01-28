@@ -13,4 +13,9 @@ class GearsTeleOp : MainTeleOp() {
         )
         super.init()
     }
+
+    override fun start() {
+        super.start()
+        gyro.waitForCalibration()
+    }
 }

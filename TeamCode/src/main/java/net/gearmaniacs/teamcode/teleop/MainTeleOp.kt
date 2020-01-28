@@ -49,8 +49,8 @@ abstract class MainTeleOp : OpMode() {
     private var orientationIndependentDrive = false
     private var resetStrafePid = true
     private var curvedMovement = false
-    private val strafePid = PidController(256.0, 0.0001, 0.5).apply {
-        setOutputRange(-100.0, 100.0)
+    private val strafePid = PidController(0.45, 0.0001, 0.5).apply {
+        setOutputRange(-0.35, 0.35)
     }
 
     override fun init() {
@@ -59,6 +59,8 @@ abstract class MainTeleOp : OpMode() {
 
         gripper = hardwareMap.getDevice("gripper")
         spinner = hardwareMap.getDevice("spinner")
+
+//        wheels.setZeroPowerBehaviorAll(DcMotor.ZeroPowerBehavior.BRAKE)
     }
 
     override fun start() {
@@ -126,7 +128,7 @@ abstract class MainTeleOp : OpMode() {
 
     private fun curveMovement() {
         val x = gamepad1.right_stick_x.toDouble()
-        val y = -gamepad1.right_stick_y.toDouble()
+        val y = expo(-gamepad1.right_stick_y.toDouble(),1.0)
 
         if (abs(x) == 0.0 && abs(y) == 0.0)
             return
@@ -155,11 +157,9 @@ abstract class MainTeleOp : OpMode() {
         leftBackPower += speedLeft
     }
 
-    private fun expo(input: Double, expo_factor: Double): Double = expo_factor * input * input * input + (1 - expo_factor) * input
-
     private fun planeMovement() {
-        val x = expo(gamepad1.left_stick_x.toDouble(), 0.5)
-        val y = expo(-gamepad1.left_stick_y.toDouble(), 0.5)
+        val x = expo(gamepad1.left_stick_x.toDouble(), 1.0)
+        val y = expo(gamepad1.left_stick_y.toDouble(), 1.0)
 
         if (abs(x) == 0.0 && abs(y) == 0.0) {
             resetStrafePid = true
@@ -174,7 +174,7 @@ abstract class MainTeleOp : OpMode() {
 
         val correction = if (!curvedMovement) strafePid.compute(RobotPos.currentAngle) else 0.0
 
-        val magnitude = hypot(x, y) * if (precisionModeOn) WHEELS_SPEED_PRECISION else WHEELS_SPEED_NORMAL
+        val magnitude = hypot(x, y) * if (precisionModeOn) WHEELS_SPEED_PRECISION else 1.0
 
         val independentAngleCorrection = if (orientationIndependentDrive) RobotPos.currentAngle - resetAngle else 0.0
         val angle = atan2(y, x) - independentAngleCorrection
@@ -183,13 +183,17 @@ abstract class MainTeleOp : OpMode() {
 
         val scalingFactor = magnitude / if (abs(speedX) == 0.0) abs(speedY) else abs(speedX)
 
+        telemetry.addData("SpeedX", speedX)
+        telemetry.addData("SpeedY", speedY)
+        telemetry.addData("Correction", correction)
+
         val scaledXSpeed = speedX * scalingFactor
         val scaledYSpeed = speedY * scalingFactor
 
-        rightFrontPower -= scaledXSpeed + correction
-        leftFrontPower += scaledYSpeed - correction
-        rightBackPower -= scaledYSpeed + correction
-        leftBackPower += scaledXSpeed - correction
+        rightFrontPower += speedX + correction
+        leftFrontPower -= speedY - correction
+        rightBackPower += speedY + correction
+        leftBackPower -= speedX - correction
     }
 
     private fun intake() {
@@ -272,5 +276,8 @@ abstract class MainTeleOp : OpMode() {
         private const val LIFT_POWER = 0.5
 
         private const val MAX_LIFT_HEIGHT_TICKS = 1200
+
+        private fun expo(input: Double, expoFactor: Double): Double =
+            expoFactor * input * input * input + (1 - expoFactor) * input
     }
 }
