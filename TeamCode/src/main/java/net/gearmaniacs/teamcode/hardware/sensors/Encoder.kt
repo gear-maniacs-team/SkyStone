@@ -56,10 +56,8 @@ class Encoder : IHardware, IUpdatable {
 
         val distance = (deltaLeft + deltaRight) / 2
 
-        RobotPos.currentX += distance * cos(RobotPos.currentAngle) - deltaBack * sin(
-            RobotPos.currentAngle)
-        RobotPos.currentY += distance * sin(RobotPos.currentAngle) + deltaBack * cos(
-            RobotPos.currentAngle)
+        RobotPos.currentX += distance * cos(RobotPos.currentAngle) - deltaBack * sin(RobotPos.currentAngle)
+        RobotPos.currentY += distance * sin(RobotPos.currentAngle) + deltaBack * cos(RobotPos.currentAngle)
         RobotPos.currentAngle += deltaAngle
 
         previousBackPosition = backPos

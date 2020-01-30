@@ -1,4 +1,3 @@
-/*
 package net.gearmaniacs.teamcode.detector
 
 import android.content.Context
@@ -19,11 +18,13 @@ import kotlin.collections.ArrayList
 
 class TFLiteClassifier(private val context: Context) {
 
+    private val lock = Any()
     private var interpreter: Interpreter? = null
+    @Volatile
     var isInitialized = false
         private set
 
-    private var labels = ArrayList<String>()
+    private var labels = emptyList<String>()
 
     private var inputImageWidth = 0
     private var inputImageHeight = 0
@@ -31,11 +32,15 @@ class TFLiteClassifier(private val context: Context) {
 
     @Throws(IOException::class)
     fun initialize() {
-        val assetManager = context.assets
-        val model = loadModelFile(assetManager, "CustomSkystone.tflite")
+        if (isInitialized) return
 
-        labels = loadLines(context, "labelmap.txt")
+        val assetManager = context.assets
+        val model = loadModelFile(assetManager, TFLITE_FILE)
+
+        labels = loadLines(context, LABELS_FILE)
         val options = Interpreter.Options()
+        options.setNumThreads(2)
+
         val interpreter = Interpreter(model, options)
 
         val inputShape = interpreter.getInputTensor(0).shape()
@@ -43,9 +48,10 @@ class TFLiteClassifier(private val context: Context) {
         inputImageHeight = inputShape[2]
         modelInputSize = inputImageWidth * inputImageHeight * inputShape[3]
 
-        this.interpreter = interpreter
-
-        isInitialized = true
+        synchronized(lock) {
+            this.interpreter = interpreter
+            isInitialized = true
+        }
     }
 
     @Throws(IOException::class)
@@ -59,26 +65,11 @@ class TFLiteClassifier(private val context: Context) {
     }
 
     @Throws(IOException::class)
-    fun loadLines(context: Context, filename: String): ArrayList<String> {
-        val s = Scanner(InputStreamReader(context.assets.open(filename)))
-        val labels = ArrayList<String>()
-        while (s.hasNextLine()) {
-            labels.add(s.nextLine())
+    private fun loadLines(context: Context, fileName: String): List<String> {
+        val inputStream = context.assets.open(fileName)
+        inputStream.bufferedReader().use {
+            return it.readLines()
         }
-        s.close()
-        return labels
-    }
-
-    private fun getMaxResult(result: FloatArray): Int {
-        var probability = result[0]
-        var index = 0
-        for (i in result.indices) {
-            if (probability < result[i]) {
-                probability = result[i]
-                index = i
-            }
-        }
-        return index
     }
 
     fun classify(bitmap: Bitmap): List<Recognition> {
@@ -100,10 +91,13 @@ class TFLiteClassifier(private val context: Context) {
         outputMap[2] = outputScores
         outputMap[3] = numDetections
 
-        interpreter!!.runForMultipleInputsOutputs(arrayOf(byteBuffer), outputMap)
-        val list = ArrayList<Recognition>(5)
+        synchronized(lock) {
+            interpreter!!.runForMultipleInputsOutputs(arrayOf(byteBuffer), outputMap)
+        }
 
+        val list = ArrayList<Recognition>(5)
         val number = numDetections.first().toInt()
+
         for (i in 0 until number) {
             val location = RectF(
                 outputLocations[0][i][1] * inputImageWidth,
@@ -124,7 +118,10 @@ class TFLiteClassifier(private val context: Context) {
     }
 
     fun close() {
-        interpreter?.close()
+        synchronized(lock) {
+            isInitialized = false
+            interpreter?.close()
+        }
     }
 
     private fun convertBitmapToByteBuffer(bitmap: Bitmap): ByteBuffer {
@@ -157,7 +154,9 @@ class TFLiteClassifier(private val context: Context) {
 
     companion object {
         private const val TAG = "TFLiteClassifier"
+
+        private const val TFLITE_FILE = "CustomSkystone.tflite"
+        private const val LABELS_FILE = "labelmap.txt"
         private const val NUM_DETECTIONS = 5
     }
 }
-*/
