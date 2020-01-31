@@ -10,7 +10,7 @@ import org.openftc.easyopencv.OpenCvWebcam
 
 class OpenCvManager(private var pipeline: OpenCvPipeline) {
 
-    private lateinit var camera: OpenCvCamera
+    private lateinit var camera: OpenCvWebcam
 
     fun startCamera(hardwareMap: HardwareMap) {
         val cameraMonitorViewId = hardwareMap.appContext.resources.getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.packageName)

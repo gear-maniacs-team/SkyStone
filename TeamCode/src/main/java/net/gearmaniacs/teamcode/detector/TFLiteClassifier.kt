@@ -8,7 +8,6 @@ import android.util.Log
 import org.tensorflow.lite.Interpreter
 import java.io.FileInputStream
 import java.io.IOException
-import java.io.InputStreamReader
 import java.nio.BufferOverflowException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -35,9 +34,9 @@ class TFLiteClassifier(private val context: Context) {
         if (isInitialized) return
 
         val assetManager = context.assets
-        val model = loadModelFile(assetManager, TFLITE_FILE)
+        val model = loadModelFile(assetManager)
 
-        labels = loadLines(context, LABELS_FILE)
+        labels = loadLines(context)
         val options = Interpreter.Options()
         options.setNumThreads(2)
 
@@ -55,18 +54,17 @@ class TFLiteClassifier(private val context: Context) {
     }
 
     @Throws(IOException::class)
-    private fun loadModelFile(assetManager: AssetManager, fileName: String): ByteBuffer {
-        val fileDescriptor = assetManager.openFd(fileName)
+    private fun loadModelFile(assetManager: AssetManager): ByteBuffer {
+        val fileDescriptor = assetManager.openFd(TFLITE_FILE)
         val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
         val fileChannel = inputStream.channel
-        val startOffset = fileDescriptor.startOffset
         val declaredLength = fileDescriptor.declaredLength
-        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
+        return fileChannel.map(FileChannel.MapMode.READ_ONLY, fileDescriptor.startOffset, declaredLength)
     }
 
     @Throws(IOException::class)
-    private fun loadLines(context: Context, fileName: String): List<String> {
-        val inputStream = context.assets.open(fileName)
+    private fun loadLines(context: Context): List<String> {
+        val inputStream = context.assets.open(LABELS_FILE)
         inputStream.bufferedReader().use {
             return it.readLines()
         }
@@ -130,21 +128,17 @@ class TFLiteClassifier(private val context: Context) {
 
         val pixels = IntArray(inputImageWidth * inputImageHeight)
         bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
-        var pixel = 0
-        try {
-            for (i in 0 until inputImageWidth) {
-                for (j in 0 until inputImageHeight) {
-                    val pixelVal = pixels[pixel++]
 
-                    // Quantized model
-                    byteBuffer.put((pixelVal shr 16 and 0xFF).toByte())
-                    byteBuffer.put((pixelVal shr 8 and 0xFF).toByte())
-                    byteBuffer.put((pixelVal and 0xFF).toByte())
-                }
+        var pixel = 0
+        for (i in 0 until inputImageWidth) {
+            for (j in 0 until inputImageHeight) {
+                val pixelVal = pixels[pixel++]
+
+                // Quantized model
+                byteBuffer.put((pixelVal shr 16 and 0xFF).toByte())
+                byteBuffer.put((pixelVal shr 8 and 0xFF).toByte())
+                byteBuffer.put((pixelVal and 0xFF).toByte())
             }
-        } catch (e: BufferOverflowException) {
-            Log.e(TAG, "Pixel: $pixel")
-            e.printStackTrace()
         }
 
         bitmap.recycle()
@@ -153,8 +147,6 @@ class TFLiteClassifier(private val context: Context) {
     }
 
     companion object {
-        private const val TAG = "TFLiteClassifier"
-
         private const val TFLITE_FILE = "CustomSkystone.tflite"
         private const val LABELS_FILE = "labelmap.txt"
         private const val NUM_DETECTIONS = 5

@@ -208,8 +208,8 @@ abstract class MainTeleOp : OpMode() {
 
     private fun lift() {
         val posChange = when {
-            gamepad2.dpad_down -> -120
-            gamepad2.dpad_up -> 120
+            gamepad2.dpad_down -> -20
+            gamepad2.dpad_up -> 20
             else -> 0
         }
 
@@ -227,12 +227,8 @@ abstract class MainTeleOp : OpMode() {
         val power = if (liftTargetPosition == 0 && lift.left.currentPosition < 300 && lift.right.currentPosition < 300)
             0.0 else LIFT_POWER
 
-        with(lift) {
-            left.targetPosition = liftTargetPosition
-            right.targetPosition = -liftTargetPosition
-            left.power = power
-            right.power = power
-        }
+        lift.setTargetPositionAll(liftTargetPosition)
+        lift.setPowerAll(power)
     }
 
     private fun outtake() {
