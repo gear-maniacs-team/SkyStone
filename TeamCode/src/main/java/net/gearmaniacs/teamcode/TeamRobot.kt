@@ -3,6 +3,7 @@ package net.gearmaniacs.teamcode
 import com.qualcomm.robotcore.hardware.HardwareMap
 import net.gearmaniacs.teamcode.utils.IHardware
 import net.gearmaniacs.teamcode.utils.IUpdatable
+import net.gearmaniacs.teamcode.utils.getDevice
 import org.openftc.revextensions2.ExpansionHubEx
 import org.openftc.revextensions2.RevBulkData
 import kotlin.concurrent.thread
@@ -33,6 +34,9 @@ class TeamRobot {
         isOpModeActive = true
         hardwareInstances = hardwareList
         updatableInstances = updatableList
+
+        expansionHub1 = hardwareMap.getDevice(EXPANSION_HUB_1_NAME)
+        expansionHub2 = hardwareMap.getDevice(EXPANSION_HUB_2_NAME)
 
         hardwareInstances.forEach {
             it.init(hardwareMap)

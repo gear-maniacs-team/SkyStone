@@ -25,7 +25,7 @@ class OdometryTest : OpMode() {
     }
 
     override fun loop() {
-        robot.updateExpansionHubs()
+//        robot.updateExpansionHubs()
         encoder.update()
 
         telemetry.addData("X Position", RobotPos.currentX)

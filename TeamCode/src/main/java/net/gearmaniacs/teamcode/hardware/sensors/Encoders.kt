@@ -29,9 +29,9 @@ class Encoders : IHardware, IUpdatable {
 
     override fun init(hardwareMap: HardwareMap) {
         val dcMotors = hardwareMap.dcMotor
-        left = dcMotors["TL"]
+        left = dcMotors["BL"]
         right = dcMotors["TR"]
-        back = dcMotors["BL"]
+        back = dcMotors["TL"]
 
         left.direction = DcMotorSimple.Direction.FORWARD
         right.direction = DcMotorSimple.Direction.FORWARD
@@ -104,9 +104,9 @@ class Encoders : IHardware, IUpdatable {
         val backPos: Double
 
         if (useBulkRead) {
-            leftPos = -TeamRobot.getBulkData2().getMotorCurrentPosition(left).toDouble()
-            rightPos = TeamRobot.getBulkData1().getMotorCurrentPosition(right).toDouble()
-            backPos = TeamRobot.getBulkData1().getMotorCurrentPosition(back).toDouble()
+            leftPos = TeamRobot.getBulkData2().getMotorCurrentPosition(left).toDouble()
+            rightPos = -TeamRobot.getBulkData1().getMotorCurrentPosition(right).toDouble()
+            backPos = -TeamRobot.getBulkData1().getMotorCurrentPosition(back).toDouble()
         } else {
             // All must return a positive value when moving forward
             leftPos = left.currentPosition.toDouble()

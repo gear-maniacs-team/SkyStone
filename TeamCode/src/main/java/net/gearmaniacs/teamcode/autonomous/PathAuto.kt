@@ -35,6 +35,18 @@ open class PathAuto : LinearOpMode() {
     private lateinit var spinner: Servo
 
     private val path = listOf(
+        PathPoint(24.00, 64.14, 0.79, action = PathPoint.ACTION_START_INTAKE),
+        PathPoint(52.47, 92.29, 0.75),
+        PathPoint(6.833, 59.34, Math.PI / 2, action = PathPoint.ACTION_STOP_INTAKE),
+        PathPoint(-77.39, 66.08, Math.PI / 2),
+        PathPoint(-151.6, 66.96, Math.PI / 2),
+        PathPoint(-185.0, 76.0, Math.PI, action = PathPoint.ACTION_SIMPLE_OUTTAKE),
+        PathPoint(-185.0, 76.0, Math.PI, action = PathPoint.ACTION_ATTACH_FOUNDATION),
+        PathPoint(-143.0, 80.0, Math.PI / 2),
+        PathPoint(-188.0, 73.26, Math.PI / 2, action = PathPoint.ACTION_DETACH_FOUNDATION),
+        PathPoint(-87.45, 72.35, Math.PI / 2)
+    )
+    /*private val path = listOf(
         PathPoint(
             cmX = -33.63255745421882,
             cmY = 57.86473642268101,
@@ -72,7 +84,7 @@ open class PathAuto : LinearOpMode() {
         ),
         PathPoint(cmX = -159.71579058646137, cmY = 56.863833536475035, angle = 1.561175950151949),
         PathPoint(cmX = -84.59913286877313, cmY = 59.56045321588649, angle = 1.5502650351788423)
-    )
+    )*/
 
     override fun runOpMode() {
         robot.init(hardwareMap, listOf(wheels, intake, foundation, outtake, encoder), listOf(encoder))
@@ -92,7 +104,7 @@ open class PathAuto : LinearOpMode() {
 
         path.forEachIndexed { index, point ->
             telemetry.addData("Destination Index", index)
-            
+
             RobotPos.targetX = point.cmX
             RobotPos.targetY = point.cmY
             RobotPos.targetAngle = point.angle
@@ -100,6 +112,8 @@ open class PathAuto : LinearOpMode() {
             goToPoint()
             performAction(point.action)
         }
+
+//        wheels.setPowerAll(0.0)
 
         robot.stop()
     }
@@ -119,8 +133,8 @@ open class PathAuto : LinearOpMode() {
                 break
 
             val robotMovementAngle = atan2(distanceToX, distanceToY)
-            val motionX = sin(robotMovementAngle) * MOTOR_SPEED_MOVEMENT
-            val motionY = cos(robotMovementAngle) * MOTOR_SPEED_MOVEMENT
+            val motionX = sin(robotMovementAngle) * distanceToX
+            val motionY = cos(robotMovementAngle) * distanceToY
 
             rotationPid.setPoint = RobotPos.targetAngle
             val rotation = rotationPid.compute(RobotPos.currentAngle)
@@ -141,15 +155,15 @@ open class PathAuto : LinearOpMode() {
                 update()
             }
 
-            if (System.currentTimeMillis() - startTime > 3000)
-                break // Skip this point if it takes more than 3 seconds to arrive
+//            if (System.currentTimeMillis() - startTime > 3000)
+//                break // Skip this point if it takes more than 3 seconds to arrive
 
             Thread.sleep(5)
         }
     }
 
     private fun movement(x: Double, y: Double, rotation: Double) {
-        val magnitude = hypot(x, y) * MOTOR_SPEED_MOVEMENT
+        val magnitude = hypot(x, y)
 
         val angle = atan2(y, x) - Math.PI / 2
 
@@ -177,9 +191,8 @@ open class PathAuto : LinearOpMode() {
     }
 
     private fun actionIntake(start: Boolean) {
-        val power = if (start) 1.0 else 0.0
-        intake.left.power = power
-        intake.right.power = -power
+        val power = if (start) 0.8 else 0.0
+        intake.setPowerAll(power)
     }
 
     private fun foundation(attach: Boolean) {
