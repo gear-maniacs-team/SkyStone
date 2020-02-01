@@ -39,6 +39,8 @@ class Encoders : IHardware, IUpdatable {
 
         setModeAll(RunMode.STOP_AND_RESET_ENCODER)
         setModeAll(RunMode.RUN_WITHOUT_ENCODER)
+
+        initNative()
     }
 
     fun setModeAll(mode: RunMode) {
@@ -46,6 +48,8 @@ class Encoders : IHardware, IUpdatable {
         right.mode = mode
         back.mode = mode
     }
+
+    private external fun initNative()
 
     private fun linearUpdate(leftPos: Double, rightPos: Double, backPos: Double) {
         val deltaBack = ticksToCM(backPos - previousBackPosition)
@@ -98,6 +102,8 @@ class Encoders : IHardware, IUpdatable {
         previousRightPosition = rightPos
     }
 
+    private external fun updateNative(leftPos: Double, rightPos: Double, backPos: Double, currentAngle: Double): Result
+
     override fun update() {
         val leftPos: Double
         val rightPos: Double
@@ -115,8 +121,19 @@ class Encoders : IHardware, IUpdatable {
         }
 
 //        linearUpdate(leftPos, rightPos, backPos)
-        updateUsingArcs(leftPos, rightPos, backPos)
+//        updateUsingArcs(leftPos, rightPos, backPos)
+
+        val result = updateNative(ticksToCM(leftPos), ticksToCM(rightPos), ticksToCM(backPos), RobotPos.currentAngle)
+        RobotPos.currentX += result.deltaX
+        RobotPos.currentY += result.deltaY
+        RobotPos.currentAngle += result.deltaAngle
     }
+
+    class Result(
+        val deltaX: Double,
+        val deltaY: Double,
+        val deltaAngle: Double
+    )
 
     companion object {
         private const val DIAMETER = 7.2
