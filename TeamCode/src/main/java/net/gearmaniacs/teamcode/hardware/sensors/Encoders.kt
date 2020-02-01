@@ -12,7 +12,7 @@ import net.gearmaniacs.teamcode.utils.epsilonEquals
 import kotlin.math.cos
 import kotlin.math.sin
 
-class Encoder : IHardware, IUpdatable {
+class Encoders : IHardware, IUpdatable {
 
     lateinit var left: DcMotor
         private set

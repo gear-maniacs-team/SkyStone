@@ -4,6 +4,7 @@ import android.util.Log
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamRobot
+import net.gearmaniacs.teamcode.hardware.sensors.Encoders
 import net.gearmaniacs.teamcode.teleop.MainTeleOp
 import net.gearmaniacs.teamcode.utils.PathPoint
 import kotlin.concurrent.thread
@@ -11,7 +12,17 @@ import kotlin.concurrent.thread
 @TeleOp(name = "Path Planner")
 class PathPlanner : MainTeleOp() {
 
+    private val encoder = Encoders()
     private val list = ArrayList<PathPoint>()
+
+    override fun init() {
+        robot.init(
+            hardwareMap,
+            listOf(wheels, intake, lift, foundation, outtake, encoder),
+            listOf(encoder)
+        )
+        super.init()
+    }
 
     override fun start() {
         super.start()

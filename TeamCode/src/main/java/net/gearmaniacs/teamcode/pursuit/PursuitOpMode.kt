@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamRobot
 import net.gearmaniacs.teamcode.hardware.motors.Wheels
-import net.gearmaniacs.teamcode.hardware.sensors.Encoder
+import net.gearmaniacs.teamcode.hardware.sensors.Encoders
 import net.gearmaniacs.teamcode.pid.PidController
 import kotlin.math.atan2
 import kotlin.math.hypot
@@ -18,7 +18,7 @@ class PursuitOpMode : OpMode() {
 
     private val robot = TeamRobot()
     private val wheels = Wheels()
-    private val encoder = Encoder()
+    private val encoder = Encoders()
     private val xPid = PidController(64.0, 0.0, 0.005)
     private val yPid = PidController(64.0, 0.0, 0.005)
     private val rotationPid = PidController(64.0, 0.0, 0.005)

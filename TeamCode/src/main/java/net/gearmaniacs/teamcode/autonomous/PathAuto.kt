@@ -7,7 +7,7 @@ import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamRobot
 import net.gearmaniacs.teamcode.hardware.motors.Intake
 import net.gearmaniacs.teamcode.hardware.motors.Wheels
-import net.gearmaniacs.teamcode.hardware.sensors.Encoder
+import net.gearmaniacs.teamcode.hardware.sensors.Encoders
 import net.gearmaniacs.teamcode.hardware.servos.FoundationServos
 import net.gearmaniacs.teamcode.hardware.servos.OuttakeServos
 import net.gearmaniacs.teamcode.pid.PidController
@@ -24,7 +24,7 @@ open class PathAuto : LinearOpMode() {
 
     private val robot = TeamRobot()
     private val wheels = Wheels()
-    private val encoder = Encoder()
+    private val encoder = Encoders()
     private val intake = Intake()
     private val foundation = FoundationServos()
     private val outtake = OuttakeServos()

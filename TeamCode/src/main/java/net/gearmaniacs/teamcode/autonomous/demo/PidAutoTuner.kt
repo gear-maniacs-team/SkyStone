@@ -7,7 +7,7 @@ import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamRobot
 import net.gearmaniacs.teamcode.hardware.motors.Wheels
 import net.gearmaniacs.teamcode.pid.PidController
-import net.gearmaniacs.teamcode.hardware.sensors.Encoder
+import net.gearmaniacs.teamcode.hardware.sensors.Encoders
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.hypot
@@ -19,7 +19,7 @@ class PidAutoTuner : LinearOpMode() {
 
     private val robot = TeamRobot()
     private val wheels = Wheels()
-    private val encoder = Encoder()
+    private val encoder = Encoders()
 
     private val xPid = PidController(0.45, 0.0, 20.0)
     private val yPid = PidController(0.45, 0.0, 20.0)

@@ -3,7 +3,6 @@ package net.gearmaniacs.teamcode
 import com.qualcomm.robotcore.hardware.HardwareMap
 import net.gearmaniacs.teamcode.utils.IHardware
 import net.gearmaniacs.teamcode.utils.IUpdatable
-import net.gearmaniacs.teamcode.utils.getDevice
 import org.openftc.revextensions2.ExpansionHubEx
 import org.openftc.revextensions2.RevBulkData
 import kotlin.concurrent.thread
@@ -35,11 +34,6 @@ class TeamRobot {
         hardwareInstances = hardwareList
         updatableInstances = updatableList
 
-        INSTANCE = this
-
-        expansionHub1 = hardwareMap.getDevice(EXPANSION_HUB_1_NAME)
-        expansionHub2 = hardwareMap.getDevice(EXPANSION_HUB_2_NAME)
-
         hardwareInstances.forEach {
             it.init(hardwareMap)
         }
@@ -65,13 +59,13 @@ class TeamRobot {
     }
 
     fun stop() {
-        INSTANCE = null
+        isOpModeActive = false
 
         hardwareInstances.forEach {
             it.stop()
         }
 
-        isOpModeActive = false
+        INSTANCE = null
     }
 
     fun updateExpansionHubs() {
@@ -83,6 +77,7 @@ class TeamRobot {
         private const val EXPANSION_HUB_1_NAME = "Expansion Hub 1"
         private const val EXPANSION_HUB_2_NAME = "Expansion Hub 2"
 
+        @Volatile
         private var INSTANCE: TeamRobot? = null
 
         /*

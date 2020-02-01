@@ -8,8 +8,6 @@ import net.gearmaniacs.teamcode.TeamRobot
 import net.gearmaniacs.teamcode.hardware.motors.Intake
 import net.gearmaniacs.teamcode.hardware.motors.Lift
 import net.gearmaniacs.teamcode.hardware.motors.Wheels
-import net.gearmaniacs.teamcode.hardware.sensors.Encoder
-import net.gearmaniacs.teamcode.hardware.sensors.Gyro
 import net.gearmaniacs.teamcode.hardware.servos.FoundationServos
 import net.gearmaniacs.teamcode.hardware.servos.OuttakeServos
 import net.gearmaniacs.teamcode.pid.PidController
@@ -28,8 +26,6 @@ abstract class MainTeleOp : OpMode() {
     protected val robot = TeamRobot()
     protected val wheels = Wheels()
     protected val intake = Intake()
-    protected val encoder = Encoder()
-    protected val gyro = Gyro()
     protected val lift = Lift()
     protected val foundation = FoundationServos()
     protected val outtake = OuttakeServos()
@@ -54,7 +50,7 @@ abstract class MainTeleOp : OpMode() {
     }
 
     override fun init() {
-        // TeamRobot::init must be called in child classes
+        check(robot.isOpModeActive) { "TeamRobot::init must be called in child classes" }
         wheels.setModeAll(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
 
         gripper = hardwareMap.getDevice("gripper")

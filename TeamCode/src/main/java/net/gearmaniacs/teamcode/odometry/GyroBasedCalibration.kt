@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamRobot
 import net.gearmaniacs.teamcode.hardware.motors.Wheels
-import net.gearmaniacs.teamcode.hardware.sensors.Encoder
+import net.gearmaniacs.teamcode.hardware.sensors.Encoders
 import net.gearmaniacs.teamcode.hardware.sensors.Gyro
 
 @Disabled
@@ -17,7 +17,7 @@ class GyroBasedCalibration : LinearOpMode() {
     private val robot = TeamRobot()
     private val wheels = Wheels()
     private val gyro = Gyro()
-    private val encoder = Encoder()
+    private val encoder = Encoders()
 
     override fun runOpMode() {
         robot.init(hardwareMap, listOf(wheels, gyro, encoder), listOf(gyro))
@@ -36,8 +36,9 @@ class GyroBasedCalibration : LinearOpMode() {
         wheels.setPowerAll(0.0)
         Thread.sleep(1000)
 
-        val difference = (encoder.right.currentPosition - -encoder.left.currentPosition) / RobotPos.currentAngle
-        val result = (Encoder.ticksToCM(encoder.right.currentPosition.toDouble()) - Encoder.ticksToCM(-encoder.left.currentPosition.toDouble())) / RobotPos.currentAngle
+        val difference = (encoder.right.currentPosition - (-encoder.left.currentPosition)) / RobotPos.currentAngle
+        val result =
+            (Encoders.ticksToCM(encoder.right.currentPosition.toDouble()) - Encoders.ticksToCM(-encoder.left.currentPosition.toDouble())) / RobotPos.currentAngle
         while (opModeIsActive()) {
             telemetry.addData("Right",encoder.right.currentPosition)
             telemetry.addData("Left", encoder.left.currentPosition)
