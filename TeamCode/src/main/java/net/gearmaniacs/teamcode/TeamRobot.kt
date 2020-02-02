@@ -1,5 +1,6 @@
 package net.gearmaniacs.teamcode
 
+import android.util.Log
 import com.qualcomm.robotcore.hardware.HardwareMap
 import net.gearmaniacs.teamcode.utils.IHardware
 import net.gearmaniacs.teamcode.utils.IUpdatable
@@ -95,5 +96,10 @@ class TeamRobot {
         fun getBulkData1() = getRobot().bulkInputData1
 
         fun getBulkData2() = getRobot().bulkInputData2
+
+        init {
+            Log.v("Gear Maniacs", "Loaded Library")
+            System.loadLibrary("gear_maniacs")
+        }
     }
 }

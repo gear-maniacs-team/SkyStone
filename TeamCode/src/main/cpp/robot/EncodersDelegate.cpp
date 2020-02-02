@@ -2,17 +2,17 @@
 
 #include "../Cache.h"
 
-static Encoders &getEncodersInstance()
+namespace
 {
-    static Encoders encoders{};
-    return encoders;
+    Encoders encoders{};
+    jmethodID encodersResultConstructorId = nullptr;
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_net_gearmaniacs_teamcode_hardware_sensors_Encoders_initNative(JNIEnv *, jobject)
+Java_net_gearmaniacs_teamcode_hardware_sensors_Encoders_initNative(JNIEnv *pEnv, jobject/*instance*/)
 {
-    Encoders &encoders = getEncodersInstance();
     encoders.init();
+    encodersResultConstructorId = pEnv->GetMethodID(Cache::encodersResultClass, "<init>", "(DDD)V");
 }
 
 extern "C" JNIEXPORT jobject JNICALL
@@ -20,13 +20,10 @@ Java_net_gearmaniacs_teamcode_hardware_sensors_Encoders_updateNative(
         JNIEnv *pEnv, jobject /*instance*/,
         jdouble leftPos, jdouble rightPos, jdouble backPos, jdouble currentAngle)
 {
-    Encoders &encoders = getEncodersInstance();
-
     const RobotPose pose{ double(leftPos), double(rightPos), double(backPos) };
     const auto[deltaX, deltaY, deltaAngle] = encoders.update(pose, double(currentAngle));
 
-    const static auto constructorId = pEnv->GetMethodID(Cache::encodersResultClass, "<init>", "(DDD)V");
 
-    return pEnv->NewObject(Cache::encodersResultClass, constructorId,
+    return pEnv->NewObject(Cache::encodersResultClass, encodersResultConstructorId,
                            deltaX, deltaY, deltaAngle);
 }
