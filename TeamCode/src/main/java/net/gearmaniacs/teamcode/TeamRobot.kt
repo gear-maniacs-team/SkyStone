@@ -109,7 +109,7 @@ class TeamRobot {
         fun useBulkRead() = getRobot()?.useBulkRead ?: false
 
         init {
-            Log.v("Gear Maniacs", "Loaded Library")
+            Log.v("GearManiacsLib", "Loaded Library")
             System.loadLibrary("gear_maniacs")
         }
     }

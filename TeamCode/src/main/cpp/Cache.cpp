@@ -9,11 +9,11 @@ namespace Cache
 
     void createCaches(JNIEnv *env)
     {
-        encodersResultClass = cacheClass(env, env->FindClass("net/gearmaniacs/teamcode/hardware/sensors/Encoders$Result"));
+        robotPosClass = cacheClass(env, env->FindClass("net/gearmaniacs/teamcode/RobotPos"));
     }
 
     void cleanCaches(JNIEnv *env)
     {
-        env->DeleteGlobalRef(encodersResultClass);
+        env->DeleteGlobalRef(robotPosClass);
     }
 }

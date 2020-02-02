@@ -5,24 +5,37 @@
 namespace
 {
     Encoders encoders{};
-    jmethodID encodersResultConstructorId = nullptr;
+
+    jfieldID currentXId = nullptr;
+    jfieldID currentYId = nullptr;
+    jfieldID currentAngleId = nullptr;
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_net_gearmaniacs_teamcode_hardware_sensors_Encoders_initNative(JNIEnv *pEnv, jobject/*instance*/)
+Java_net_gearmaniacs_teamcode_hardware_sensors_Encoders_initNative(JNIEnv *pEnv, jobject /*instance*/)
 {
+    currentXId = pEnv->GetStaticFieldID(Cache::robotPosClass, "currentX", "D");
+    currentYId = pEnv->GetStaticFieldID(Cache::robotPosClass, "currentY", "D");
+    currentAngleId = pEnv->GetStaticFieldID(Cache::robotPosClass, "currentAngle", "D");
+
     encoders.init();
-    encodersResultConstructorId = pEnv->GetMethodID(Cache::encodersResultClass, "<init>", "(DDD)V");
 }
 
-extern "C" JNIEXPORT jobject JNICALL
+extern "C" JNIEXPORT void JNICALL
 Java_net_gearmaniacs_teamcode_hardware_sensors_Encoders_updateNative(
         JNIEnv *pEnv, jobject /*instance*/,
-        jdouble leftPos, jdouble rightPos, jdouble backPos, jdouble currentAngle)
+        jdouble leftPos, jdouble rightPos, jdouble backPos)
 {
-    const RobotPose pose{ double(leftPos), double(rightPos), double(backPos) };
-    const auto[deltaX, deltaY, deltaAngle] = encoders.update(pose, double(currentAngle));
+    using namespace Cache;
 
-    return pEnv->NewObject(Cache::encodersResultClass, encodersResultConstructorId,
-                           deltaX, deltaY, deltaAngle);
+    const double currentX = pEnv->GetStaticDoubleField(robotPosClass, currentXId);
+    const double currentY = pEnv->GetStaticDoubleField(robotPosClass, currentYId);
+    const double currentAngle = pEnv->GetStaticDoubleField(robotPosClass, currentAngleId);
+
+    const auto[deltaX, deltaY, deltaAngle]=
+        encoders.update({ double(leftPos), double(rightPos), double(backPos) }, currentAngle);
+
+    pEnv->SetStaticDoubleField(robotPosClass, currentXId, currentX + deltaX);
+    pEnv->SetStaticDoubleField(robotPosClass, currentYId, currentY + deltaY);
+    pEnv->SetStaticDoubleField(robotPosClass, currentAngleId, currentAngle + deltaAngle);
 }

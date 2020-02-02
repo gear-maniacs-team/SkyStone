@@ -27,9 +27,9 @@ RobotPose Encoders::update(const RobotPose &pose, const double currentAngle) noe
 
     if (!Math::epsilonEquals(deltaAngle, 0.0))
     {
-        const double sinDeltaAngle = sin(deltaAngle / 2);
-        newX = 2 * sinDeltaAngle * (deltaBack / deltaAngle + DISTANCE_TO_BACK_ENCODER);
-        newY = 2 * sinDeltaAngle * (deltaRight / deltaAngle + DISTANCE_BETWEEN_ENCODER_WHEELS / 2);
+        const double sinDeltaAngle = 2 * sin(deltaAngle / 2);
+        newX = sinDeltaAngle * (deltaBack / deltaAngle + DISTANCE_TO_BACK_ENCODER);
+        newY = sinDeltaAngle * (deltaRight / deltaAngle + DISTANCE_BETWEEN_ENCODER_WHEELS / 2);
     }
 
     const double averageOrientation = -(currentAngle + deltaAngle / 2);

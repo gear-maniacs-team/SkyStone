@@ -1,6 +1,5 @@
 package net.gearmaniacs.teamcode.hardware.sensors
 
-import android.util.Log
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode
 import com.qualcomm.robotcore.hardware.DcMotorSimple
@@ -9,7 +8,6 @@ import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamRobot
 import net.gearmaniacs.teamcode.utils.IHardware
 import net.gearmaniacs.teamcode.utils.IUpdatable
-import net.gearmaniacs.teamcode.utils.PerformanceProfiler
 import net.gearmaniacs.teamcode.utils.epsilonEquals
 import kotlin.math.cos
 import kotlin.math.sin
@@ -84,17 +82,20 @@ class Encoders : IHardware, IUpdatable {
             newX = deltaBack
             newY = deltaRight
         } else {
-            newX = 2 * sin(deltaAngle / 2) * (deltaBack / deltaAngle + DISTANCE_BETWEEN_BACK_ENCODER_AND_CENTER)
-            newY = 2 * sin(deltaAngle / 2) * (deltaRight / deltaAngle + DISTANCE_BETWEEN_ENCODER_WHEELS / 2)
+            val sinDeltaAngle = sin(deltaAngle / 2.0)
+            newX = 2.0 * sinDeltaAngle * (deltaBack / deltaAngle + DISTANCE_BETWEEN_BACK_ENCODER_AND_CENTER)
+            newY = 2.0 * sinDeltaAngle * (deltaRight / deltaAngle + DISTANCE_BETWEEN_ENCODER_WHEELS / 2)
         }
 
-        val averageOrientation = -(currentAngle + deltaAngle / 2)
+        val averageOrientation = -(currentAngle + deltaAngle / 2.0)
 
         // Calculate and update the position values
         // Rotate the cartesian coordinate system by transforming into polar form, adding the angle and then
         // transforming back into cartesian form.
-        RobotPos.currentX += newX * cos(averageOrientation) - newY * sin(averageOrientation)
-        RobotPos.currentY += newX * sin(averageOrientation) + newY * cos(averageOrientation)
+        val sinAverageOrientation = sin(averageOrientation)
+        val cosAverageOrientation = cos(averageOrientation)
+        RobotPos.currentX += newX * cosAverageOrientation - newY * sinAverageOrientation
+        RobotPos.currentY += newX * sinAverageOrientation + newY * cosAverageOrientation
         RobotPos.currentAngle += deltaAngle
 
         previousBackPosition = backPos
@@ -105,15 +106,15 @@ class Encoders : IHardware, IUpdatable {
     /**
      * Calling updateNative before initNative will result in undefined behavior
      */
-    private external fun updateNative(leftPos: Double, rightPos: Double, backPos: Double, currentAngle: Double): Result
+    private external fun updateNative(leftPos: Double, rightPos: Double, backPos: Double)
 
     override fun update() {
         val leftPos: Double
         val rightPos: Double
         val backPos: Double
 
-        val robot = TeamRobot.getRobot() ?: return
-        if (!robot.isOpModeActive) return
+        val robot = TeamRobot.getRobot()
+        if (robot == null || !robot.isOpModeActive) return
 
         if (robot.useBulkRead) {
             leftPos = robot.bulkData2.getMotorCurrentPosition(left).toDouble()
@@ -128,18 +129,8 @@ class Encoders : IHardware, IUpdatable {
 
 //        linearUpdate(leftPos, rightPos, backPos)
 //        updateUsingArcs(leftPos, rightPos, backPos)
-
-        val result = updateNative(ticksToCM(leftPos), ticksToCM(rightPos), ticksToCM(backPos), RobotPos.currentAngle)
-        RobotPos.currentX += result.deltaX
-        RobotPos.currentY += result.deltaY
-        RobotPos.currentAngle += result.deltaAngle
+        updateNative(ticksToCM(leftPos), ticksToCM(rightPos), ticksToCM(backPos))
     }
-
-    class Result(
-        val deltaX: Double,
-        val deltaY: Double,
-        val deltaAngle: Double
-    )
 
     companion object {
         private const val DIAMETER = 7.2
@@ -148,6 +139,6 @@ class Encoders : IHardware, IUpdatable {
         private const val DISTANCE_BETWEEN_ENCODER_WHEELS = 19.6125
         private const val DISTANCE_BETWEEN_BACK_ENCODER_AND_CENTER = 14.2 // The distance to the tracking center
 
-        fun ticksToCM(x: Double) = (DIAMETER * Math.PI * x) / TICKS_PER_REVOLUTION
+        fun ticksToCM(ticks: Double) = (DIAMETER * Math.PI * ticks) / TICKS_PER_REVOLUTION
     }
 }

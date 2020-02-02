@@ -5,7 +5,7 @@
 // JVM Cached Classes
 namespace Cache
 {
-    inline jclass encodersResultClass;
+    inline jclass robotPosClass;
 
     jclass cacheClass(JNIEnv *env, jclass cls);
     void createCaches(JNIEnv *env);
