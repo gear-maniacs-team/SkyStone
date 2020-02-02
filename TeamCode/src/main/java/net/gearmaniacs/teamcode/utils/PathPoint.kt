@@ -4,8 +4,8 @@ data class PathPoint(
     val cmX: Double,
     val cmY: Double,
     val angle: Double,
-    val moveSpeed: Double = 0.0,
-    val turnSpeed: Double = 0.0,
+    val moveSpeed: Double = 1.0,
+    val turnSpeed: Double = 1.0,
     val action: Int = ACTION_NONE
 ) {
 

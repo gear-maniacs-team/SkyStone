@@ -1,5 +1,6 @@
 package net.gearmaniacs.teamcode.hardware.sensors
 
+import android.util.Log
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode
 import com.qualcomm.robotcore.hardware.DcMotorSimple
@@ -8,6 +9,7 @@ import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamRobot
 import net.gearmaniacs.teamcode.utils.IHardware
 import net.gearmaniacs.teamcode.utils.IUpdatable
+import net.gearmaniacs.teamcode.utils.PerformanceProfiler
 import net.gearmaniacs.teamcode.utils.epsilonEquals
 import kotlin.math.cos
 import kotlin.math.sin
@@ -24,8 +26,6 @@ class Encoders : IHardware, IUpdatable {
     private var previousLeftPosition = 0.0
     private var previousRightPosition = 0.0
     private var previousBackPosition = 0.0
-
-    var useBulkRead = false
 
     override fun init(hardwareMap: HardwareMap) {
         val dcMotors = hardwareMap.dcMotor
@@ -102,6 +102,9 @@ class Encoders : IHardware, IUpdatable {
         previousRightPosition = rightPos
     }
 
+    /**
+     * Calling updateNative before initNative will result in undefined behavior
+     */
     private external fun updateNative(leftPos: Double, rightPos: Double, backPos: Double, currentAngle: Double): Result
 
     override fun update() {
@@ -109,10 +112,13 @@ class Encoders : IHardware, IUpdatable {
         val rightPos: Double
         val backPos: Double
 
-        if (useBulkRead) {
-            leftPos = TeamRobot.getBulkData2().getMotorCurrentPosition(left).toDouble()
-            rightPos = -TeamRobot.getBulkData1().getMotorCurrentPosition(right).toDouble()
-            backPos = -TeamRobot.getBulkData1().getMotorCurrentPosition(back).toDouble()
+        val robot = TeamRobot.getRobot() ?: return
+        if (!robot.isOpModeActive) return
+
+        if (robot.useBulkRead) {
+            leftPos = robot.bulkData2.getMotorCurrentPosition(left).toDouble()
+            rightPos = -robot.bulkData1.getMotorCurrentPosition(right).toDouble()
+            backPos = -robot.bulkData2.getMotorCurrentPosition(back).toDouble()
         } else {
             // All must return a positive value when moving forward
             leftPos = left.currentPosition.toDouble()

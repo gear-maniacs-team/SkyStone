@@ -23,7 +23,6 @@ Java_net_gearmaniacs_teamcode_hardware_sensors_Encoders_updateNative(
     const RobotPose pose{ double(leftPos), double(rightPos), double(backPos) };
     const auto[deltaX, deltaY, deltaAngle] = encoders.update(pose, double(currentAngle));
 
-
     return pEnv->NewObject(Cache::encodersResultClass, encodersResultConstructorId,
                            deltaX, deltaY, deltaAngle);
 }

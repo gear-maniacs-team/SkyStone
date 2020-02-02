@@ -10,7 +10,7 @@ namespace
 
 void Encoders::init() noexcept
 {
-    previousPose = RobotPose();
+    previousPose = {};
 }
 
 RobotPose Encoders::update(const RobotPose &pose, const double currentAngle) noexcept
@@ -20,7 +20,7 @@ RobotPose Encoders::update(const RobotPose &pose, const double currentAngle) noe
     const double deltaBack = pose.back - previousPose.back;
     const double deltaAngle = (deltaLeft - deltaRight) / DISTANCE_BETWEEN_ENCODER_WHEELS;
 
-    previousPose = { deltaLeft, deltaRight, deltaBack };
+    previousPose = pose;
 
     double newX = deltaBack;
     double newY = deltaRight;

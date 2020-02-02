@@ -19,13 +19,16 @@ class TeamRobot {
         private set
     lateinit var expansionHub2: ExpansionHubEx
         private set
-    lateinit var bulkInputData1: RevBulkData
+    @Volatile
+    lateinit var bulkData1: RevBulkData
         private set
-    lateinit var bulkInputData2: RevBulkData
+    @Volatile
+    lateinit var bulkData2: RevBulkData
         private set
 
     var isOpModeActive = false
         private set
+    var useBulkRead = true
 
     fun init(
         hardwareMap: HardwareMap,
@@ -36,8 +39,11 @@ class TeamRobot {
         hardwareInstances = hardwareList
         updatableInstances = updatableList
 
+        INSTANCE = this
+
         expansionHub1 = hardwareMap.getDevice(EXPANSION_HUB_1_NAME)
         expansionHub2 = hardwareMap.getDevice(EXPANSION_HUB_2_NAME)
+        updateExpansionHubs()
 
         hardwareInstances.forEach {
             it.init(hardwareMap)
@@ -49,12 +55,14 @@ class TeamRobot {
             it.start()
         }
 
-        if (updatableInstances.isNotEmpty())
+        if (updatableInstances.isNotEmpty() || useBulkRead)
             thread(block = ::updateAll)
     }
 
     private fun updateAll() {
         while (isOpModeActive) {
+            updateExpansionHubs()
+
             updatableInstances.forEach {
                 it.update()
             }
@@ -73,9 +81,10 @@ class TeamRobot {
         INSTANCE = null
     }
 
-    fun updateExpansionHubs() {
-        bulkInputData1 = expansionHub1.bulkInputData
-        bulkInputData2 = expansionHub2.bulkInputData
+    private fun updateExpansionHubs() {
+        if (!useBulkRead) return
+        bulkData1 = expansionHub1.bulkInputData
+        bulkData2 = expansionHub2.bulkInputData
     }
 
     companion object {
@@ -85,17 +94,19 @@ class TeamRobot {
         @Volatile
         private var INSTANCE: TeamRobot? = null
 
-        /*
-         * This function should only be called after TeamRobot::init has been called
-         * and before TeamRobot::stop was called
-         *
-         * If it is called at any other time, the function will throw an NPE
+        /**
+         * This function will return null before TeamRobot::init has been called
+         * and after TeamRobot::stop was called
          */
-        fun getRobot(): TeamRobot = INSTANCE!!
+        fun getRobot(): TeamRobot? = INSTANCE
 
-        fun getBulkData1() = getRobot().bulkInputData1
+        fun getBulkData1() = getRobot()?.bulkData1
 
-        fun getBulkData2() = getRobot().bulkInputData2
+        fun getBulkData2() = getRobot()?.bulkData2
+
+        fun isOpModeActive() = getRobot()?.isOpModeActive ?: false
+
+        fun useBulkRead() = getRobot()?.useBulkRead ?: false
 
         init {
             Log.v("Gear Maniacs", "Loaded Library")

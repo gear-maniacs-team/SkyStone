@@ -50,7 +50,7 @@ abstract class MainTeleOp : OpMode() {
     }
 
     override fun init() {
-        check(robot.isOpModeActive) { "TeamRobot::init must be called in child classes" }
+        check(robot.isOpModeActive) { "TeamRobot::init must be called in all child classes" }
         wheels.setModeAll(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
 
         gripper = hardwareMap.getDevice("gripper")

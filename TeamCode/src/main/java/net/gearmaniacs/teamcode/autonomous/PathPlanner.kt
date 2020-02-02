@@ -27,7 +27,7 @@ class PathPlanner : MainTeleOp() {
     override fun start() {
         super.start()
         thread {
-            while (TeamRobot.getRobot().isOpModeActive) {
+            while (robot.isOpModeActive) {
                 if (gamepad1.x) {
                     val it = PathPoint(RobotPos.currentX, RobotPos.currentY, RobotPos.currentAngle)
                     list.add(it)
