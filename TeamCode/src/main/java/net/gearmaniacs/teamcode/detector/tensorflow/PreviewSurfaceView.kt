@@ -1,4 +1,4 @@
-package net.gearmaniacs.teamcode.detector
+package net.gearmaniacs.teamcode.detector.tensorflow
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -22,7 +22,8 @@ class PreviewSurfaceView(
     private var renderThread: RenderThread? = null
     private val visionPreviewFrameQueue = EvictingBlockingQueue(ArrayBlockingQueue<Bitmap>(4))
     @Volatile
-    private var internalRenderingState = RenderingState.STOPPED
+    private var internalRenderingState =
+        RenderingState.STOPPED
     private val syncObj = Any()
     @Volatile
     private var userRequestedActive = false
@@ -89,7 +90,8 @@ class PreviewSurfaceView(
                 } catch (e: InterruptedException) {
                     e.printStackTrace()
                 }
-                internalRenderingState = RenderingState.STOPPED
+                internalRenderingState =
+                    RenderingState.STOPPED
             } else {
                 Log.d(TAG, "CheckState(): already deactivated")
             }
@@ -101,7 +103,8 @@ class PreviewSurfaceView(
              */
             if (internalRenderingState == RenderingState.STOPPED) {
                 Log.d(TAG, "CheckState(): activating viewport")
-                internalRenderingState = RenderingState.PAUSED
+                internalRenderingState =
+                    RenderingState.PAUSED
                 internalRenderingState = if (userRequestedPause) {
                     RenderingState.PAUSED
                 } else {

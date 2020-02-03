@@ -1,4 +1,4 @@
-package net.gearmaniacs.teamcode.detector
+package net.gearmaniacs.teamcode.detector.tensorflow
 
 import android.graphics.RectF
 import kotlin.math.roundToInt

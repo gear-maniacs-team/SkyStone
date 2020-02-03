@@ -79,7 +79,7 @@ class VuforiaManager {
     }
 
     companion object {
-        private const val TFOD_MODEL_ASSET = "Skystone.tflite"
+        private const val TFOD_MODEL_ASSET = "CustomSkystone.tflite"
         const val LABEL_STONE = "stone"
         const val LABEL_SKYSTONE = "skystone"
         private const val VUFORIA_KEY =

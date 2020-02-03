@@ -32,7 +32,7 @@ Java_net_gearmaniacs_teamcode_hardware_sensors_Encoders_updateNative(
     const double currentY = pEnv->GetStaticDoubleField(robotPosClass, currentYId);
     const double currentAngle = pEnv->GetStaticDoubleField(robotPosClass, currentAngleId);
 
-    const auto[deltaX, deltaY, deltaAngle]=
+    const auto[deltaX, deltaY, deltaAngle] =
         encoders.update({ double(leftPos), double(rightPos), double(backPos) }, currentAngle);
 
     pEnv->SetStaticDoubleField(robotPosClass, currentXId, currentX + deltaX);

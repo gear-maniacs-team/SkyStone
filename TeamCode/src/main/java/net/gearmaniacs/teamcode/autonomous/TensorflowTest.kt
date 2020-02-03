@@ -8,8 +8,8 @@ import android.widget.LinearLayout
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.util.RobotLog
-import net.gearmaniacs.teamcode.detector.PreviewSurfaceView
-import net.gearmaniacs.teamcode.detector.TFLiteClassifier
+import net.gearmaniacs.teamcode.detector.tensorflow.PreviewSurfaceView
+import net.gearmaniacs.teamcode.detector.tensorflow.TFLiteClassifier
 import net.gearmaniacs.teamcode.utils.fastLazy
 import org.firstinspires.ftc.robotcore.external.ClassFactory
 import org.firstinspires.ftc.robotcore.external.android.util.Size
@@ -40,7 +40,11 @@ class TensorflowTest : OpMode(), CameraStreamSource {
         private const val CAMERA_FPS = 20
     }
 
-    private val classifier by fastLazy { TFLiteClassifier(hardwareMap.appContext) }
+    private val classifier by fastLazy {
+        TFLiteClassifier(
+            hardwareMap.appContext
+        )
+    }
     private val latestBitmap = AtomicReference<Pair<Int, Bitmap>>()
     private var cameraMonitorViewId = 0
     private lateinit var camera: Camera
@@ -139,7 +143,10 @@ class TensorflowTest : OpMode(), CameraStreamSource {
 
             check(viewportContainerLayout.childCount == 0) { "Preview container specified by user is not empty!" }
 
-            preview = PreviewSurfaceView(AppUtil.getInstance().activity, null).apply {
+            preview = PreviewSurfaceView(
+                AppUtil.getInstance().activity,
+                null
+            ).apply {
                 setSize(Size(CAMERA_WIDTH, CAMERA_HEIGHT))
                 layoutParams = LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,

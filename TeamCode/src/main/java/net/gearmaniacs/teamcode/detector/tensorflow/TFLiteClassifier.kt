@@ -1,19 +1,17 @@
-package net.gearmaniacs.teamcode.detector
+package net.gearmaniacs.teamcode.detector.tensorflow
 
+/*
 import android.content.Context
 import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.graphics.RectF
-import android.util.Log
 import org.tensorflow.lite.Interpreter
 import java.io.FileInputStream
 import java.io.IOException
-import java.nio.BufferOverflowException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.channels.FileChannel
-import java.util.*
-import kotlin.collections.ArrayList
+import java.util.HashMap
 
 class TFLiteClassifier(private val context: Context) {
 
@@ -149,6 +147,7 @@ class TFLiteClassifier(private val context: Context) {
     companion object {
         private const val TFLITE_FILE = "CustomSkystone.tflite"
         private const val LABELS_FILE = "labelmap.txt"
-        private const val NUM_DETECTIONS = 5
+        private const val NUM_DETECTIONS = 10
     }
 }
+*/
