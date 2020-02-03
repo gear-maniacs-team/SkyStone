@@ -1,5 +1,6 @@
 package net.gearmaniacs.teamcode.hardware.sensors
 
+import android.util.Log
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode
 import com.qualcomm.robotcore.hardware.DcMotorSimple
@@ -27,9 +28,9 @@ class Encoders : IHardware, IUpdatable {
 
     override fun init(hardwareMap: HardwareMap) {
         val dcMotors = hardwareMap.dcMotor
-        left = dcMotors["BL"]
-        right = dcMotors["TR"]
-        back = dcMotors["TL"]
+        left = dcMotors["intake_left"]
+        right = dcMotors["intake_right"]
+        back = dcMotors["lift_left"]
 
         left.direction = DcMotorSimple.Direction.FORWARD
         right.direction = DcMotorSimple.Direction.FORWARD
@@ -117,19 +118,18 @@ class Encoders : IHardware, IUpdatable {
         if (robot == null || !robot.isOpModeActive) return
 
         if (robot.useBulkRead) {
-            leftPos = robot.bulkData2.getMotorCurrentPosition(left).toDouble()
-            rightPos = -robot.bulkData1.getMotorCurrentPosition(right).toDouble()
-            backPos = -robot.bulkData2.getMotorCurrentPosition(back).toDouble()
+            leftPos = -robot.bulkData2.getMotorCurrentPosition(left).toDouble()
+            rightPos = robot.bulkData1.getMotorCurrentPosition(right).toDouble()
+            backPos = robot.bulkData2.getMotorCurrentPosition(back).toDouble()
         } else {
             // All must return a positive value when moving forward
-            leftPos = left.currentPosition.toDouble()
-            rightPos = -right.currentPosition.toDouble()
-            backPos = -back.currentPosition.toDouble()
+            leftPos = -left.currentPosition.toDouble()
+            rightPos = right.currentPosition.toDouble()
+            backPos = back.currentPosition.toDouble()
         }
 
 //        linearUpdate(leftPos, rightPos, backPos)
-//        updateUsingArcs(leftPos, rightPos, backPos)
-        updateNative(ticksToCM(leftPos), ticksToCM(rightPos), ticksToCM(backPos))
+        updateUsingArcs(leftPos, rightPos, backPos)
     }
 
     companion object {

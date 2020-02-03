@@ -56,14 +56,14 @@ abstract class MainTeleOp : OpMode() {
         gripper = hardwareMap.getDevice("gripper")
         spinner = hardwareMap.getDevice("spinner")
 
-//        wheels.setZeroPowerBehaviorAll(DcMotor.ZeroPowerBehavior.BRAKE)
+        wheels.setModeAll(DcMotor.RunMode.RUN_USING_ENCODER)
     }
 
     override fun start() {
         robot.start()
         RobotPos.resetAll()
 
-        thread {
+        /*thread {
             while (robot.isOpModeActive) {
                 intake()
                 lift()
@@ -71,7 +71,7 @@ abstract class MainTeleOp : OpMode() {
                 foundation()
                 Thread.yield()
             }
-        }
+        }*/
     }
 
     override fun loop() {
@@ -104,18 +104,16 @@ abstract class MainTeleOp : OpMode() {
         }
 
         with(telemetry) {
-            addData("X", RobotPos.currentX)
-            addData("Y", RobotPos.currentY)
-            addData("Heading", Math.toDegrees(MathUtils.angleWrap(RobotPos.currentAngle)))
+            addData("X Pos", "%3f", RobotPos.currentX)
+            addData("Y Pos", "%3f", RobotPos.currentY)
+            addData("Degrees", "%3f", Math.toDegrees(MathUtils.angleWrap(RobotPos.currentAngle)))
             addData("--", "--")
-            addData("rightFront power", rightFrontPower)
-            addData("leftFront power", leftFrontPower)
-            addData("rightBack power", rightBackPower)
-            addData("leftBack power", leftBackPower)
+            addData("Power rightFront", rightFrontPower)
+            addData("Power leftFront", leftFrontPower)
+            addData("Power rightBack", rightBackPower)
+            addData("Power leftBack", leftBackPower)
             addData("Lift Target Position", liftTargetPosition)
-
-            update()
-        }
+          }
     }
 
     override fun stop() {
@@ -124,7 +122,7 @@ abstract class MainTeleOp : OpMode() {
 
     private fun curveMovement() {
         val x = gamepad1.right_stick_x.toDouble()
-        val y = expo(-gamepad1.right_stick_y.toDouble(),1.0)
+        val y = expo(-gamepad1.right_stick_y.toDouble(), 1.0)
 
         if (abs(x) == 0.0 && abs(y) == 0.0)
             return
@@ -179,8 +177,6 @@ abstract class MainTeleOp : OpMode() {
 
         val scalingFactor = magnitude / if (abs(speedX) == 0.0) abs(speedY) else abs(speedX)
 
-        telemetry.addData("SpeedX", speedX)
-        telemetry.addData("SpeedY", speedY)
         telemetry.addData("Correction", correction)
 
         val scaledXSpeed = speedX * scalingFactor
@@ -262,8 +258,8 @@ abstract class MainTeleOp : OpMode() {
 
     private companion object {
         private const val WHEELS_SPEED_PRECISION = 0.3
-        private const val WHEELS_SPEED_NORMAL = 0.75
-        private const val WHEELS_SPEED_TURBO = 1.0
+        private const val WHEELS_SPEED_NORMAL = 0.7
+        private const val WHEELS_SPEED_TURBO = 0.8
         private const val INTAKE_POWER = 1.0
         private const val LIFT_POWER = 0.5
 

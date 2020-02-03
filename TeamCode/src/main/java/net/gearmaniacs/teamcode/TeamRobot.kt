@@ -28,6 +28,7 @@ class TeamRobot {
 
     var isOpModeActive = false
         private set
+    @Volatile
     var useBulkRead = true
 
     fun init(

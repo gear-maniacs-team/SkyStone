@@ -42,7 +42,15 @@ class Wheels : IHardware {
     fun setPowerAll(power: Double) {
         leftFront.power = power
         leftBack.power = power
-        rightFront.power = power
-        rightBack.power = power
+        rightFront.power = -power
+        rightBack.power = -power
+        //TODO: Fix
+    }
+
+    fun setVelocityAll(velocity: Double){
+        leftFront.velocity = velocity
+        leftBack.velocity = velocity
+        rightFront.velocity = -velocity
+        rightBack.velocity = -velocity
     }
 }
