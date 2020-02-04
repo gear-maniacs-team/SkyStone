@@ -1,6 +1,5 @@
 package net.gearmaniacs.teamcode.hardware.sensors
 
-import android.util.Log
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode
 import com.qualcomm.robotcore.hardware.DcMotorSimple
@@ -51,9 +50,9 @@ class Encoders : IHardware, IUpdatable {
     private external fun initNative()
 
     private fun linearUpdate(leftPos: Double, rightPos: Double, backPos: Double) {
-        val deltaBack = ticksToCM(backPos - previousBackPosition)
-        val deltaRight = ticksToCM(rightPos - previousRightPosition)
-        val deltaLeft = ticksToCM(leftPos - previousLeftPosition)
+        val deltaBack = Encoders.toCM(backPos - previousBackPosition)
+        val deltaRight = Encoders.toCM(rightPos - previousRightPosition)
+        val deltaLeft = Encoders.toCM(leftPos - previousLeftPosition)
 
         val deltaAngle = (deltaLeft - deltaRight) / DISTANCE_BETWEEN_ENCODER_WHEELS
 
@@ -71,9 +70,9 @@ class Encoders : IHardware, IUpdatable {
     private fun updateUsingArcs(leftPos: Double, rightPos: Double, backPos: Double) {
         val currentAngle = RobotPos.currentAngle
 
-        val deltaBack = ticksToCM(backPos - previousBackPosition)
-        val deltaRight = ticksToCM(rightPos - previousRightPosition)
-        val deltaLeft = ticksToCM(leftPos - previousLeftPosition)
+        val deltaBack = Encoders.toCM(backPos - previousBackPosition)
+        val deltaRight = Encoders.toCM(rightPos - previousRightPosition)
+        val deltaLeft = Encoders.toCM(leftPos - previousLeftPosition)
 
         val deltaAngle = (deltaLeft - deltaRight) / DISTANCE_BETWEEN_ENCODER_WHEELS
 
@@ -133,12 +132,12 @@ class Encoders : IHardware, IUpdatable {
     }
 
     companion object {
-        private const val DIAMETER = 7.2
-        private const val TICKS_PER_REVOLUTION = 8192
+        private const val M_DIAMETER = 7.2
+        private const val M_TICKS_PER_REVOLUTION = 8192
 
         private const val DISTANCE_BETWEEN_ENCODER_WHEELS = 19.6125
         private const val DISTANCE_BETWEEN_BACK_ENCODER_AND_CENTER = 14.2 // The distance to the tracking center
 
-        fun ticksToCM(ticks: Double) = (DIAMETER * Math.PI * ticks) / TICKS_PER_REVOLUTION
+        fun toCM(ticks: Double) = (M_DIAMETER * Math.PI * ticks) / M_TICKS_PER_REVOLUTION
     }
 }

@@ -38,7 +38,7 @@ class GyroBasedCalibration : LinearOpMode() {
 
         val difference = (encoder.right.currentPosition - (-encoder.left.currentPosition)) / RobotPos.currentAngle
         val result =
-            (Encoders.ticksToCM(encoder.right.currentPosition.toDouble()) - Encoders.ticksToCM(-encoder.left.currentPosition.toDouble())) / RobotPos.currentAngle
+            (Encoders.toCM(encoder.right.currentPosition.toDouble()) - Encoders.toCM(-encoder.left.currentPosition.toDouble())) / RobotPos.currentAngle
         while (opModeIsActive()) {
             telemetry.addData("Right",encoder.right.currentPosition)
             telemetry.addData("Left", encoder.left.currentPosition)

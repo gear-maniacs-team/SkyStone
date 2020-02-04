@@ -19,7 +19,7 @@ class MotionProfilingTest : OpMode() {
     private val robot = TeamRobot()
     private val encoder = Encoders()
     private val wheels = Wheels()
-    private val controller = PIDFController(PIDCoefficients(0.0, 0.0, 0.0), 1 / MAX_VEL, 1 / MAX_ACC)
+    private val controller = PIDFController(PIDCoefficients(0.0, 0.0, 0.0), 1 / MAX_VEL, 0.0)
     private var startOfMotion = 0L
 
     override fun init() {
@@ -34,13 +34,14 @@ class MotionProfilingTest : OpMode() {
         wheels.setModeAll(DcMotor.RunMode.RUN_USING_ENCODER)
     }
 
-    private var setPoint = 200.0 // cm
+    private var
+            setPoint = 400.0 // cm
     private val motionProfile = MotionProfileGenerator.generateSimpleMotionProfile(
         MotionState(0.0, 0.0, 0.0),
         MotionState(setPoint, 0.0, 0.0),
         MAX_VEL,
         MAX_ACC,
-        100.0
+        600.0
     )
 
     override fun start() {
@@ -62,8 +63,7 @@ class MotionProfilingTest : OpMode() {
 
         telemetry.addData("Elapsed Time", temp)
         telemetry.addData("State", state.toString())
-        val dist =
-            RobotPos.currentY  //ProMotionPlusMaxUltra2Elite.ticksToCM(wheels.rightFront.currentPosition.toDouble())
+        val dist = RobotPos.currentY
         telemetry.addData("Position", dist)
 
         val correctionInfo = controller.update(dist, state.v, state.a)
@@ -74,7 +74,8 @@ class MotionProfilingTest : OpMode() {
     }
 
     companion object {
-        const val MAX_ACC = 118.0
-        const val MAX_VEL = 178.0
+        const val MAX_ACC = 200.0
+        //For Max_VEL : 148 from tests, works not as good if increased, 145 to be safe
+        const val MAX_VEL = 145.0
     }
 }
