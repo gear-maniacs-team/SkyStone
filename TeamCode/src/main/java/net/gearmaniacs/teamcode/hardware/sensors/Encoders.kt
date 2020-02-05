@@ -50,9 +50,9 @@ class Encoders : IHardware, IUpdatable {
     private external fun initNative()
 
     private fun linearUpdate(leftPos: Double, rightPos: Double, backPos: Double) {
-        val deltaBack = Encoders.toCM(backPos - previousBackPosition)
-        val deltaRight = Encoders.toCM(rightPos - previousRightPosition)
-        val deltaLeft = Encoders.toCM(leftPos - previousLeftPosition)
+        val deltaBack = toCm(backPos - previousBackPosition)
+        val deltaRight = toCm(rightPos - previousRightPosition)
+        val deltaLeft = toCm(leftPos - previousLeftPosition)
 
         val deltaAngle = (deltaLeft - deltaRight) / DISTANCE_BETWEEN_ENCODER_WHEELS
 
@@ -70,18 +70,15 @@ class Encoders : IHardware, IUpdatable {
     private fun updateUsingArcs(leftPos: Double, rightPos: Double, backPos: Double) {
         val currentAngle = RobotPos.currentAngle
 
-        val deltaBack = Encoders.toCM(backPos - previousBackPosition)
-        val deltaRight = Encoders.toCM(rightPos - previousRightPosition)
-        val deltaLeft = Encoders.toCM(leftPos - previousLeftPosition)
+        val deltaBack = toCm(backPos - previousBackPosition)
+        val deltaRight = toCm(rightPos - previousRightPosition)
+        val deltaLeft = toCm(leftPos - previousLeftPosition)
 
         val deltaAngle = (deltaLeft - deltaRight) / DISTANCE_BETWEEN_ENCODER_WHEELS
 
-        val newX: Double
-        val newY: Double
-        if (deltaAngle epsilonEquals 0.0) {
-            newX = deltaBack
-            newY = deltaRight
-        } else {
+        var newX = deltaBack
+        var newY = deltaRight
+        if (!(deltaAngle epsilonEquals 0.0)) {
             val sinDeltaAngle = sin(deltaAngle / 2.0)
             newX = 2.0 * sinDeltaAngle * (deltaBack / deltaAngle + DISTANCE_BETWEEN_BACK_ENCODER_AND_CENTER)
             newY = 2.0 * sinDeltaAngle * (deltaRight / deltaAngle + DISTANCE_BETWEEN_ENCODER_WHEELS / 2)
@@ -138,6 +135,6 @@ class Encoders : IHardware, IUpdatable {
         private const val DISTANCE_BETWEEN_ENCODER_WHEELS = 19.6125
         private const val DISTANCE_BETWEEN_BACK_ENCODER_AND_CENTER = 14.2 // The distance to the tracking center
 
-        fun toCM(ticks: Double) = (M_DIAMETER * Math.PI * ticks) / M_TICKS_PER_REVOLUTION
+        fun toCm(ticks: Double) = (ticks * M_DIAMETER * Math.PI) / M_TICKS_PER_REVOLUTION
     }
 }

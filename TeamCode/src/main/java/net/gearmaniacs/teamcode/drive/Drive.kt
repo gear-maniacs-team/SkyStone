@@ -10,7 +10,6 @@ object Drive {
     const val MAX_RPM = 340
     const val TRACK_WIDTH = 19.1
     const val MOTOR_VELOCITY_F = 32767 / (MAX_RPM * TICKS / 60.0)
-    const val RUN_USING_ENCODER = true
 
     var BASE_CONSTRAINTS = DriveConstraints(
         30.0, 30.0, 0.0,
@@ -26,5 +25,4 @@ object Drive {
     fun ticksToCm(ticks: Int) = (ticks * DIAMETER * Math.PI) / TICKS
 
     fun ticksToCm(ticks: Double) = ticksToCm(ticks.toInt())
-
 }
