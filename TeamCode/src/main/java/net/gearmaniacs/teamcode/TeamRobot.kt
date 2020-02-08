@@ -2,6 +2,7 @@ package net.gearmaniacs.teamcode
 
 import android.util.Log
 import com.qualcomm.robotcore.hardware.HardwareMap
+import com.qualcomm.robotcore.util.RobotLog
 import net.gearmaniacs.teamcode.utils.IHardware
 import net.gearmaniacs.teamcode.utils.IUpdatable
 import net.gearmaniacs.teamcode.utils.getDevice
@@ -9,7 +10,10 @@ import org.openftc.revextensions2.ExpansionHubEx
 import org.openftc.revextensions2.RevBulkData
 import kotlin.concurrent.thread
 
-class TeamRobot {
+class TeamRobot(
+    @Volatile
+    var useBulkRead: Boolean = true
+) {
 
     private var hardwareInstances = emptyList<IHardware>()
     private var updatableInstances = emptyList<IUpdatable>()
@@ -20,16 +24,14 @@ class TeamRobot {
     lateinit var expansionHub2: ExpansionHubEx
         private set
     @Volatile
-    lateinit var bulkData1: RevBulkData
+    var bulkData1: RevBulkData? = null
         private set
     @Volatile
-    lateinit var bulkData2: RevBulkData
+    var bulkData2: RevBulkData? = null
         private set
 
     var isOpModeActive = false
         private set
-    @Volatile
-    var useBulkRead = true
 
     fun init(
         hardwareMap: HardwareMap,
@@ -84,11 +86,26 @@ class TeamRobot {
 
     private fun updateExpansionHubs() {
         if (!useBulkRead) return
-        bulkData1 = expansionHub1.bulkInputData
-        bulkData2 = expansionHub2.bulkInputData
+        val bulkInputData1: RevBulkData? = expansionHub1.bulkInputData
+        val bulkInputData2: RevBulkData? = expansionHub2.bulkInputData
+
+        if (bulkInputData1 == null) {
+            RobotLog.ee(TAG, "Bulk Input Data 1 is null")
+            return
+        }
+
+        if (bulkInputData2 == null) {
+            RobotLog.ee(TAG, "Bulk Input Data 2 is null")
+            return
+        }
+
+        bulkData1 = bulkInputData1
+        bulkData2 = bulkInputData2
     }
 
     companion object {
+        private const val TAG = "TeamRobot"
+
         private const val EXPANSION_HUB_1_NAME = "Expansion Hub 1"
         private const val EXPANSION_HUB_2_NAME = "Expansion Hub 2"
 
