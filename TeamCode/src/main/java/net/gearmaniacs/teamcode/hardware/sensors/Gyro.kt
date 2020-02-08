@@ -2,12 +2,13 @@ package net.gearmaniacs.teamcode.hardware.sensors
 
 import com.qualcomm.hardware.bosch.BNO055IMU
 import com.qualcomm.robotcore.hardware.HardwareMap
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.utils.IHardware
 import net.gearmaniacs.teamcode.utils.IUpdatable
+import net.gearmaniacs.teamcode.utils.getDevice
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference
 
 class Gyro : IHardware, IUpdatable {
 
@@ -35,7 +36,7 @@ class Gyro : IHardware, IUpdatable {
     private var angle = 0f
 
     override fun init(hardwareMap: HardwareMap) {
-        imu = hardwareMap.get(BNO055IMU::class.java, "imu")
+        imu = hardwareMap.getDevice("imu")
 
         val parameters = BNO055IMU.Parameters().apply {
             mode = BNO055IMU.SensorMode.IMU

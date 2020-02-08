@@ -9,6 +9,7 @@ import net.gearmaniacs.teamcode.TeamRobot
 import net.gearmaniacs.teamcode.utils.IHardware
 import net.gearmaniacs.teamcode.utils.IUpdatable
 import net.gearmaniacs.teamcode.utils.epsilonEquals
+import net.gearmaniacs.teamcode.utils.getDevice
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -26,10 +27,9 @@ class Encoders : IHardware, IUpdatable {
     private var previousBackPosition = 0.0
 
     override fun init(hardwareMap: HardwareMap) {
-        val dcMotors = hardwareMap.dcMotor
-        left = dcMotors["intake_left"]
-        right = dcMotors["intake_right"]
-        back = dcMotors["lift_left"]
+        left = hardwareMap.getDevice("intake_left")
+        right = hardwareMap.getDevice("intake_right")
+        back = hardwareMap.getDevice("lift_left")
 
         left.direction = DcMotorSimple.Direction.FORWARD
         right.direction = DcMotorSimple.Direction.FORWARD

@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.HardwareMap
 import net.gearmaniacs.teamcode.utils.IHardware
+import net.gearmaniacs.teamcode.utils.getDevice
 
 class Wheels : IHardware {
 
@@ -16,13 +17,12 @@ class Wheels : IHardware {
         private set
     lateinit var rightBack: DcMotorEx
         private set
-    
+
     override fun init(hardwareMap: HardwareMap) {
-        val dcMotors = hardwareMap.dcMotor
-        leftFront = dcMotors["TL"] as DcMotorEx
-        leftBack = dcMotors["BL"] as DcMotorEx
-        rightFront = dcMotors["TR"] as DcMotorEx
-        rightBack = dcMotors["BR"] as DcMotorEx
+        leftFront = hardwareMap.getDevice("TL")
+        leftBack = hardwareMap.getDevice("BL")
+        rightFront = hardwareMap.getDevice("TR")
+        rightBack = hardwareMap.getDevice("BR")
     }
 
     fun setModeAll(mode: RunMode) {
@@ -47,7 +47,7 @@ class Wheels : IHardware {
         //TODO: Fix
     }
 
-    fun setVelocityAll(velocity: Double){
+    fun setVelocityAll(velocity: Double) {
         leftFront.velocity = velocity
         leftBack.velocity = velocity
         rightFront.velocity = -velocity

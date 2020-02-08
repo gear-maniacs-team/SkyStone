@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
 import net.gearmaniacs.teamcode.utils.IHardware
+import net.gearmaniacs.teamcode.utils.getDevice
 
 class Intake : IHardware {
 
@@ -13,9 +14,8 @@ class Intake : IHardware {
         private set
 
     override fun init(hardwareMap: HardwareMap) {
-        val dcMotors = hardwareMap.dcMotor
-        left = dcMotors["intake_left"] as DcMotorEx
-        right = dcMotors["intake_right"] as DcMotorEx
+        left = hardwareMap.getDevice("intake_left")
+        right = hardwareMap.getDevice("intake_right")
 
         left.direction = DcMotorSimple.Direction.FORWARD
         right.direction = DcMotorSimple.Direction.REVERSE
