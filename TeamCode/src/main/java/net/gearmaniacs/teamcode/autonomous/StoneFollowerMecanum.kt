@@ -57,7 +57,7 @@ class StoneFollowerMecanum : OpMode() {
     override fun start() {
         executor.submit {
             while (robot.isOpModeActive) {
-                vuforia.waitForDetector()
+                vuforia.activateDetector()
                 cube = vuforia.recognitions.firstOrNull {
                     it.label == VuforiaManager.LABEL_STONE
                 }
@@ -72,7 +72,7 @@ class StoneFollowerMecanum : OpMode() {
             }
         }
 
-        vuforia.waitForDetector()
+        vuforia.activateDetector()
     }
 
     override fun loop() {
