@@ -16,7 +16,7 @@ class VuforiaTest : LinearOpMode() {
 
         while (opModeIsActive()) {
             vuforia.recognitions.forEachIndexed { index, recognition ->
-                telemetry.addData(index.toString(), "Top %f, Left %f", recognition.top, recognition.top)
+                telemetry.addData(index.toString(), "Top %f, Left %f", recognition.top, recognition.left)
             }
             telemetry.update()
         }

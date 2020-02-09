@@ -10,6 +10,7 @@ import net.gearmaniacs.teamcode.hardware.motors.Wheels
 import net.gearmaniacs.teamcode.hardware.servos.FoundationServos
 import net.gearmaniacs.teamcode.hardware.servos.OuttakeServos
 import net.gearmaniacs.teamcode.pid.PidController
+import net.gearmaniacs.teamcode.utils.CpuUsage
 import net.gearmaniacs.teamcode.utils.DelayedBoolean
 import net.gearmaniacs.teamcode.utils.MathUtils
 import net.gearmaniacs.teamcode.utils.PerformanceProfiler
@@ -49,6 +50,7 @@ abstract class MainTeleOp : TeamOpMode() {
 
     override fun init() {
         check(robot.isOpModeActive) { "TeamRobot::init must be called in all child classes" }
+        RobotPos.resetAll()
         wheels.setModeAll(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
 
         gripper = hardwareMap.getDevice("gripper")
@@ -59,7 +61,6 @@ abstract class MainTeleOp : TeamOpMode() {
 
     override fun start() {
         super.start()
-        RobotPos.resetAll()
 
         /*thread {
             while (robot.isOpModeActive) {
@@ -74,6 +75,7 @@ abstract class MainTeleOp : TeamOpMode() {
 
     override fun loop() {
         performanceProfiler.update(telemetry)
+        telemetry.addData("Cpu Usage", "${CpuUsage.totalUsage.toInt()}%")
 
         precisionModeOn = gamepad1.right_bumper
         if (gamepad1.b) headingIndependentDrive.invert()
@@ -102,7 +104,7 @@ abstract class MainTeleOp : TeamOpMode() {
             addData("X Pos", "%3f", RobotPos.currentX)
             addData("Y Pos", "%3f", RobotPos.currentY)
             addData("Degrees", "%3f", Math.toDegrees(MathUtils.angleWrap(RobotPos.currentAngle)))
-            addData("--", "--")
+            addLine("--")
             addData("Power rightFront", rightFrontPower)
             addData("Power leftFront", leftFrontPower)
             addData("Power rightBack", rightBackPower)
