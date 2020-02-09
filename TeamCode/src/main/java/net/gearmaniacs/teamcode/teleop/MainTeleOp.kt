@@ -10,11 +10,7 @@ import net.gearmaniacs.teamcode.hardware.motors.Wheels
 import net.gearmaniacs.teamcode.hardware.servos.FoundationServos
 import net.gearmaniacs.teamcode.hardware.servos.OuttakeServos
 import net.gearmaniacs.teamcode.pid.PidController
-import net.gearmaniacs.teamcode.utils.CpuUsage
-import net.gearmaniacs.teamcode.utils.DelayedBoolean
-import net.gearmaniacs.teamcode.utils.MathUtils
-import net.gearmaniacs.teamcode.utils.PerformanceProfiler
-import net.gearmaniacs.teamcode.utils.getDevice
+import net.gearmaniacs.teamcode.utils.*
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.hypot
@@ -57,20 +53,6 @@ abstract class MainTeleOp : TeamOpMode() {
         spinner = hardwareMap.getDevice("spinner")
 
         wheels.setModeAll(DcMotor.RunMode.RUN_USING_ENCODER)
-    }
-
-    override fun start() {
-        super.start()
-
-        /*thread {
-            while (robot.isOpModeActive) {
-                intake()
-                lift()
-                outtake()
-                foundation()
-                Thread.yield()
-            }
-        }*/
     }
 
     override fun loop() {
@@ -146,7 +128,7 @@ abstract class MainTeleOp : TeamOpMode() {
 
     private fun planeMovement() {
         val x = expo(gamepad1.left_stick_x.toDouble(), 1.0)
-        val y = expo(gamepad1.left_stick_y.toDouble(), 1.0)
+        val y = -expo(gamepad1.left_stick_y.toDouble(), 1.0)
 
         if (abs(x) == 0.0 && abs(y) == 0.0) {
             resetStrafePid = true
@@ -168,17 +150,12 @@ abstract class MainTeleOp : TeamOpMode() {
         val speedX = magnitude * sin(angle + Math.PI / 4)
         val speedY = magnitude * sin(angle - Math.PI / 4)
 
-        val scalingFactor = magnitude / if (abs(speedX) == 0.0) abs(speedY) else abs(speedX)
-
         telemetry.addData("Correction", correction)
 
-        val scaledXSpeed = speedX * scalingFactor
-        val scaledYSpeed = speedY * scalingFactor
-
-        rightFrontPower += scaledXSpeed + correction
-        leftFrontPower -= scaledYSpeed - correction
-        rightBackPower += scaledYSpeed + correction
-        leftBackPower -= scaledXSpeed - correction
+        rightFrontPower += speedX + correction
+        leftFrontPower -= speedY - correction
+        rightBackPower += speedY + correction
+        leftBackPower -= speedX - correction
     }
 
     private fun intake() {
