@@ -158,6 +158,32 @@ abstract class MainTeleOp : TeamOpMode() {
         leftBackPower -= speedX - correction
     }
 
+    private fun untestedMovement() {
+        val x = expo(gamepad1.left_stick_x.toDouble(), 1.0)
+        val y = -expo(gamepad1.left_stick_y.toDouble(), 1.0)
+        val theta = expo(gamepad1.right_stick_x.toDouble(), 1.0)
+
+        if (abs(x) == 0.0 && abs(y) == 0.0) {
+            resetStrafePid = true
+            return
+        }
+
+        if (resetStrafePid && !curvedMovement) {
+            strafePid.reset()
+            strafePid.setPoint = RobotPos.currentAngle
+            resetStrafePid = false
+        }
+
+        val correction = if (!curvedMovement) strafePid.compute(RobotPos.currentAngle) else 0.0
+
+        val scaledAngle = DRIVE_BASE_CONSTANT * theta
+        leftFrontPower -= -x - y - scaledAngle
+        leftBackPower -= x - y - scaledAngle
+        rightBackPower += -x - y + scaledAngle
+        rightFrontPower += x - y + scaledAngle
+
+    }
+
     private fun intake() {
         val intakePower = when {
             gamepad2.right_bumper -> INTAKE_POWER
@@ -232,10 +258,10 @@ abstract class MainTeleOp : TeamOpMode() {
         private const val WHEELS_SPEED_TURBO = 0.8
         private const val INTAKE_POWER = 1.0
         private const val LIFT_POWER = 0.5
-
+        private const val DRIVE_BASE_CONSTANT = 10 // drive base length/2 + drive base width/2
         private const val MAX_LIFT_HEIGHT_TICKS = 1200
 
         private fun expo(input: Double, expoFactor: Double): Double =
-            expoFactor * input * input * input + (1 - expoFactor) * input
+                expoFactor * input * input * input + (1 - expoFactor) * input
     }
 }
