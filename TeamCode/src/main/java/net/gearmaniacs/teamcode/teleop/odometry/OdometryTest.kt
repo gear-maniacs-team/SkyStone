@@ -1,10 +1,8 @@
-package net.gearmaniacs.teamcode.odometry
+package net.gearmaniacs.teamcode.teleop.odometry
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamOpMode
-import net.gearmaniacs.teamcode.TeamRobot
 import net.gearmaniacs.teamcode.hardware.sensors.Encoders
 import net.gearmaniacs.teamcode.utils.MathUtils.angleWrap
 import net.gearmaniacs.teamcode.utils.PerformanceProfiler

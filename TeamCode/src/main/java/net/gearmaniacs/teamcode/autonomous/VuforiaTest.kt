@@ -9,7 +9,7 @@ class VuforiaTest : LinearOpMode() {
 
     override fun runOpMode() {
         val vuforia = VuforiaManager()
-        vuforia.startDetectorAsync(hardwareMap)
+        vuforia.init(hardwareMap)
         vuforia.activateDetector()
 
         waitForStart()
@@ -20,5 +20,7 @@ class VuforiaTest : LinearOpMode() {
             }
             telemetry.update()
         }
+
+        vuforia.stop()
     }
 }

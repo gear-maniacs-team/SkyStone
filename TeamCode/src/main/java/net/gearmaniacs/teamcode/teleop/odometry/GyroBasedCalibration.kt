@@ -1,4 +1,4 @@
-package net.gearmaniacs.teamcode.odometry
+package net.gearmaniacs.teamcode.teleop.odometry
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode

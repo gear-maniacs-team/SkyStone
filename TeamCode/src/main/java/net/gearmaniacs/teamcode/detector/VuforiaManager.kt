@@ -3,6 +3,7 @@ package net.gearmaniacs.teamcode.detector
 import android.content.Context
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.util.RobotLog
+import net.gearmaniacs.teamcode.utils.IHardware
 import net.gearmaniacs.teamcode.utils.getDevice
 import org.firstinspires.ftc.robotcore.external.ClassFactory
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
@@ -11,17 +12,20 @@ import org.firstinspires.ftc.robotcore.external.tfod.Recognition
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector
 import kotlin.concurrent.thread
 
-class VuforiaManager {
+class VuforiaManager : IHardware {
 
     private val lock = Any()
     @Volatile
     private var initializing = false
     private var tfod: TFObjectDetector? = null
 
-    fun startDetectorAsync(hardwareMap: HardwareMap) {
+    /**
+     * The initialization is done asynchronously
+     */
+    override fun init(hardwareMap: HardwareMap) {
         check(ClassFactory.getInstance().canCreateTFObjectDetector()) { "This device is not compatible with TFOD!" }
 
-        if (initializing) return
+        if (initializing || tfod != null) return
 
         val webcamName = hardwareMap.getDevice<WebcamName>(DEFAULT_CAMERA_NAME)
 
@@ -60,13 +64,13 @@ class VuforiaManager {
         }
     }
 
-    fun stopCamera() {
+    override fun stop() {
         synchronized(lock) {
             tfod?.let {
                 it.deactivate()
                 it.shutdown()
+                tfod = null
             }
-            tfod = null
         }
     }
 
