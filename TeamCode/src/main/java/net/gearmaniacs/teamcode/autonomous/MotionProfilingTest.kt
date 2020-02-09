@@ -30,6 +30,8 @@ class MotionProfilingTest : TeamOpMode() {
         )
         RobotPos.resetAll()
 
+        controller.setOutputBounds(-1.0, 1.0)
+
         wheels.setModeAll(DcMotor.RunMode.STOP_AND_RESET_ENCODER)
         wheels.setModeAll(DcMotor.RunMode.RUN_USING_ENCODER)
     }
@@ -41,13 +43,11 @@ class MotionProfilingTest : TeamOpMode() {
         MAX_VEL,
         MAX_ACC,
         100.0
-
     )
 
     override fun start() {
         super.start()
         startOfMotion = System.currentTimeMillis()
-        controller.setOutputBounds(-1.0, 1.0)
     }
 
     override fun loop() {

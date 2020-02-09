@@ -1,29 +1,27 @@
 package net.gearmaniacs.teamcode.teleop
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.Servo
 import net.gearmaniacs.teamcode.RobotPos
-import net.gearmaniacs.teamcode.TeamRobot
+import net.gearmaniacs.teamcode.TeamOpMode
 import net.gearmaniacs.teamcode.hardware.motors.Intake
 import net.gearmaniacs.teamcode.hardware.motors.Lift
 import net.gearmaniacs.teamcode.hardware.motors.Wheels
 import net.gearmaniacs.teamcode.hardware.servos.FoundationServos
 import net.gearmaniacs.teamcode.hardware.servos.OuttakeServos
 import net.gearmaniacs.teamcode.pid.PidController
+import net.gearmaniacs.teamcode.utils.DelayedBoolean
 import net.gearmaniacs.teamcode.utils.MathUtils
 import net.gearmaniacs.teamcode.utils.PerformanceProfiler
 import net.gearmaniacs.teamcode.utils.getDevice
-import kotlin.concurrent.thread
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.hypot
 import kotlin.math.sin
 
-abstract class MainTeleOp : OpMode() {
+abstract class MainTeleOp : TeamOpMode() {
 
     private val performanceProfiler = PerformanceProfiler()
-    protected val robot = TeamRobot()
     protected val wheels = Wheels()
     protected val intake = Intake()
     protected val lift = Lift()
@@ -41,8 +39,8 @@ abstract class MainTeleOp : OpMode() {
     private var rightBackPower = 0.0
     private var leftBackPower = 0.0
 
+    private val headingIndependentDrive = DelayedBoolean(400)
     private var resetAngle = 0.0
-    private var orientationIndependentDrive = false
     private var resetStrafePid = true
     private var curvedMovement = false
     private val strafePid = PidController(0.45, 0.0001, 0.5).apply {
@@ -60,7 +58,7 @@ abstract class MainTeleOp : OpMode() {
     }
 
     override fun start() {
-        robot.start()
+        super.start()
         RobotPos.resetAll()
 
         /*thread {
@@ -78,14 +76,11 @@ abstract class MainTeleOp : OpMode() {
         performanceProfiler.update(telemetry)
 
         precisionModeOn = gamepad1.right_bumper
-        if (gamepad1.b) {
-            orientationIndependentDrive = !orientationIndependentDrive
-            Thread.sleep(200L)
-        }
+        if (gamepad1.b) headingIndependentDrive.invert()
 
         if (gamepad1.left_stick_button && gamepad1.right_stick_button) {
             resetAngle = RobotPos.currentAngle
-            Thread.sleep(200L)
+            Thread.sleep(300L)
         }
 
         rightFrontPower = 0.0
@@ -113,11 +108,7 @@ abstract class MainTeleOp : OpMode() {
             addData("Power rightBack", rightBackPower)
             addData("Power leftBack", leftBackPower)
             addData("Lift Target Position", liftTargetPosition)
-          }
-    }
-
-    override fun stop() {
-        robot.stop()
+        }
     }
 
     private fun curveMovement() {
@@ -170,7 +161,7 @@ abstract class MainTeleOp : OpMode() {
 
         val magnitude = hypot(x, y) * if (precisionModeOn) WHEELS_SPEED_PRECISION else 1.0
 
-        val independentAngleCorrection = if (orientationIndependentDrive) RobotPos.currentAngle - resetAngle else 0.0
+        val independentAngleCorrection = if (headingIndependentDrive.value) RobotPos.currentAngle - resetAngle else 0.0
         val angle = atan2(y, x) - independentAngleCorrection
         val speedX = magnitude * sin(angle + Math.PI / 4)
         val speedY = magnitude * sin(angle - Math.PI / 4)
