@@ -1,6 +1,7 @@
 package net.gearmaniacs.teamcode.hardware.motors.type
 
 import com.qualcomm.robotcore.hardware.configuration.DistributorInfo
+import com.qualcomm.robotcore.hardware.configuration.ModernRoboticsMotorControllerParams
 import com.qualcomm.robotcore.hardware.configuration.annotations.DeviceProperties
 import com.qualcomm.robotcore.hardware.configuration.annotations.ExpansionHubPIDFPositionParams
 import com.qualcomm.robotcore.hardware.configuration.annotations.ExpansionHubPIDFVelocityParams
@@ -26,6 +27,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.Rotation
  * * Calculate I: I = P / 10
  * * D remains 0
  */
-@ExpansionHubPIDFVelocityParams(P = 1.32, I = 0.132, D = 0.0, F = 13.2)
+@ExpansionHubPIDFVelocityParams(P = 1.293, I = 0.1293, D = 0.0, F = 12.93)
 @ExpansionHubPIDFPositionParams(P = 5.0)
 interface AndyMark3637

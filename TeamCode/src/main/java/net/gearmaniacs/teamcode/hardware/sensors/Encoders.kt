@@ -34,8 +34,6 @@ class Encoders : IHardware, IUpdatable {
 
         setModeAll(RunMode.STOP_AND_RESET_ENCODER)
         setModeAll(RunMode.RUN_WITHOUT_ENCODER)
-
-        initNative()
     }
 
     fun setModeAll(mode: RunMode) {
@@ -44,7 +42,7 @@ class Encoders : IHardware, IUpdatable {
         back.mode = mode
     }
 
-    private external fun initNative()
+//    private external fun initNative()
 
     private fun linearUpdate(leftPos: Double, rightPos: Double, backPos: Double) {
         val deltaBack = toCm(backPos - previousBackPosition)
@@ -100,7 +98,7 @@ class Encoders : IHardware, IUpdatable {
     /**
      * Calling updateNative before initNative will result in undefined behavior
      */
-    private external fun updateNative(leftPos: Double, rightPos: Double, backPos: Double)
+//    private external fun updateNative(leftPos: Double, rightPos: Double, backPos: Double)
 
     override fun update() {
         val robot = TeamRobot.getRobot()

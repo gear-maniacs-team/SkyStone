@@ -1,5 +1,6 @@
 package net.gearmaniacs.teamcode.utils
 
+import java.io.DataInputStream
 import java.io.File
 import java.io.FileFilter
 import java.util.regex.Pattern
@@ -23,18 +24,11 @@ object CpuUsage {
         }
     }
 
-    private val maxCpuFrequency by lazy {
-        IntArray(cpuCoresNumber) { index ->
-            val path = "/sys/devices/system/cpu/cpu$index/cpufreq/cpuinfo_max_freq"
-            readSystemFile(path)
-        }
-    }
-
     private fun readSystemFile(systemFile: String): Int {
         val process = ProcessBuilder("/system/bin/cat", systemFile).start()
 
-        process.inputStream.bufferedReader().use {
-            return it.readText().trim().toInt()
+        DataInputStream(process.inputStream).use {
+            return it.readInt()
         }
     }
 
@@ -43,12 +37,18 @@ object CpuUsage {
         readSystemFile(path)
     }
 
+    private fun getMaxCpuFrequency() = IntArray(cpuCoresNumber) { index ->
+        val path = "/sys/devices/system/cpu/cpu$index/cpufreq/cpuinfo_max_freq"
+        readSystemFile(path)
+    }
+
     val usage: FloatArray
         get() {
             val current = getCurrentCpuFrequency()
+            val max = getMaxCpuFrequency()
 
             return FloatArray(cpuCoresNumber) { index ->
-                current[index].toFloat() / maxCpuFrequency[index]
+                current[index].toFloat() / max[index]
             }
         }
 
