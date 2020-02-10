@@ -38,6 +38,8 @@ class TeamRobot(
         hardwareList: List<IHardware> = emptyList(),
         updatableList: List<IUpdatable> = emptyList()
     ) {
+        check(INSTANCE != null) { "Another TeamRobot Instance already exists" }
+
         isOpModeActive = true
         hardwareInstances = hardwareList
         updatableInstances = updatableList
@@ -126,9 +128,9 @@ class TeamRobot(
 
         fun useBulkRead() = getRobot()?.useBulkRead ?: false
 
-        init {
+        /*init {
             Log.v("GearManiacsLib", "Loaded Library")
             System.loadLibrary("gear_maniacs")
-        }
+        }*/
     }
 }

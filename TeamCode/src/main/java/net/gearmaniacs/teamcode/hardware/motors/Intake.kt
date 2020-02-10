@@ -1,5 +1,6 @@
 package net.gearmaniacs.teamcode.hardware.motors
 
+import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
@@ -17,12 +18,12 @@ class Intake : IHardware {
         left = hardwareMap.getDevice("intake_left")
         right = hardwareMap.getDevice("intake_right")
 
-        left.direction = DcMotorSimple.Direction.FORWARD
-        right.direction = DcMotorSimple.Direction.REVERSE
+        left.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+        right.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
     }
 
     fun setPowerAll(power: Double) {
         left.power = power
-        right.power = power
+        right.power = -power
     }
 }

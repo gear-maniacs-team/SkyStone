@@ -16,7 +16,8 @@ class VuforiaManager : IHardware {
 
     private val lock = Any()
     @Volatile
-    private var initializing = false
+    private var initialized = false
+    @Volatile
     private var tfod: TFObjectDetector? = null
 
     /**
@@ -25,19 +26,17 @@ class VuforiaManager : IHardware {
     override fun init(hardwareMap: HardwareMap) {
         check(ClassFactory.getInstance().canCreateTFObjectDetector()) { "This device is not compatible with TFOD!" }
 
-        if (initializing || tfod != null) return
+        if (initialized || tfod != null) return
 
         val webcamName = hardwareMap.getDevice<WebcamName>(DEFAULT_CAMERA_NAME)
 
-        thread(start = true, name = "Vuforia Initializer") {
+        thread(name = "Vuforia Initializer") {
             try {
                 synchronized(lock) {
-                    initializing = true
+                    initialized = true
 
                     val localizer = getLocalizerInstance(webcamName)
                     initTfod(hardwareMap.appContext, localizer)
-
-                    initializing = false
                 }
             } catch (e: Exception) {
                 RobotLog.ee(TAG, e, "Initialization Failed")
@@ -50,11 +49,14 @@ class VuforiaManager : IHardware {
 
     fun activateDetector() {
         try {
+            while (!initialized)
+                Thread.yield()
+
             synchronized(lock) {
                 tfod!!.activate()
             }
         } catch (e: Exception) {
-            RobotLog.ee("VuforiaManager", e, "Detector activation failed")
+            RobotLog.ee(TAG, e, "Detector activation failed")
         }
     }
 
@@ -70,6 +72,7 @@ class VuforiaManager : IHardware {
                 it.deactivate()
                 it.shutdown()
                 tfod = null
+                initialized = false
             }
         }
     }
