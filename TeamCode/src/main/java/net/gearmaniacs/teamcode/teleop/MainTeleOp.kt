@@ -1,5 +1,6 @@
 package net.gearmaniacs.teamcode.teleop
 
+import android.util.Log
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.Servo
 import net.gearmaniacs.teamcode.RobotPos
@@ -11,10 +12,8 @@ import net.gearmaniacs.teamcode.hardware.servos.FoundationServos
 import net.gearmaniacs.teamcode.hardware.servos.OuttakeServos
 import net.gearmaniacs.teamcode.pid.PidController
 import net.gearmaniacs.teamcode.utils.*
-import kotlin.math.abs
-import kotlin.math.atan2
-import kotlin.math.hypot
-import kotlin.math.sin
+import kotlin.concurrent.thread
+import kotlin.math.*
 
 abstract class MainTeleOp : TeamOpMode() {
 
@@ -55,9 +54,22 @@ abstract class MainTeleOp : TeamOpMode() {
         wheels.setModeAll(DcMotor.RunMode.RUN_USING_ENCODER)
     }
 
+    override fun start() {
+        super.start()
+
+        thread {
+            while (robot.isOpModeActive) {
+                intake()
+//                lift()
+                outtake()
+                foundation()
+                Thread.yield()
+            }
+        }
+    }
+
     override fun loop() {
         performanceProfiler.update(telemetry)
-        telemetry.addData("Cpu Usage", "${CpuUsage.totalUsage.toInt()}%")
 
         precisionModeOn = gamepad1.right_bumper
         if (gamepad1.b) headingIndependentDrive.invert()
@@ -72,25 +84,28 @@ abstract class MainTeleOp : TeamOpMode() {
         rightBackPower = 0.0
         leftBackPower = 0.0
 
-        curveMovement()
-        planeMovement()
+        testedMovement()
+//        curveMovement()
+//        planeMovement()
 
         with(wheels) {
-            rightFront.power = rightFrontPower
             leftFront.power = leftFrontPower
-            rightBack.power = rightBackPower
             leftBack.power = leftBackPower
+            rightBack.power = rightBackPower
+            rightFront.power = rightFrontPower
         }
 
         with(telemetry) {
+            addData("Heading Independent", headingIndependentDrive.value)
+            addLine("--")
             addData("X Pos", "%3f", RobotPos.currentX)
             addData("Y Pos", "%3f", RobotPos.currentY)
             addData("Degrees", "%3f", Math.toDegrees(MathUtils.angleWrap(RobotPos.currentAngle)))
             addLine("--")
-            addData("Power rightFront", rightFrontPower)
-            addData("Power leftFront", leftFrontPower)
-            addData("Power rightBack", rightBackPower)
-            addData("Power leftBack", leftBackPower)
+            addData("Power rightFront", "%6f", rightFrontPower)
+            addData("Power leftFront", "%6f", leftFrontPower)
+            addData("Power rightBack", "%6f", rightBackPower)
+            addData("Power leftBack", "%6f", leftBackPower)
             addData("Lift Target Position", liftTargetPosition)
         }
     }
@@ -120,10 +135,10 @@ abstract class MainTeleOp : TeamOpMode() {
         speedRight *= percentage
         speedLeft *= percentage
 
-        rightFrontPower += speedRight
-        leftFrontPower += speedLeft
+        leftFrontPower -= speedLeft
+        leftBackPower -= speedLeft
         rightBackPower += speedRight
-        leftBackPower += speedLeft
+        rightFrontPower += speedRight
     }
 
     private fun planeMovement() {
@@ -152,21 +167,30 @@ abstract class MainTeleOp : TeamOpMode() {
 
         telemetry.addData("Correction", correction)
 
-        rightFrontPower += speedX + correction
-        leftFrontPower -= speedY - correction
+        leftFrontPower += -speedY + correction
+        leftBackPower += -speedX + correction
         rightBackPower += speedY + correction
-        leftBackPower -= speedX - correction
+        rightFrontPower += speedX + correction
     }
 
-    private fun untestedMovement() {
+    private fun testedMovement() {
         val x = expo(gamepad1.left_stick_x.toDouble(), 1.0)
         val y = -expo(gamepad1.left_stick_y.toDouble(), 1.0)
         val theta = expo(gamepad1.right_stick_x.toDouble(), 1.0)
 
         if (abs(x) == 0.0 && abs(y) == 0.0) {
             resetStrafePid = true
-            return
+            if (abs(theta) == 0.0)
+                return
         }
+
+        val sinOrientation = sin(RobotPos.currentAngle)
+        val cosOrientation = cos(RobotPos.currentAngle)
+
+        val fieldOrientedX = x * cosOrientation - y * sinOrientation
+        val fieldOrientedY = x * sinOrientation + y * cosOrientation
+
+        val curvedMovement = abs(theta) != 0.0
 
         if (resetStrafePid && !curvedMovement) {
             strafePid.reset()
@@ -174,14 +198,14 @@ abstract class MainTeleOp : TeamOpMode() {
             resetStrafePid = false
         }
 
-        val correction = if (!curvedMovement) strafePid.compute(RobotPos.currentAngle) else 0.0
+        val angle = if (curvedMovement) DRIVE_BASE_CONSTANT * theta else strafePid.compute(RobotPos.currentAngle)
 
-        val scaledAngle = DRIVE_BASE_CONSTANT * theta
-        leftFrontPower -= -x - y - scaledAngle
-        leftBackPower -= x - y - scaledAngle
-        rightBackPower += -x - y + scaledAngle
-        rightFrontPower += x - y + scaledAngle
+        telemetry.addData("Angle Correction", angle)
 
+        leftFrontPower += -fieldOrientedX - fieldOrientedY - angle
+        leftBackPower += fieldOrientedX - fieldOrientedY - angle
+        rightBackPower += -fieldOrientedX - fieldOrientedY + angle
+        rightFrontPower += fieldOrientedX - fieldOrientedY + angle
     }
 
     private fun intake() {
@@ -225,7 +249,7 @@ abstract class MainTeleOp : TeamOpMode() {
         else if (gamepad2.x)
             outtake.retract()
 
-        gripper.position = if (gamepad2.right_trigger > 0) 0.75 else 0.35
+        gripper.position = if (gamepad2.right_trigger > 0) 1.0 else 0.55
 
         if (gamepad2.a)
             spinner.position = 0.15
@@ -258,10 +282,10 @@ abstract class MainTeleOp : TeamOpMode() {
         private const val WHEELS_SPEED_TURBO = 0.8
         private const val INTAKE_POWER = 1.0
         private const val LIFT_POWER = 0.5
-        private const val DRIVE_BASE_CONSTANT = 10 // drive base length/2 + drive base width/2
+        private const val DRIVE_BASE_CONSTANT = 0.205 // drive base length/2 + drive base width/2
         private const val MAX_LIFT_HEIGHT_TICKS = 1200
 
         private fun expo(input: Double, expoFactor: Double): Double =
-                expoFactor * input * input * input + (1 - expoFactor) * input
+            expoFactor * input * input * input + (1 - expoFactor) * input
     }
 }
