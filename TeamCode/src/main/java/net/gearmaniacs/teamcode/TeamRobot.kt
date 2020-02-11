@@ -125,8 +125,6 @@ class TeamRobot(
 
         fun isOpModeActive() = getRobot()?.isOpModeActive ?: false
 
-        fun useBulkRead() = getRobot()?.useBulkRead ?: false
-
         /*init {
             Log.v("GearManiacsLib", "Loaded Library")
             System.loadLibrary("gear_maniacs")
