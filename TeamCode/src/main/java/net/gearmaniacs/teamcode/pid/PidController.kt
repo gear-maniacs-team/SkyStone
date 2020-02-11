@@ -83,6 +83,8 @@ class PidController(
 
         val currentTime = System.currentTimeMillis()
         val deltaTime = currentTime - previousTime
+        if (deltaTime == 0L)
+            return 0.0
 
         if (Ranges.isRangeValid(lastOutput, minOutput, maxOutput) || sign(cumulativeError) != sign(error))
             cumulativeError += error * deltaTime

@@ -24,4 +24,8 @@ repositories {
     }
 }
 
+dependencies {
+    api 'com.acmerobotics.dashboard:dashboard:0.3.8'
+}
+
 apply from: 'build.release.gradle'

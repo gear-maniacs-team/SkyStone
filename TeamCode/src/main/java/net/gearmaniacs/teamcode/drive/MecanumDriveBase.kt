@@ -1,5 +1,8 @@
 package net.gearmaniacs.teamcode.drive
 
+import com.acmerobotics.dashboard.FtcDashboard
+import com.acmerobotics.dashboard.canvas.Canvas
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.acmerobotics.roadrunner.control.PIDCoefficients
 import com.acmerobotics.roadrunner.control.PIDFController
 import com.acmerobotics.roadrunner.drive.DriveSignal
@@ -14,12 +17,10 @@ import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder
 import com.acmerobotics.roadrunner.trajectory.constraints.MecanumConstraints
 import com.acmerobotics.roadrunner.util.NanoClock
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode
-import org.firstinspires.ftc.robotcore.external.Telemetry
-import java.util.ArrayList
+import java.util.*
 
-abstract class MecanumDriveBase(
-    private val telemetry: Telemetry
-) : MecanumDrive(
+
+abstract class MecanumDriveBase : MecanumDrive(
     Drive.kV,
     Drive.kA,
     Drive.kStatic,
@@ -30,10 +31,11 @@ abstract class MecanumDriveBase(
         IDLE, TURN, FOLLOW_TRAJECTORY
     }
 
+    protected val dashboard: FtcDashboard = FtcDashboard.getInstance()
     private val clock: NanoClock = NanoClock.system()
     private var mode = Mode.IDLE
     private val turnController = PIDFController(HEADING_PID).apply {
-        setInputBounds(0.0, 2 * Math.PI)
+        setInputBounds(-Math.PI, Math.PI)
     }
     private var turnProfile: MotionProfile? = null
     private var turnStart = 0.0
@@ -68,12 +70,12 @@ abstract class MecanumDriveBase(
         waitForIdle()
     }
 
-    fun followTrajectory(trajectory: Trajectory?) {
-        follower.followTrajectory(trajectory!!)
+    fun followTrajectory(trajectory: Trajectory) {
+        follower.followTrajectory(trajectory)
         mode = Mode.FOLLOW_TRAJECTORY
     }
 
-    fun followTrajectorySync(trajectory: Trajectory?) {
+    fun followTrajectorySync(trajectory: Trajectory) {
         followTrajectory(trajectory)
         waitForIdle()
     }
@@ -89,15 +91,19 @@ abstract class MecanumDriveBase(
 
     fun update() {
         updatePoseEstimate()
+
         val currentPose = poseEstimate
         val lastError = lastError
-        telemetry.addData("mode", mode)
-        telemetry.addData("x", currentPose.x)
-        telemetry.addData("y", currentPose.y)
-        telemetry.addData("heading", currentPose.heading)
-        telemetry.addData("xError", lastError.x)
-        telemetry.addData("yError", lastError.y)
-        telemetry.addData("headingError", lastError.heading)
+        val packet = TelemetryPacket()
+        val fieldOverlay: Canvas = packet.fieldOverlay()
+
+        packet.put("mode", mode)
+        packet.put("x", currentPose.x)
+        packet.put("y", currentPose.y)
+        packet.put("heading", currentPose.heading)
+        packet.put("xError", lastError.x)
+        packet.put("yError", lastError.y)
+        packet.put("headingError", lastError.heading)
         when (mode) {
             Mode.IDLE -> {
             }
@@ -120,9 +126,29 @@ abstract class MecanumDriveBase(
                 }
             }
             Mode.FOLLOW_TRAJECTORY -> {
-                TODO("Add Trajectory support")
+                setDriveSignal(follower.update(currentPose))
+
+                val trajectory = follower.trajectory
+
+                fieldOverlay.setStrokeWidth(1)
+                fieldOverlay.setStroke("4CAF50")
+                DashboardUtil.drawSampledPath(fieldOverlay, trajectory.path)
+
+                fieldOverlay.setStroke("#F44336")
+                val t = follower.elapsedTime()
+                DashboardUtil.drawRobot(fieldOverlay, trajectory[t])
+
+                fieldOverlay.setStroke("#3F51B5")
+                fieldOverlay.fillCircle(currentPose.x, currentPose.y, 3.0)
+
+                if (!follower.isFollowing()) {
+                    mode = Mode.IDLE
+                    setDriveSignal(DriveSignal())
+                }
             }
         }
+
+        dashboard.sendTelemetryPacket(packet)
     }
 
     fun waitForIdle() {
@@ -163,7 +189,7 @@ abstract class MecanumDriveBase(
     )
 
     companion object {
-        var TRANSLATIONAL_PID = PIDCoefficients(0.0, 0.0, 0.0)
-        var HEADING_PID = PIDCoefficients(0.0, 0.0, 0.0)
+        val TRANSLATIONAL_PID = PIDCoefficients(0.1, 0.0, 0.0)
+        val HEADING_PID = PIDCoefficients(0.1, 0.0, 0.0)
     }
 }

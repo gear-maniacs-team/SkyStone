@@ -1,5 +1,7 @@
 package net.gearmaniacs.teamcode.hardware.sensors
 
+import com.acmerobotics.roadrunner.geometry.Pose2d
+import com.acmerobotics.roadrunner.localization.Localizer
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
@@ -10,7 +12,7 @@ import net.gearmaniacs.teamcode.utils.*
 import kotlin.math.cos
 import kotlin.math.sin
 
-class Encoders : IHardware, IUpdatable {
+class Encoders : IHardware, IUpdatable, Localizer {
 
     lateinit var left: DcMotorEx
         private set
@@ -44,24 +46,6 @@ class Encoders : IHardware, IUpdatable {
 
 //    private external fun initNative()
 
-    private fun linearUpdate(leftPos: Double, rightPos: Double, backPos: Double) {
-        val deltaBack = toCm(backPos - previousBackPosition)
-        val deltaRight = toCm(rightPos - previousRightPosition)
-        val deltaLeft = toCm(leftPos - previousLeftPosition)
-
-        val deltaAngle = (deltaLeft - deltaRight) / DISTANCE_BETWEEN_ENCODER_WHEELS
-
-        val distance = (deltaLeft + deltaRight) / 2
-
-        RobotPos.currentX += distance * cos(RobotPos.currentAngle) - deltaBack * sin(RobotPos.currentAngle)
-        RobotPos.currentY += distance * sin(RobotPos.currentAngle) + deltaBack * cos(RobotPos.currentAngle)
-        RobotPos.currentAngle += deltaAngle
-
-        previousBackPosition = backPos
-        previousLeftPosition = leftPos
-        previousRightPosition = rightPos
-    }
-
     private fun arcUpdate(leftPos: Double, rightPos: Double, backPos: Double) {
         val currentAngle = RobotPos.currentAngle
 
@@ -94,6 +78,10 @@ class Encoders : IHardware, IUpdatable {
         previousLeftPosition = leftPos
         previousRightPosition = rightPos
     }
+
+    override var poseEstimate: Pose2d
+        get() = Pose2d(RobotPos.currentY, RobotPos.currentX, RobotPos.currentAngle)
+        set(value) { RobotPos.currentX = value.y; RobotPos.currentY = value.x; RobotPos.currentAngle = value.heading }
 
     /**
      * Calling updateNative before initNative will result in undefined behavior

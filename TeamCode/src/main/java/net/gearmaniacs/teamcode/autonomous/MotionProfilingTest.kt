@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.hardware.DcMotor
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamOpMode
+import net.gearmaniacs.teamcode.drive.Drive
 import net.gearmaniacs.teamcode.hardware.motors.Wheels
 import net.gearmaniacs.teamcode.hardware.sensors.Encoders
 import net.gearmaniacs.teamcode.utils.PerformanceProfiler
@@ -19,7 +20,7 @@ class MotionProfilingTest : TeamOpMode() {
     private val performanceProfiler = PerformanceProfiler()
     private val encoder = Encoders()
     private val wheels = Wheels()
-    private val controller = PIDFController(PIDCoefficients(0.0, 0.0, 0.0), 1 / MAX_VEL, 0.0)
+    private val controller = PIDFController(PIDCoefficients(0.1, 0.0, 0.0), 1 / Drive.MAX_VEL, 1 / Drive.MAX_ACC)
     private var startOfMotion = 0L
 
     override fun init() {
@@ -40,8 +41,8 @@ class MotionProfilingTest : TeamOpMode() {
     private val motionProfile = MotionProfileGenerator.generateSimpleMotionProfile(
         MotionState(0.0, 0.0, 0.0),
         MotionState(setPoint, 0.0, 0.0),
-        MAX_VEL,
-        MAX_ACC,
+        Drive.MAX_VEL,
+        Drive.MAX_ACC,
         100.0
     )
 
@@ -68,13 +69,8 @@ class MotionProfilingTest : TeamOpMode() {
         telemetry.addData("Position", dist)
 
         controller.targetPosition = state.x
-        val correctionInfo = controller.update(dist, state.v, state.a)
+        val correctionInfo = -controller.update(dist, state.v, state.a)
         telemetry.addData("Correction", correctionInfo)
         wheels.setPowerAll(correctionInfo)
-    }
-
-    companion object {
-        const val MAX_ACC = 200.0
-        const val MAX_VEL = 145.0 // 148 from tests, use 145 to be safe
     }
 }

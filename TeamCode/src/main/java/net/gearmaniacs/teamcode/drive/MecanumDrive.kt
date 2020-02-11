@@ -1,16 +1,17 @@
 package net.gearmaniacs.teamcode.drive
 
+import android.util.Log
 import com.acmerobotics.roadrunner.control.PIDCoefficients
+import com.acmerobotics.roadrunner.localization.Localizer
 import com.qualcomm.hardware.bosch.BNO055IMU
-import com.qualcomm.robotcore.hardware.DcMotor
+import com.qualcomm.robotcore.hardware.*
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode
-import com.qualcomm.robotcore.hardware.DcMotorEx
-import com.qualcomm.robotcore.hardware.HardwareMap
-import com.qualcomm.robotcore.hardware.PIDFCoefficients
+import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.drive.Drive.MOTOR_VELOCITY_F
-import org.firstinspires.ftc.robotcore.external.Telemetry
+import net.gearmaniacs.teamcode.hardware.sensors.Encoders
+import net.gearmaniacs.teamcode.utils.getDevice
 
-class MecanumDrive(hardwareMap: HardwareMap, telemetry: Telemetry) : MecanumDriveBase(telemetry) {
+class MecanumDrive(hardwareMap: HardwareMap) : MecanumDriveBase() {
 
     private val leftFront: DcMotorEx
     private val leftBack: DcMotorEx
@@ -18,6 +19,7 @@ class MecanumDrive(hardwareMap: HardwareMap, telemetry: Telemetry) : MecanumDriv
     private val rightFront: DcMotorEx
     private val motors: List<DcMotorEx>
     private val imu: BNO055IMU = hardwareMap.get(BNO055IMU::class.java, "imu")
+    private var localizerInstance: Localizer = Encoders()
 
     override fun getPIDCoefficients(runMode: RunMode?): PIDCoefficients {
         val coefficients: PIDFCoefficients = leftFront.getPIDFCoefficients(runMode)
@@ -51,7 +53,7 @@ class MecanumDrive(hardwareMap: HardwareMap, telemetry: Telemetry) : MecanumDriv
     }
 
     override val rawExternalHeading: Double
-        get() = imu.angularOrientation.firstAngle.toDouble()
+        get() = RobotPos.currentAngle
 
     override fun getWheelPositions(): List<Double> {
         val positions = ArrayList<Double>(motors.size)
@@ -61,24 +63,30 @@ class MecanumDrive(hardwareMap: HardwareMap, telemetry: Telemetry) : MecanumDriv
         return positions
     }
 
+    override var localizer: Localizer
+        get() = localizerInstance
+        set(value) { throw IllegalAccessError("Localizer broken") }
+
     init {
+        (localizerInstance as Encoders).init(hardwareMap)
         val parameters = BNO055IMU.Parameters()
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS
         imu.initialize(parameters)
         // TODO: if your hub is mounted vertically, remap the IMU axes so that the z-axis points
 // upward (normal to the floor) using a command like the following:
 // BNO055IMUUtil.remapAxes(imu, AxesOrder.XYZ, AxesSigns.NPN);
-        leftFront = hardwareMap.get(DcMotorEx::class.java, "leftFront")
-        leftBack = hardwareMap.get(DcMotorEx::class.java, "leftRear")
-        rightBack = hardwareMap.get(DcMotorEx::class.java, "rightRear")
-        rightFront = hardwareMap.get(DcMotorEx::class.java, "rightFront")
+        leftFront = hardwareMap.getDevice("TL")
+        leftBack = hardwareMap.getDevice("BL")
+        rightBack = hardwareMap.getDevice("BR")
+        rightFront = hardwareMap.getDevice("TR")
+
+        rightBack.direction = DcMotorSimple.Direction.REVERSE
+        rightFront.direction = DcMotorSimple.Direction.REVERSE
+
         motors = listOf(leftFront, leftBack, rightBack, rightFront)
         for (motor in motors) {
             motor.mode = RunMode.RUN_USING_ENCODER
             motor.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         }
-//        if (Drive.RUN_USING_ENCODER && Drive.MOTOR_VELO_PID != null) {
-//            setPIDCoefficients(RunMode.RUN_USING_ENCODER, Drive.MOTOR_VELO_PID)
-//        }
     }
 }
