@@ -64,8 +64,8 @@ class PursuitOpMode : OpMode() {
         with(wheels) {
             rightFront.power = -speedX + rotationCorrection
             leftFront.power = -speedY + rotationCorrection
-            rightBack.power = speedY + rotationCorrection
-            leftBack.power = speedX + rotationCorrection
+            rightRear.power = speedY + rotationCorrection
+            leftRear.power = speedX + rotationCorrection
         }
     }
 

@@ -1,11 +1,10 @@
 package net.gearmaniacs.teamcode
 
-import android.util.Log
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.util.RobotLog
 import net.gearmaniacs.teamcode.utils.IHardware
 import net.gearmaniacs.teamcode.utils.IUpdatable
-import net.gearmaniacs.teamcode.utils.getDevice
+import net.gearmaniacs.teamcode.utils.extensions.getDevice
 import org.openftc.revextensions2.ExpansionHubEx
 import org.openftc.revextensions2.RevBulkData
 import kotlin.concurrent.thread

@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.utils.IHardware
 import net.gearmaniacs.teamcode.utils.IUpdatable
-import net.gearmaniacs.teamcode.utils.getDevice
+import net.gearmaniacs.teamcode.utils.extensions.getDevice
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference

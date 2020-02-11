@@ -6,54 +6,45 @@ import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
 import net.gearmaniacs.teamcode.utils.IHardware
-import net.gearmaniacs.teamcode.utils.getDevice
+import net.gearmaniacs.teamcode.utils.extensions.getDevice
 
 class Wheels : IHardware {
 
+    private var all = emptyList<DcMotorEx>()
     lateinit var leftFront: DcMotorEx
         private set
-    lateinit var leftBack: DcMotorEx
+    lateinit var leftRear: DcMotorEx
         private set
-    lateinit var rightBack: DcMotorEx
+    lateinit var rightRear: DcMotorEx
         private set
     lateinit var rightFront: DcMotorEx
         private set
 
     override fun init(hardwareMap: HardwareMap) {
-        leftFront = hardwareMap.getDevice("TL")
-        leftBack = hardwareMap.getDevice("BL")
-        rightBack = hardwareMap.getDevice("BR")
-        rightFront = hardwareMap.getDevice("TR")
+        leftFront = hardwareMap.getDevice("right_front")
+        leftRear = hardwareMap.getDevice("left_rear")
+        rightRear = hardwareMap.getDevice("right_rear")
+        rightFront = hardwareMap.getDevice("right_front")
 
         leftFront.direction = DcMotorSimple.Direction.REVERSE
-        leftBack.direction = DcMotorSimple.Direction.REVERSE
+        leftRear.direction = DcMotorSimple.Direction.REVERSE
+
+        all = mutableListOf(leftFront, leftRear, rightFront, leftRear)
     }
 
     fun setModeAll(mode: RunMode) {
-        leftFront.mode = mode
-        leftBack.mode = mode
-        rightFront.mode = mode
-        rightBack.mode = mode
+        all.forEach { it.mode = mode }
     }
 
     fun setZeroPowerBehaviorAll(behavior: ZeroPowerBehavior) {
-        leftFront.zeroPowerBehavior = behavior
-        leftBack.zeroPowerBehavior = behavior
-        rightBack.zeroPowerBehavior = behavior
-        rightFront.zeroPowerBehavior = behavior
+        all.forEach { it.zeroPowerBehavior = behavior }
     }
 
     fun setPowerAll(power: Double) {
-        leftFront.power = power
-        leftBack.power = power
-        rightBack.power = power
-        rightFront.power = power
+        all.forEach { it.power = power }
     }
 
     fun setVelocityAll(velocity: Double) {
-        leftFront.velocity = velocity
-        leftBack.velocity = velocity
-        rightBack.velocity = velocity
-        rightFront.velocity = velocity
+        all.forEach { it.velocity = velocity }
     }
 }

@@ -4,7 +4,7 @@ import android.content.Context
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.util.RobotLog
 import net.gearmaniacs.teamcode.utils.IHardware
-import net.gearmaniacs.teamcode.utils.getDevice
+import net.gearmaniacs.teamcode.utils.extensions.getDevice
 import org.firstinspires.ftc.robotcore.external.ClassFactory
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer

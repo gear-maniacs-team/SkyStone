@@ -17,8 +17,9 @@ import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder
 import com.acmerobotics.roadrunner.trajectory.constraints.MecanumConstraints
 import com.acmerobotics.roadrunner.util.NanoClock
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode
+import net.gearmaniacs.teamcode.utils.SystemNanoClock
+import net.gearmaniacs.teamcode.utils.extensions.CM_TO_INCH
 import java.util.*
-
 
 abstract class MecanumDriveBase : MecanumDrive(
     Drive.kV,
@@ -31,7 +32,7 @@ abstract class MecanumDriveBase : MecanumDrive(
         IDLE, TURN, FOLLOW_TRAJECTORY
     }
 
-    protected val dashboard: FtcDashboard = FtcDashboard.getInstance()
+    private val dashboard: FtcDashboard = FtcDashboard.getInstance()
     private val clock: NanoClock = NanoClock.system()
     private var mode = Mode.IDLE
     private val turnController = PIDFController(HEADING_PID).apply {
@@ -43,7 +44,8 @@ abstract class MecanumDriveBase : MecanumDrive(
     private val follower = HolonomicPIDVAFollower(
         TRANSLATIONAL_PID,
         TRANSLATIONAL_PID,
-        HEADING_PID
+        HEADING_PID,
+        clock = SystemNanoClock
     )
     private var lastWheelPositions: List<Double>? = null
     private var lastTimestamp = 0.0
@@ -139,7 +141,7 @@ abstract class MecanumDriveBase : MecanumDrive(
                 DashboardUtil.drawRobot(fieldOverlay, trajectory[t])
 
                 fieldOverlay.setStroke("#3F51B5")
-                fieldOverlay.fillCircle(currentPose.x, currentPose.y, 3.0)
+                fieldOverlay.fillCircle(currentPose.x * CM_TO_INCH, currentPose.y * CM_TO_INCH, 3.0)
 
                 if (!follower.isFollowing()) {
                     mode = Mode.IDLE

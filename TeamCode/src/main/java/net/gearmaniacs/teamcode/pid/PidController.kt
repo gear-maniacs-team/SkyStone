@@ -4,7 +4,7 @@ import android.util.Log
 import com.qualcomm.robotcore.util.Range
 import org.firstinspires.ftc.robotcore.internal.system.Misc
 import net.gearmaniacs.teamcode.utils.Ranges
-import net.gearmaniacs.teamcode.utils.epsilonEquals
+import net.gearmaniacs.teamcode.utils.extensions.epsilonEquals
 import kotlin.math.abs
 import kotlin.math.sign
 

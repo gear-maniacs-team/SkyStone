@@ -12,7 +12,7 @@ import net.gearmaniacs.teamcode.drive.Drive
 import net.gearmaniacs.teamcode.hardware.motors.Wheels
 import net.gearmaniacs.teamcode.hardware.sensors.Encoders
 import net.gearmaniacs.teamcode.utils.PerformanceProfiler
-import net.gearmaniacs.teamcode.utils.getCurrentPosition
+import net.gearmaniacs.teamcode.utils.extensions.getCurrentPosition
 
 @Autonomous(name = "Motion Profiling")
 class MotionProfilingTest : TeamOpMode() {
@@ -58,9 +58,9 @@ class MotionProfilingTest : TeamOpMode() {
         val state = motionProfile[temp]
 
         telemetry.addData("leftFront", wheels.leftFront.getCurrentPosition(robot.bulkData2))
-        telemetry.addData("leftBack", wheels.leftBack.getCurrentPosition(robot.bulkData2))
+        telemetry.addData("leftBack", wheels.leftRear.getCurrentPosition(robot.bulkData2))
         telemetry.addData("rightFront", wheels.rightFront.getCurrentPosition(robot.bulkData1))
-        telemetry.addData("rightBack", wheels.rightBack.getCurrentPosition(robot.bulkData1))
+        telemetry.addData("rightBack", wheels.rightRear.getCurrentPosition(robot.bulkData1))
         telemetry.addLine("--")
 
         telemetry.addData("Elapsed Time", temp)

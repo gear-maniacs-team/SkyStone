@@ -13,9 +13,8 @@ import net.gearmaniacs.teamcode.hardware.servos.FoundationServos
 import net.gearmaniacs.teamcode.hardware.servos.OuttakeServos
 import net.gearmaniacs.teamcode.pid.PidController
 import net.gearmaniacs.teamcode.utils.PathPoint
-import net.gearmaniacs.teamcode.utils.getDevice
-import net.gearmaniacs.teamcode.utils.smaller
-import kotlin.math.abs
+import net.gearmaniacs.teamcode.utils.extensions.getDevice
+import net.gearmaniacs.teamcode.utils.extensions.smaller
 import kotlin.math.atan2
 import kotlin.math.hypot
 import kotlin.math.sin
@@ -142,8 +141,8 @@ open class PathAuto : LinearOpMode() {
         with(wheels) {
             rightFront.power = -speedX + rotation
             leftFront.power = -speedY + rotation
-            rightBack.power = speedY + rotation
-            leftBack.power = speedX + rotation
+            rightRear.power = speedY + rotation
+            leftRear.power = speedX + rotation
         }
     }
 

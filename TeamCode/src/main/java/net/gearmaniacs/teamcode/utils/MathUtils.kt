@@ -1,10 +1,7 @@
 package net.gearmaniacs.teamcode.utils
 
 import net.gearmaniacs.teamcode.pursuit.Point
-import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.sqrt
+import kotlin.math.*
 
 object MathUtils {
 
@@ -74,7 +71,3 @@ object MathUtils {
     fun expo(input: Double, expoFactor: Double): Double =
         expoFactor * input * input * input + (1 - expoFactor) * input
 }
-
-infix fun Double.epsilonEquals(other: Double) = abs(this - other) < MathUtils.EPSILON
-
-infix fun Double.smaller(other: Double) = abs(this) < other

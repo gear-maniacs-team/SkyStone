@@ -9,6 +9,9 @@ import com.qualcomm.robotcore.hardware.HardwareMap
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamRobot
 import net.gearmaniacs.teamcode.utils.*
+import net.gearmaniacs.teamcode.utils.extensions.epsilonEquals
+import net.gearmaniacs.teamcode.utils.extensions.getCurrentPosition
+import net.gearmaniacs.teamcode.utils.extensions.getDevice
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -81,7 +84,10 @@ class Encoders : IHardware, IUpdatable, Localizer {
 
     override var poseEstimate: Pose2d
         get() = Pose2d(RobotPos.currentY, RobotPos.currentX, RobotPos.currentAngle)
-        set(value) { RobotPos.currentX = value.y; RobotPos.currentY = value.x; RobotPos.currentAngle = value.heading }
+        set(value) {
+            // Please do not question this
+            RobotPos.currentX = value.y; RobotPos.currentY = -value.x; RobotPos.currentAngle = value.heading
+        }
 
     /**
      * Calling updateNative before initNative will result in undefined behavior

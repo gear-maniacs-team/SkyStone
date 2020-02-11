@@ -130,8 +130,8 @@ class PidAutoTuner : LinearOpMode() {
         with(wheels) {
             rightFront.power = -speedX
             leftFront.power = -speedY
-            rightBack.power = speedY
-            leftBack.power = speedX
+            rightRear.power = speedY
+            leftRear.power = speedX
         }
 
         return true

@@ -3,7 +3,7 @@ package net.gearmaniacs.teamcode.hardware.servos
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.Servo
 import net.gearmaniacs.teamcode.utils.IHardware
-import net.gearmaniacs.teamcode.utils.getDevice
+import net.gearmaniacs.teamcode.utils.extensions.getDevice
 
 class OuttakeServos : IHardware {
 

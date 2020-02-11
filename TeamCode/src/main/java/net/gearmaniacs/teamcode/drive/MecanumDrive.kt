@@ -1,6 +1,5 @@
 package net.gearmaniacs.teamcode.drive
 
-import android.util.Log
 import com.acmerobotics.roadrunner.control.PIDCoefficients
 import com.acmerobotics.roadrunner.localization.Localizer
 import com.qualcomm.hardware.bosch.BNO055IMU
@@ -9,7 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotor.RunMode
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.drive.Drive.MOTOR_VELOCITY_F
 import net.gearmaniacs.teamcode.hardware.sensors.Encoders
-import net.gearmaniacs.teamcode.utils.getDevice
+import net.gearmaniacs.teamcode.utils.extensions.getDevice
 
 class MecanumDrive(hardwareMap: HardwareMap) : MecanumDriveBase() {
 

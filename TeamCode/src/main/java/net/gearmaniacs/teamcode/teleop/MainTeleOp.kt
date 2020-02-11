@@ -12,6 +12,8 @@ import net.gearmaniacs.teamcode.hardware.servos.OuttakeServos
 import net.gearmaniacs.teamcode.pid.PidController
 import net.gearmaniacs.teamcode.utils.*
 import net.gearmaniacs.teamcode.utils.MathUtils.expo
+import net.gearmaniacs.teamcode.utils.extensions.coerceRange
+import net.gearmaniacs.teamcode.utils.extensions.getDevice
 import kotlin.concurrent.thread
 import kotlin.math.*
 
@@ -30,16 +32,16 @@ abstract class MainTeleOp : TeamOpMode() {
     private var liftTargetPosition = 0
     private var precisionModeOn = false
 
-    private var rightFrontPower = 0.0
     private var leftFrontPower = 0.0
-    private var rightBackPower = 0.0
-    private var leftBackPower = 0.0
+    private var leftRearPower = 0.0
+    private var rightRearPower = 0.0
+    private var rightFrontPower = 0.0
 
     private val headingIndependentDrive = DelayedBoolean(400)
     private var resetAngle = 0.0
     private var resetRotationPid = true
-    private val rotationPid = PidController(0.4, 0.1, 4.0).apply {
-        setOutputRange(-0.35, 0.35)
+    private val rotationPid = PidController(0.6, 0.0, 2.0).apply {
+        setOutputRange(-0.3, 0.3)
     }
 
     override fun init() {
@@ -59,7 +61,7 @@ abstract class MainTeleOp : TeamOpMode() {
         thread {
             while (robot.isOpModeActive) {
                 intake()
-//                lift()
+                lift()
                 outtake()
                 foundation()
                 Thread.yield()
@@ -78,18 +80,18 @@ abstract class MainTeleOp : TeamOpMode() {
             Thread.sleep(300L)
         }
 
-        rightFrontPower = 0.0
         leftFrontPower = 0.0
-        rightBackPower = 0.0
-        leftBackPower = 0.0
+        leftRearPower = 0.0
+        rightRearPower = 0.0
+        rightFrontPower = 0.0
 
         movement()
 
         with(wheels) {
-            leftFront.power = if (leftFrontPower smaller WHEELS_POWER_TOLERANCE) 0.0 else leftFrontPower
-            leftBack.power = if (leftBackPower smaller WHEELS_POWER_TOLERANCE) 0.0 else leftBackPower
-            rightBack.power = if (rightBackPower smaller WHEELS_POWER_TOLERANCE) 0.0 else rightBackPower
-            rightFront.power = if (rightFrontPower smaller WHEELS_POWER_TOLERANCE) 0.0 else rightFrontPower
+            leftFront.power = leftFrontPower.coerceRange(WHEELS_POWER_TOLERANCE)
+            leftRear.power = leftRearPower.coerceRange(WHEELS_POWER_TOLERANCE)
+            rightRear.power = rightRearPower.coerceRange(WHEELS_POWER_TOLERANCE)
+            rightFront.power = rightFrontPower.coerceRange(WHEELS_POWER_TOLERANCE)
         }
 
         with(telemetry) {
@@ -100,8 +102,8 @@ abstract class MainTeleOp : TeamOpMode() {
             addData("Degrees", "%3f", Math.toDegrees(MathUtils.angleWrap(RobotPos.currentAngle)))
             addLine("---")
             addData("Power leftFront", "%5f", leftFrontPower)
-            addData("Power leftBack", "%5f", leftBackPower)
-            addData("Power rightBack", "%5f", rightBackPower)
+            addData("Power leftRear", "%5f", leftRearPower)
+            addData("Power rightRear", "%5f", rightRearPower)
             addData("Power rightFront", "%5f", rightFrontPower)
             addData("Lift Target Position", liftTargetPosition)
         }
@@ -128,8 +130,8 @@ abstract class MainTeleOp : TeamOpMode() {
         }
 
         leftFrontPower -= angleVariation
-        leftBackPower -= angleVariation
-        rightBackPower += angleVariation
+        leftRearPower -= angleVariation
+        rightRearPower += angleVariation
         rightFrontPower += angleVariation
 
         telemetry.addData("Angle Variation", angleVariation)
@@ -144,8 +146,8 @@ abstract class MainTeleOp : TeamOpMode() {
         val fieldOrientedY = x * sinOrientation + y * cosOrientation
 
         leftFrontPower += (-fieldOrientedX - fieldOrientedY) * powerMultiplier
-        leftBackPower += (fieldOrientedX - fieldOrientedY) * powerMultiplier
-        rightBackPower += (-fieldOrientedX - fieldOrientedY) * powerMultiplier
+        leftRearPower += (fieldOrientedX - fieldOrientedY) * powerMultiplier
+        rightRearPower += (-fieldOrientedX - fieldOrientedY) * powerMultiplier
         rightFrontPower += (fieldOrientedX - fieldOrientedY) * powerMultiplier
     }
 

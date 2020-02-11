@@ -31,8 +31,8 @@ abstract class ParkingAuto : LinearOpMode() {
         with(wheels) {
             rightFront.power = power
             leftFront.power = -power
-            rightBack.power = power
-            leftBack.power = -power
+            rightRear.power = power
+            leftRear.power = -power
         }
 
         waitTime(time)
@@ -42,8 +42,8 @@ abstract class ParkingAuto : LinearOpMode() {
         with(wheels) {
             rightFront.power = -power
             leftFront.power = -power
-            rightBack.power = power
-            leftBack.power = power
+            rightRear.power = power
+            leftRear.power = power
         }
 
         waitTime(time)

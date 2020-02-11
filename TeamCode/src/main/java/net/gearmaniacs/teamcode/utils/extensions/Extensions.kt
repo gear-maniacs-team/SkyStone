@@ -1,4 +1,4 @@
-package net.gearmaniacs.teamcode.utils
+package net.gearmaniacs.teamcode.utils.extensions
 
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.HardwareMap

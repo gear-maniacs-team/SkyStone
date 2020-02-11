@@ -9,11 +9,16 @@ import net.gearmaniacs.teamcode.TeamOpMode
 import net.gearmaniacs.teamcode.hardware.sensors.Encoders
 import net.gearmaniacs.teamcode.utils.MathUtils.angleWrap
 import net.gearmaniacs.teamcode.utils.PerformanceProfiler
-import net.gearmaniacs.teamcode.utils.getCurrentPosition
+import net.gearmaniacs.teamcode.utils.extensions.CM_TO_INCH
+import net.gearmaniacs.teamcode.utils.extensions.getCurrentPosition
+import kotlin.math.pow
 
 @TeleOp(name = "Odometry Test", group = "Odometry")
 class OdometryTest : TeamOpMode() {
 
+    private val maxTrajectorySize = 2.0.pow(16.0)
+    private val xTrajectory = ArrayList<Double>(maxTrajectorySize.toInt())
+    private val yTrajectory = ArrayList<Double>(maxTrajectorySize.toInt())
     private val encoder = Encoders()
     private val performanceProfiler = PerformanceProfiler()
     private val dashboard: FtcDashboard = FtcDashboard.getInstance()
@@ -47,10 +52,26 @@ class OdometryTest : TeamOpMode() {
             put("Right encoder", rightPos)
             put("Back encoder", backPos)
         }
+
+        val x = RobotPos.currentY * CM_TO_INCH
+        val y = -RobotPos.currentX * CM_TO_INCH
         val fieldOverlay: Canvas = packet.fieldOverlay()
         fieldOverlay.setStroke("#3F51B5")
-        fieldOverlay.fillCircle(RobotPos.currentY * 0.394, RobotPos.currentX * 0.394, 4.0)
+        fieldOverlay.fillCircle(x, y, 4.0)
 
+        if (x != xTrajectory.lastOrNull() || y == yTrajectory.lastOrNull()) {
+            xTrajectory.add(x)
+            yTrajectory.add(y)
+        }
+
+        drawSampledPath(fieldOverlay)
         dashboard.sendTelemetryPacket(packet)
+    }
+
+    private fun drawSampledPath(canvas: Canvas) {
+        val xPoints = xTrajectory.toDoubleArray()
+        val yPoints = yTrajectory.toDoubleArray()
+
+        canvas.strokePolyline(xPoints, yPoints)
     }
 }
