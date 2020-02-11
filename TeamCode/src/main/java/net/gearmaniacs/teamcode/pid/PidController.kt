@@ -2,9 +2,10 @@ package net.gearmaniacs.teamcode.pid
 
 import android.util.Log
 import com.qualcomm.robotcore.util.Range
-import org.firstinspires.ftc.robotcore.internal.system.Misc
 import net.gearmaniacs.teamcode.utils.Ranges
+import net.gearmaniacs.teamcode.utils.RobotClock
 import net.gearmaniacs.teamcode.utils.extensions.epsilonEquals
+import org.firstinspires.ftc.robotcore.internal.system.Misc
 import kotlin.math.abs
 import kotlin.math.sign
 
@@ -35,7 +36,7 @@ class PidController(
     var setPoint: Double = 0.0
 
     fun reset() {
-        previousTime = System.currentTimeMillis()
+        previousTime =RobotClock.millis()
         cumulativeError = 0.0
         lastError = 0.0
         lastOutput = 0.0
@@ -77,11 +78,11 @@ class PidController(
             firstRun = false
 
             lastError = error
-            previousTime = System.currentTimeMillis()
+            previousTime = RobotClock.millis()
             return 0.0
         }
 
-        val currentTime = System.currentTimeMillis()
+        val currentTime = RobotClock.millis()
         val deltaTime = currentTime - previousTime
         if (deltaTime == 0L)
             return 0.0

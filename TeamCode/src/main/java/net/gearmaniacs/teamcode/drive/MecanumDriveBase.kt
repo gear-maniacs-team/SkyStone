@@ -17,7 +17,7 @@ import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder
 import com.acmerobotics.roadrunner.trajectory.constraints.MecanumConstraints
 import com.acmerobotics.roadrunner.util.NanoClock
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode
-import net.gearmaniacs.teamcode.utils.SystemNanoClock
+import net.gearmaniacs.teamcode.utils.RobotClock
 import net.gearmaniacs.teamcode.utils.extensions.CM_TO_INCH
 import java.util.*
 
@@ -45,7 +45,7 @@ abstract class MecanumDriveBase : MecanumDrive(
         TRANSLATIONAL_PID,
         TRANSLATIONAL_PID,
         HEADING_PID,
-        clock = SystemNanoClock
+        clock = RobotClock
     )
     private var lastWheelPositions: List<Double>? = null
     private var lastTimestamp = 0.0

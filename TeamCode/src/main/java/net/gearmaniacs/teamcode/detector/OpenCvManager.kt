@@ -1,20 +1,19 @@
 package net.gearmaniacs.teamcode.detector
 
 import com.qualcomm.robotcore.hardware.HardwareMap
+import net.gearmaniacs.teamcode.utils.extensions.getDevice
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
-import org.openftc.easyopencv.OpenCvCamera
-import org.openftc.easyopencv.OpenCvCameraRotation
-import org.openftc.easyopencv.OpenCvPipeline
-import org.openftc.easyopencv.OpenCvWebcam
+import org.openftc.easyopencv.*
 
 class OpenCvManager(private var pipeline: OpenCvPipeline) {
 
-    private lateinit var camera: OpenCvWebcam
+    private lateinit var camera: OpenCvCamera
 
     fun startCamera(hardwareMap: HardwareMap) {
         val cameraMonitorViewId = hardwareMap.appContext.resources.getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.packageName)
-        camera = OpenCvWebcam(hardwareMap.get(WebcamName::class.java, "Expensive Webcam"), cameraMonitorViewId)
+        val webcamName = hardwareMap.getDevice<WebcamName>("Expensive Webcam")
+        camera = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId)
 
         camera.openCameraDevice()
         camera.setPipeline(pipeline)

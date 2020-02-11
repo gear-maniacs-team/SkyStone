@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import net.gearmaniacs.teamcode.detector.VuforiaManager
 import net.gearmaniacs.teamcode.utils.CpuUsage
 
-@TeleOp(name = "CustomVuforiaTest")
+@TeleOp(name = "CustomVuforiaTest", group = "Vision")
 class VuforiaTest : LinearOpMode() {
 
     override fun runOpMode() {
