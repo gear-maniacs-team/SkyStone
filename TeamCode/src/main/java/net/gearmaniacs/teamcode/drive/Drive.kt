@@ -3,8 +3,8 @@ package net.gearmaniacs.teamcode.drive
 import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints
 
 object Drive {
-    const val MAX_VEL = 178.0
-    const val MAX_ACC = 118.0
+    const val MAX_VEL = 145.0
+    const val MAX_ACC = 200.0
     const val TICKS = 537.6
     const val DIAMETER = 10
     const val MAX_RPM = 340
@@ -12,7 +12,7 @@ object Drive {
     const val MOTOR_VELOCITY_F = 32767 / (MAX_RPM * TICKS / 60.0)
 
     var BASE_CONSTRAINTS = DriveConstraints(
-        30.0, 30.0, 0.0,
+        MAX_VEL, MAX_ACC, 100.0,
         Math.toRadians(180.0), Math.toRadians(180.0), 0.0
     )
 

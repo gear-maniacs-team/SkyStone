@@ -70,6 +70,11 @@ object MathUtils {
 
         return allPoints
     }
+
+    fun expo(input: Double, expoFactor: Double): Double =
+        expoFactor * input * input * input + (1 - expoFactor) * input
 }
 
 infix fun Double.epsilonEquals(other: Double) = abs(this - other) < MathUtils.EPSILON
+
+infix fun Double.smaller(other: Double) = abs(this) < other

@@ -1,6 +1,4 @@
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-
     implementation project(':FtcRobotController')
     implementation(name: 'RobotCore-release', ext: 'aar')
     implementation(name: 'Hardware-release', ext: 'aar')

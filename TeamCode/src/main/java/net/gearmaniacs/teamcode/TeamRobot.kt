@@ -38,7 +38,7 @@ class TeamRobot(
         hardwareList: List<IHardware> = emptyList(),
         updatableList: List<IUpdatable> = emptyList()
     ) {
-        check(INSTANCE != null) { "Another TeamRobot Instance already exists" }
+        check(INSTANCE == null) { "Another TeamRobot Instance already exists" }
 
         isOpModeActive = true
         hardwareInstances = hardwareList

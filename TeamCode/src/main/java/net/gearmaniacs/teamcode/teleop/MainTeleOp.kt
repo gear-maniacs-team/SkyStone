@@ -1,6 +1,5 @@
 package net.gearmaniacs.teamcode.teleop
 
-import android.util.Log
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.Servo
 import net.gearmaniacs.teamcode.RobotPos
@@ -12,6 +11,7 @@ import net.gearmaniacs.teamcode.hardware.servos.FoundationServos
 import net.gearmaniacs.teamcode.hardware.servos.OuttakeServos
 import net.gearmaniacs.teamcode.pid.PidController
 import net.gearmaniacs.teamcode.utils.*
+import net.gearmaniacs.teamcode.utils.MathUtils.expo
 import kotlin.concurrent.thread
 import kotlin.math.*
 
@@ -37,9 +37,8 @@ abstract class MainTeleOp : TeamOpMode() {
 
     private val headingIndependentDrive = DelayedBoolean(400)
     private var resetAngle = 0.0
-    private var resetStrafePid = true
-    private var curvedMovement = false
-    private val strafePid = PidController(0.45, 0.0001, 0.5).apply {
+    private var resetRotationPid = true
+    private val rotationPid = PidController(0.4, 0.1, 4.0).apply {
         setOutputRange(-0.35, 0.35)
     }
 
@@ -84,128 +83,70 @@ abstract class MainTeleOp : TeamOpMode() {
         rightBackPower = 0.0
         leftBackPower = 0.0
 
-        testedMovement()
-//        curveMovement()
-//        planeMovement()
+        movement()
 
         with(wheels) {
-            leftFront.power = leftFrontPower
-            leftBack.power = leftBackPower
-            rightBack.power = rightBackPower
-            rightFront.power = rightFrontPower
+            leftFront.power = if (leftFrontPower smaller WHEELS_POWER_TOLERANCE) 0.0 else leftFrontPower
+            leftBack.power = if (leftBackPower smaller WHEELS_POWER_TOLERANCE) 0.0 else leftBackPower
+            rightBack.power = if (rightBackPower smaller WHEELS_POWER_TOLERANCE) 0.0 else rightBackPower
+            rightFront.power = if (rightFrontPower smaller WHEELS_POWER_TOLERANCE) 0.0 else rightFrontPower
         }
 
         with(telemetry) {
             addData("Heading Independent", headingIndependentDrive.value)
-            addLine("--")
+            addLine("---")
             addData("X Pos", "%3f", RobotPos.currentX)
             addData("Y Pos", "%3f", RobotPos.currentY)
             addData("Degrees", "%3f", Math.toDegrees(MathUtils.angleWrap(RobotPos.currentAngle)))
-            addLine("--")
-            addData("Power rightFront", "%6f", rightFrontPower)
-            addData("Power leftFront", "%6f", leftFrontPower)
-            addData("Power rightBack", "%6f", rightBackPower)
-            addData("Power leftBack", "%6f", leftBackPower)
+            addLine("---")
+            addData("Power leftFront", "%5f", leftFrontPower)
+            addData("Power leftBack", "%5f", leftBackPower)
+            addData("Power rightBack", "%5f", rightBackPower)
+            addData("Power rightFront", "%5f", rightFrontPower)
             addData("Lift Target Position", liftTargetPosition)
         }
     }
 
-    private fun curveMovement() {
-        val x = gamepad1.right_stick_x.toDouble()
-        val y = expo(-gamepad1.right_stick_y.toDouble(), 1.0)
-
-        if (abs(x) == 0.0 && abs(y) == 0.0)
-            return
-
-        var speedLeft = y + x
-        var speedRight = -y + x
-
-        val max = maxOf(speedLeft, speedRight)
-
-        if (max > 1) {
-            speedLeft /= max
-            speedRight /= max
-        }
-
-        curvedMovement = true
-        resetStrafePid = true
-
-        val percentage = if (precisionModeOn) WHEELS_SPEED_PRECISION else WHEELS_SPEED_NORMAL
-
-        speedRight *= percentage
-        speedLeft *= percentage
-
-        leftFrontPower -= speedLeft
-        leftBackPower -= speedLeft
-        rightBackPower += speedRight
-        rightFrontPower += speedRight
-    }
-
-    private fun planeMovement() {
-        val x = expo(gamepad1.left_stick_x.toDouble(), 1.0)
-        val y = -expo(gamepad1.left_stick_y.toDouble(), 1.0)
-
-        if (abs(x) == 0.0 && abs(y) == 0.0) {
-            resetStrafePid = true
-            return
-        }
-
-        if (resetStrafePid && !curvedMovement) {
-            strafePid.reset()
-            strafePid.setPoint = RobotPos.currentAngle
-            resetStrafePid = false
-        }
-
-        val correction = if (!curvedMovement) strafePid.compute(RobotPos.currentAngle) else 0.0
-
-        val magnitude = hypot(x, y) * if (precisionModeOn) WHEELS_SPEED_PRECISION else 1.0
-
-        val independentAngleCorrection = if (headingIndependentDrive.value) RobotPos.currentAngle - resetAngle else 0.0
-        val angle = atan2(y, x) - independentAngleCorrection
-        val speedX = magnitude * sin(angle + Math.PI / 4)
-        val speedY = magnitude * sin(angle - Math.PI / 4)
-
-        telemetry.addData("Correction", correction)
-
-        leftFrontPower += -speedY + correction
-        leftBackPower += -speedX + correction
-        rightBackPower += speedY + correction
-        rightFrontPower += speedX + correction
-    }
-
-    private fun testedMovement() {
+    private fun movement() {
         val x = expo(gamepad1.left_stick_x.toDouble(), 1.0)
         val y = -expo(gamepad1.left_stick_y.toDouble(), 1.0)
         val theta = expo(gamepad1.right_stick_x.toDouble(), 1.0)
 
-        if (abs(x) == 0.0 && abs(y) == 0.0) {
-            resetStrafePid = true
-            if (abs(theta) == 0.0)
-                return
+        val powerMultiplier = if (precisionModeOn) WHEELS_SPEED_PRECISION else WHEELS_SPEED_NORMAL
+        val curvedMovement = abs(theta) != 0.0
+
+        val angleVariation = if (curvedMovement) {
+            resetRotationPid = true
+            DRIVE_BASE_CONSTANT * theta
+        } else {
+            if (resetRotationPid) {
+                rotationPid.reset()
+                rotationPid.setPoint = RobotPos.currentAngle
+                resetRotationPid = false
+            }
+            rotationPid.compute(RobotPos.currentAngle)
         }
 
-        val sinOrientation = sin(RobotPos.currentAngle)
-        val cosOrientation = cos(RobotPos.currentAngle)
+        leftFrontPower -= angleVariation
+        leftBackPower -= angleVariation
+        rightBackPower += angleVariation
+        rightFrontPower += angleVariation
+
+        telemetry.addData("Angle Variation", angleVariation)
+
+        if (abs(x) == 0.0 && abs(y) == 0.0) return
+
+        val currentAngle = RobotPos.currentAngle
+        val sinOrientation = sin(currentAngle)
+        val cosOrientation = cos(currentAngle)
 
         val fieldOrientedX = x * cosOrientation - y * sinOrientation
         val fieldOrientedY = x * sinOrientation + y * cosOrientation
 
-        val curvedMovement = abs(theta) != 0.0
-
-        if (resetStrafePid && !curvedMovement) {
-            strafePid.reset()
-            strafePid.setPoint = RobotPos.currentAngle
-            resetStrafePid = false
-        }
-
-        val angle = if (curvedMovement) DRIVE_BASE_CONSTANT * theta else strafePid.compute(RobotPos.currentAngle)
-
-        telemetry.addData("Angle Correction", angle)
-
-        leftFrontPower += -fieldOrientedX - fieldOrientedY - angle
-        leftBackPower += fieldOrientedX - fieldOrientedY - angle
-        rightBackPower += -fieldOrientedX - fieldOrientedY + angle
-        rightFrontPower += fieldOrientedX - fieldOrientedY + angle
+        leftFrontPower += (-fieldOrientedX - fieldOrientedY) * powerMultiplier
+        leftBackPower += (fieldOrientedX - fieldOrientedY) * powerMultiplier
+        rightBackPower += (-fieldOrientedX - fieldOrientedY) * powerMultiplier
+        rightFrontPower += (fieldOrientedX - fieldOrientedY) * powerMultiplier
     }
 
     private fun intake() {
@@ -220,8 +161,8 @@ abstract class MainTeleOp : TeamOpMode() {
 
     private fun lift() {
         val posChange = when {
-            gamepad2.dpad_down -> -20
-            gamepad2.dpad_up -> 20
+            gamepad2.dpad_down -> -50
+            gamepad2.dpad_up -> 50
             else -> 0
         }
 
@@ -236,11 +177,8 @@ abstract class MainTeleOp : TeamOpMode() {
         if (posChange != 0)
             Thread.sleep(200)
 
-        val power = if (liftTargetPosition == 0 && lift.left.currentPosition < 300 && lift.right.currentPosition < 300)
-            0.0 else LIFT_POWER
-
         lift.setTargetPositionAll(liftTargetPosition)
-        lift.setPowerAll(power)
+        lift.setPowerAll(LIFT_POWER)
     }
 
     private fun outtake() {
@@ -277,15 +215,12 @@ abstract class MainTeleOp : TeamOpMode() {
     }
 
     private companion object {
-        private const val WHEELS_SPEED_PRECISION = 0.3
-        private const val WHEELS_SPEED_NORMAL = 0.7
-        private const val WHEELS_SPEED_TURBO = 0.8
+        private const val WHEELS_POWER_TOLERANCE = 0.05
+        private const val WHEELS_SPEED_PRECISION = 0.4
+        private const val WHEELS_SPEED_NORMAL = 0.9
         private const val INTAKE_POWER = 1.0
         private const val LIFT_POWER = 0.5
-        private const val DRIVE_BASE_CONSTANT = 0.205 // drive base length/2 + drive base width/2
+        private const val DRIVE_BASE_CONSTANT = 0.5 // measured in Maniacs
         private const val MAX_LIFT_HEIGHT_TICKS = 1200
-
-        private fun expo(input: Double, expoFactor: Double): Double =
-            expoFactor * input * input * input + (1 - expoFactor) * input
     }
 }

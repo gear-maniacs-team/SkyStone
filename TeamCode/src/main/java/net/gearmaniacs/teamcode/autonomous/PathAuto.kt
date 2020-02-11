@@ -14,6 +14,7 @@ import net.gearmaniacs.teamcode.hardware.servos.OuttakeServos
 import net.gearmaniacs.teamcode.pid.PidController
 import net.gearmaniacs.teamcode.utils.PathPoint
 import net.gearmaniacs.teamcode.utils.getDevice
+import net.gearmaniacs.teamcode.utils.smaller
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.hypot
@@ -195,7 +196,5 @@ open class PathAuto : LinearOpMode() {
 
         private const val DISTANCE_ERROR = 1.5
         private val ANGLE_ERROR = Math.toRadians(5.0)
-
-        private infix fun Double.smaller(other: Double) = abs(this) < other
     }
 }
