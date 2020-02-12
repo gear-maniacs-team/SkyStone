@@ -21,7 +21,7 @@ class Wheels : IHardware {
         private set
 
     override fun init(hardwareMap: HardwareMap) {
-        leftFront = hardwareMap.getDevice("right_front")
+        leftFront = hardwareMap.getDevice("left_front")
         leftRear = hardwareMap.getDevice("left_rear")
         rightRear = hardwareMap.getDevice("right_rear")
         rightFront = hardwareMap.getDevice("right_front")
