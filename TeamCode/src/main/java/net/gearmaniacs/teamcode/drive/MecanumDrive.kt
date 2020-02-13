@@ -13,8 +13,8 @@ import net.gearmaniacs.teamcode.utils.extensions.getDevice
 class MecanumDrive(hardwareMap: HardwareMap) : MecanumDriveBase() {
 
     private val leftFront: DcMotorEx
-    private val leftBack: DcMotorEx
-    private val rightBack: DcMotorEx
+    private val leftRear: DcMotorEx
+    private val rightRear: DcMotorEx
     private val rightFront: DcMotorEx
     private val motors: List<DcMotorEx>
     private val imu: BNO055IMU = hardwareMap.get(BNO055IMU::class.java, "imu")
@@ -46,8 +46,8 @@ class MecanumDrive(hardwareMap: HardwareMap) : MecanumDriveBase() {
 
     override fun setMotorPowers(frontLeft: Double, rearLeft: Double, rearRight: Double, frontRight: Double) {
         leftFront.power = frontLeft
-        leftBack.power = rearLeft
-        rightBack.power = rearRight
+        leftRear.power = rearLeft
+        rightRear.power = rearRight
         rightFront.power = frontRight
     }
 
@@ -64,7 +64,9 @@ class MecanumDrive(hardwareMap: HardwareMap) : MecanumDriveBase() {
 
     override var localizer: Localizer
         get() = localizerInstance
-        set(value) { throw IllegalAccessError("Localizer broken") }
+        set(value) {
+            throw IllegalAccessError("Localizer broken")
+        }
 
     init {
         (localizerInstance as Encoders).init(hardwareMap)
@@ -74,15 +76,14 @@ class MecanumDrive(hardwareMap: HardwareMap) : MecanumDriveBase() {
         // TODO: if your hub is mounted vertically, remap the IMU axes so that the z-axis points
 // upward (normal to the floor) using a command like the following:
 // BNO055IMUUtil.remapAxes(imu, AxesOrder.XYZ, AxesSigns.NPN);
-        leftFront = hardwareMap.getDevice("TL")
-        leftBack = hardwareMap.getDevice("BL")
-        rightBack = hardwareMap.getDevice("BR")
-        rightFront = hardwareMap.getDevice("TR")
-
-        rightBack.direction = DcMotorSimple.Direction.REVERSE
+        leftFront = hardwareMap.getDevice("left_front")
+        leftRear = hardwareMap.getDevice("left_rear")
+        rightRear = hardwareMap.getDevice("right_rear")
+        rightFront = hardwareMap.getDevice("right_front")
+        rightRear.direction = DcMotorSimple.Direction.REVERSE
         rightFront.direction = DcMotorSimple.Direction.REVERSE
 
-        motors = listOf(leftFront, leftBack, rightBack, rightFront)
+        motors = listOf(leftFront, leftRear, rightRear, rightFront)
         for (motor in motors) {
             motor.mode = RunMode.RUN_USING_ENCODER
             motor.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
