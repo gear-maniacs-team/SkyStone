@@ -36,7 +36,7 @@ class PidController(
     var setPoint: Double = 0.0
 
     fun reset() {
-        previousTime =RobotClock.millis()
+        previousTime = RobotClock.millis()
         cumulativeError = 0.0
         lastError = 0.0
         lastOutput = 0.0

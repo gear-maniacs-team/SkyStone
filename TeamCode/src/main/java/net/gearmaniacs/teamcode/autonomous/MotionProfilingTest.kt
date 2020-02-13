@@ -20,7 +20,7 @@ class MotionProfilingTest : TeamOpMode() {
     private val performanceProfiler = PerformanceProfiler()
     private val encoder = Encoders()
     private val wheels = Wheels()
-    private val controller = PIDFController(PIDCoefficients(0.1, 0.0, 0.0), 1 / Drive.MAX_VEL, 1 / Drive.MAX_ACC)
+    private val controller = PIDFController(PIDCoefficients(0.09, 0.0, 0.01), 1 / Drive.MAX_VEL, 0.0)
     private var startOfMotion = 0L
 
     override fun init() {

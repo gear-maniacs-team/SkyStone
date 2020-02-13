@@ -1,5 +1,5 @@
 package net.gearmaniacs.teamcode.detector
-
+/*
 import com.qualcomm.robotcore.hardware.HardwareMap
 import net.gearmaniacs.teamcode.utils.extensions.getDevice
 import org.firstinspires.ftc.robotcore.external.Telemetry
@@ -55,3 +55,4 @@ class OpenCvManager(private var pipeline: OpenCvPipeline) {
         telemetry.addData("Overhead time ms", camera.overheadTimeMs)
     }
 }
+*/

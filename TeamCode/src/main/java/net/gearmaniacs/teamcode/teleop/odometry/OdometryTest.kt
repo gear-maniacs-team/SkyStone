@@ -9,6 +9,7 @@ import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamOpMode
 import net.gearmaniacs.teamcode.drive.DashboardUtil
 import net.gearmaniacs.teamcode.hardware.sensors.Encoders
+import net.gearmaniacs.teamcode.hardware.sensors.Gyro
 import net.gearmaniacs.teamcode.utils.MathUtils.angleWrap
 import net.gearmaniacs.teamcode.utils.PerformanceProfiler
 import net.gearmaniacs.teamcode.utils.extensions.CM_TO_INCH
@@ -19,17 +20,18 @@ import kotlin.math.pow
 class OdometryTest : TeamOpMode() {
 
     private val encoder = Encoders()
+    private val gyro = Gyro()
     private val performanceProfiler = PerformanceProfiler()
     private val dashboard: FtcDashboard = FtcDashboard.getInstance()
 
-    private val maxTrajectorySize = 2.0.pow(20.0).toInt()
+    private val maxTrajectorySize = 2.0.pow(17.0).toInt()
     private val xTrajectory = FloatArray(maxTrajectorySize)
     private val yTrajectory = FloatArray(maxTrajectorySize)
     private var nextIndexTrajectory = 1
 
     override fun init() {
         FtcDashboard.getInstance().telemetryTransmissionInterval = 250
-        initRobot(listOf(encoder), listOf(encoder))
+        initRobot(listOf(encoder,gyro), listOf(gyro, encoder))
         RobotPos.resetAll()
     }
 
@@ -67,8 +69,8 @@ class OdometryTest : TeamOpMode() {
         fieldOverlay.fillCircle(x.toDouble(), y.toDouble(), 4.0)
 
         if (x != xTrajectory.last() || y != yTrajectory.last()) {
-            xTrajectory[nextIndexTrajectory]
-            yTrajectory[nextIndexTrajectory]
+            xTrajectory[nextIndexTrajectory] = x
+            yTrajectory[nextIndexTrajectory] = y
             ++nextIndexTrajectory
         }
 

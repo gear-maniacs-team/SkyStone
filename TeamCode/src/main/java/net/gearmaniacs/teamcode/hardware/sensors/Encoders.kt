@@ -1,5 +1,6 @@
 package net.gearmaniacs.teamcode.hardware.sensors
 
+import android.util.Log
 import com.acmerobotics.roadrunner.geometry.Pose2d
 import com.acmerobotics.roadrunner.localization.Localizer
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode
@@ -49,14 +50,19 @@ class Encoders : IHardware, IUpdatable, Localizer {
 
 //    private external fun initNative()
 
+    private var previousAngle = 0.0
+    private val performance = PerformanceProfiler()
+
     private fun arcUpdate(leftPos: Double, rightPos: Double, backPos: Double) {
-        val currentAngle = RobotPos.currentAngle
+        val ms = performance.update()
+        Log.v("Encoders", ms.toFloat().toString())
+        val currentAngle = -RobotPos.currentAngle
 
         val deltaBack = toCm(backPos - previousBackPosition)
         val deltaRight = toCm(rightPos - previousRightPosition)
-        val deltaLeft = toCm(leftPos - previousLeftPosition)
+        //val deltaLeft = toCm(leftPos - previousLeftPosition)
 
-        val deltaAngle = (deltaLeft - deltaRight) / DISTANCE_BETWEEN_ENCODER_WHEELS
+        val deltaAngle = currentAngle - previousAngle //(deltaLeft - deltaRight) / DISTANCE_BETWEEN_ENCODER_WHEELS
 
         var newX = deltaBack
         var newY = deltaRight
@@ -80,6 +86,7 @@ class Encoders : IHardware, IUpdatable, Localizer {
         previousBackPosition = backPos
         previousLeftPosition = leftPos
         previousRightPosition = rightPos
+        previousAngle = currentAngle
     }
 
     override var poseEstimate: Pose2d

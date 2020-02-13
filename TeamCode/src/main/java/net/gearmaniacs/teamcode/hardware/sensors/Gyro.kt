@@ -33,7 +33,10 @@ class Gyro : IHardware, IUpdatable {
 
     private lateinit var imu: BNO055IMU
     private var lastAngle = 0f
-    private var angle = 0f
+    var updateGlobalAngle = true
+    @Volatile
+    var angle = 0f
+        private set
 
     override fun init(hardwareMap: HardwareMap) {
         imu = hardwareMap.getDevice("imu")
@@ -76,6 +79,7 @@ class Gyro : IHardware, IUpdatable {
 
     override fun update() {
         updateAngleValue()
-        RobotPos.currentAngle = angle.toDouble()
+        if (updateGlobalAngle)
+            RobotPos.currentAngle = angle.toDouble()
     }
 }

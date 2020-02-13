@@ -15,7 +15,7 @@ class PerformanceProfiler {
      * Returns milliseconds / updates
      */
     fun update(): Double {
-        val currentTime = System.currentTimeMillis()
+        val currentTime = RobotClock.millis()
 
         if (firstRun) {
             oldTime = currentTime

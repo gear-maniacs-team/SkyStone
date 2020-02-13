@@ -5,6 +5,9 @@ import com.qualcomm.robotcore.util.RobotLog
 import net.gearmaniacs.teamcode.utils.IHardware
 import net.gearmaniacs.teamcode.utils.IUpdatable
 import net.gearmaniacs.teamcode.utils.extensions.getDevice
+import net.gearmaniacs.teamcode.utils.extensions.justTry
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil
+import org.firstinspires.ftc.robotcore.internal.ui.UILocation
 import org.openftc.revextensions2.ExpansionHubEx
 import org.openftc.revextensions2.RevBulkData
 import kotlin.concurrent.thread
@@ -37,7 +40,15 @@ class TeamRobot(
         hardwareList: List<IHardware> = emptyList(),
         updatableList: List<IUpdatable> = emptyList()
     ) {
-        check(INSTANCE == null) { "Another TeamRobot Instance already exists" }
+        INSTANCE?.let {
+            AppUtil.getInstance().showToast(UILocation.BOTH, "Another TeamRobot Instance already exists")
+
+            justTry {
+                it.stop()
+            }
+
+            INSTANCE = null
+        }
 
         isOpModeActive = true
         hardwareInstances = hardwareList

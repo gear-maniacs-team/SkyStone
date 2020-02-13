@@ -55,7 +55,7 @@ abstract class MecanumDriveBase : MecanumDrive(
     }
 
     fun turn(angle: Double) {
-        val heading = poseEstimate.heading
+        val heading = rawExternalHeading //poseEstimate.heading
         turnProfile = MotionProfileGenerator.generateSimpleMotionProfile(
             MotionState(heading, 0.0, 0.0, 0.0),
             MotionState(heading + angle, 0.0, 0.0, 0.0),

@@ -2,28 +2,31 @@ package net.gearmaniacs.teamcode.autonomous
 
 import com.acmerobotics.roadrunner.util.Angle.norm
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
-import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.util.MovingStatistics
 import net.gearmaniacs.teamcode.RobotPos
+import net.gearmaniacs.teamcode.TeamRobot
 import net.gearmaniacs.teamcode.drive.Drive
 import net.gearmaniacs.teamcode.drive.MecanumDriveBase
 import net.gearmaniacs.teamcode.drive.MecanumDrive
+import net.gearmaniacs.teamcode.hardware.sensors.Encoders
 import org.firstinspires.ftc.robotcore.internal.system.Misc
 import kotlin.math.sqrt
 
-@Disabled
 @Autonomous(group = "TrackWidthTuner")
 class TrackWidthTuner : LinearOpMode() {
 
     override fun runOpMode() {
         val drive: MecanumDriveBase = MecanumDrive(hardwareMap)
+        val robot = TeamRobot()
+        val encoders = Encoders()
 
+        robot.init(hardwareMap, listOf(encoders), listOf(encoders))
         telemetry.addLine("Press play to begin the track width tuner routine")
         telemetry.addLine("Make sure your robot has enough clearance to turn smoothly")
         telemetry.update()
         waitForStart()
-
+        robot.start()
         if (isStopRequested) return
 
         telemetry.clearAll()
@@ -62,6 +65,7 @@ class TrackWidthTuner : LinearOpMode() {
         while (!isStopRequested) {
             idle()
         }
+        robot.stop()
     }
 
     companion object {

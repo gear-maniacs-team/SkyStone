@@ -52,7 +52,7 @@ class MecanumDrive(hardwareMap: HardwareMap) : MecanumDriveBase() {
     }
 
     override val rawExternalHeading: Double
-        get() = RobotPos.currentAngle
+        get() = imu.angularOrientation.thirdAngle.toDouble()
 
     override fun getWheelPositions(): List<Double> {
         val positions = ArrayList<Double>(motors.size)

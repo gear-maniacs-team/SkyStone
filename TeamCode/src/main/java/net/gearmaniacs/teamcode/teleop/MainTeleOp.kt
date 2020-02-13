@@ -40,7 +40,7 @@ abstract class MainTeleOp : TeamOpMode() {
     private val headingIndependentDrive = DelayedBoolean(400)
     private var resetAngle = 0.0
     private var resetRotationPid = true
-    private val rotationPid = PidController(0.6, 0.0, 2.0).apply {
+    private val rotationPid = PidController(0.0, 0.0, 0.0).apply {
         setOutputRange(-0.3, 0.3)
     }
 

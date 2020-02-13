@@ -9,6 +9,7 @@ import net.gearmaniacs.teamcode.TeamRobot
 import net.gearmaniacs.teamcode.hardware.motors.Intake
 import net.gearmaniacs.teamcode.hardware.motors.Wheels
 import net.gearmaniacs.teamcode.hardware.sensors.Encoders
+import net.gearmaniacs.teamcode.hardware.sensors.Gyro
 import net.gearmaniacs.teamcode.hardware.servos.FoundationServos
 import net.gearmaniacs.teamcode.hardware.servos.OuttakeServos
 import net.gearmaniacs.teamcode.pid.PidController
@@ -25,12 +26,13 @@ open class PathAuto : LinearOpMode() {
     private val robot = TeamRobot()
     private val wheels = Wheels()
     private val encoder = Encoders()
+    private val gyro = Gyro()
     private val intake = Intake()
     private val foundation = FoundationServos()
     private val outtake = OuttakeServos()
 
-    private val xPid = PidController(0.6, 0.0001, 100.0)
-    private val yPid = PidController(0.6, 0.0001, 100.0)
+    private val xPid = PidController(0.6, 0.0, 40.0)
+    private val yPid = PidController(0.6, 0.0, 40.0)
     private val rotationPid = PidController(0.45, 0.0, 15.0)
 
     private lateinit var gripper: Servo
@@ -43,8 +45,17 @@ open class PathAuto : LinearOpMode() {
     )
 
     override fun runOpMode() {
-        robot.init(hardwareMap, listOf(wheels, intake, foundation, outtake, encoder), listOf(encoder))
         RobotPos.resetAll()
+        robot.init(
+            hardwareMap, listOf(
+                wheels,
+                gyro,
+                intake,
+                foundation,
+                outtake,
+                encoder
+            ), listOf(gyro, encoder)
+        )
 
         xPid.setOutputRange(-1.0, 1.0)
         yPid.setOutputRange(-1.0, 1.0)
@@ -78,9 +89,8 @@ open class PathAuto : LinearOpMode() {
         }
 
         wheels.setPowerAll(0.0)
-        Thread.sleep(3000)
-
         robot.stop()
+        Thread.sleep(3000)
     }
 
     private fun goToPoint() {
@@ -91,6 +101,8 @@ open class PathAuto : LinearOpMode() {
         xPid.setPoint = RobotPos.targetX
         yPid.setPoint = RobotPos.targetY
         rotationPid.setPoint = RobotPos.targetAngle
+
+        Thread.sleep(1)
 
 //        val startTime = System.currentTimeMillis()
 
@@ -106,14 +118,14 @@ open class PathAuto : LinearOpMode() {
             movement(x, y, rotation)
 
             with(telemetry) {
-                addData("Current X", RobotPos.currentX)
+                addData("Current X", "%.3f", RobotPos.currentX)
                 addData("Current Y", RobotPos.currentY)
                 addData("Current Angle", RobotPos.currentAngle)
                 addData("--", "--")
                 addData("Target X", RobotPos.targetX)
                 addData("Target Y", RobotPos.targetY)
                 addData("Target Angle", RobotPos.targetAngle)
-                addData("--", "--")
+                addLine("--")
                 addData("PID X", x)
                 addData("PID Y", y)
                 addData("PID Rotation", rotation)
@@ -131,18 +143,11 @@ open class PathAuto : LinearOpMode() {
     }
 
     private fun movement(x: Double, y: Double, rotation: Double) {
-        val magnitude = hypot(x, y) * MOTOR_SPEED_MOVEMENT
-
-        val angle = atan2(y, x) - Math.PI / 2
-
-        val speedX = magnitude * sin(angle + Math.PI / 4)
-        val speedY = magnitude * sin(angle - Math.PI / 4)
-
         with(wheels) {
-            rightFront.power = -speedX + rotation
-            leftFront.power = -speedY + rotation
-            rightRear.power = speedY + rotation
-            leftRear.power = speedX + rotation
+            leftFront.power = (-x - y) * MOTOR_SPEED_MOVEMENT + rotation
+            leftRear.power = (x - y) * MOTOR_SPEED_MOVEMENT + rotation
+            rightRear.power = (-x - y) * MOTOR_SPEED_MOVEMENT + rotation
+            rightFront.power = (x - y) * MOTOR_SPEED_MOVEMENT + rotation
         }
     }
 

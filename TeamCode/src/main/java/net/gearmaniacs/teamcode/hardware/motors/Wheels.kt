@@ -29,7 +29,7 @@ class Wheels : IHardware {
         leftFront.direction = DcMotorSimple.Direction.REVERSE
         leftRear.direction = DcMotorSimple.Direction.REVERSE
 
-        all = mutableListOf(leftFront, leftRear, rightFront, leftRear)
+        all = mutableListOf(leftFront, leftRear, rightFront, rightRear)
     }
 
     fun setModeAll(mode: RunMode) {
