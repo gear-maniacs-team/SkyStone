@@ -18,23 +18,17 @@ data class PathPoint(
             append(cmY)
             append(", angle = ")
             append(angle)
-
-            if (action != ACTION_NONE) {
-                append(", action = PathPoint.")
-                append(getActionName(action))
-            }
-
             append(')')
         }
     }
 
     companion object {
         const val ACTION_NONE = 0
-        const val ACTION_START_INTAKE = 1
-        const val ACTION_STOP_INTAKE = 2
-        const val ACTION_ATTACH_FOUNDATION = 3
-        const val ACTION_DETACH_FOUNDATION = 4
-        const val ACTION_SIMPLE_OUTTAKE = 5
+        const val ACTION_START_INTAKE = 1 shl 0
+        const val ACTION_STOP_INTAKE = 1 shl 1
+        const val ACTION_ATTACH_FOUNDATION = 1 shl 2
+        const val ACTION_DETACH_FOUNDATION = 1 shl 3
+        const val ACTION_SIMPLE_OUTTAKE = 1 shl 4
 
         fun getActionName(action: Int) = when (action) {
             ACTION_NONE -> ::ACTION_NONE.name
@@ -43,7 +37,7 @@ data class PathPoint(
             ACTION_ATTACH_FOUNDATION -> ::ACTION_ATTACH_FOUNDATION.name
             ACTION_DETACH_FOUNDATION -> ::ACTION_DETACH_FOUNDATION.name
             ACTION_SIMPLE_OUTTAKE -> ::ACTION_SIMPLE_OUTTAKE.name
-            else -> IllegalArgumentException("Unsupported Path Action")
+            else -> "Unsupported Path Action"
         }
     }
 }
