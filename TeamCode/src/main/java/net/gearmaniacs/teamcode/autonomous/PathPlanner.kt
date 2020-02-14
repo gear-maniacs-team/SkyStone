@@ -1,5 +1,6 @@
 package net.gearmaniacs.teamcode.autonomous
 
+import android.annotation.SuppressLint
 import android.util.Log
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import net.gearmaniacs.teamcode.RobotPos
@@ -24,15 +25,17 @@ class PathPlanner : MainTeleOp() {
         super.init()
     }
 
+    @SuppressLint("MissingSuperCall")
     override fun start() {
-        super.start()
+        robot.start()
+
         thread {
             while (robot.isOpModeActive) {
                 if (gamepad1.x) {
                     val it = PathPoint(RobotPos.currentX, RobotPos.currentY, RobotPos.currentAngle)
                     list.add(it)
                     Log.v("Point", it.toString())
-                    Thread.sleep(200)
+                    Thread.sleep(400)
                 }
                 Thread.sleep(20)
             }

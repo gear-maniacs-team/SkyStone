@@ -2,6 +2,7 @@ package net.gearmaniacs.teamcode.autonomous
 
 import com.acmerobotics.roadrunner.util.Angle.norm
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.util.MovingStatistics
 import net.gearmaniacs.teamcode.RobotPos
@@ -13,6 +14,7 @@ import net.gearmaniacs.teamcode.hardware.sensors.Encoders
 import org.firstinspires.ftc.robotcore.internal.system.Misc
 import kotlin.math.sqrt
 
+@Disabled
 @Autonomous(group = "TrackWidthTuner")
 class TrackWidthTuner : LinearOpMode() {
 

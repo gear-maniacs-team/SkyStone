@@ -22,8 +22,13 @@ class OuttakeServos : IHardware {
         right.position = 1.0
     }
 
+    fun semiExtend() {
+        left.position = 0.5
+        right.position = 0.5
+    }
+
     fun retract() {
-        left.position = 1.0
-        right.position = 0.0
+        left.position = 0.8
+        right.position = 0.2
     }
 }

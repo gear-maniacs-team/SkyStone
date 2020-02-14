@@ -1,8 +1,10 @@
 package net.gearmaniacs.teamcode.teleop
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import net.gearmaniacs.teamcode.hardware.sensors.Encoders
 
+@Disabled
 @TeleOp(name = "SPARTAN", group = "Good")
 class SpartanTeleOp : MainTeleOp() {
 

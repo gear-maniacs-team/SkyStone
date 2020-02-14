@@ -1,10 +1,12 @@
 package net.gearmaniacs.teamcode.autonomous
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import net.gearmaniacs.teamcode.detector.VuforiaManager
 import net.gearmaniacs.teamcode.utils.CpuUsage
 
+@Disabled
 @TeleOp(name = "CustomVuforiaTest", group = "Vision")
 class VuforiaTest : LinearOpMode() {
 

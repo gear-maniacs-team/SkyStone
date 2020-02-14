@@ -1,6 +1,7 @@
 package net.gearmaniacs.teamcode.autonomous
 
 import android.os.Environment
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
@@ -11,6 +12,7 @@ import net.gearmaniacs.teamcode.utils.RobotClock
 import net.gearmaniacs.teamcode.utils.extensions.getCurrentPosition
 import java.io.File
 
+@Disabled
 @TeleOp(name = "Speed Tester")
 class MotionProfileTuner : TeamOpMode() {
 

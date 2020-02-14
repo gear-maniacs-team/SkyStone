@@ -67,7 +67,7 @@ class Gyro : IHardware, IUpdatable {
 
         val deltaAngle = computeAngle(lastAngle, newAngle)
 
-        angle += deltaAngle
+        angle -= deltaAngle
         lastAngle = newAngle
     }
 

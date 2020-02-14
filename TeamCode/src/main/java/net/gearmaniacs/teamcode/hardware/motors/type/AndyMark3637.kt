@@ -29,4 +29,5 @@ import org.firstinspires.ftc.robotcore.external.navigation.Rotation
  */
 @ExpansionHubPIDFVelocityParams(P = 1.293, I = 0.1293, D = 0.0, F = 12.93)
 @ExpansionHubPIDFPositionParams(P = 5.0)
+//@ModernRoboticsMotorControllerParams(P = 160, I = 32, D = 112, ratio = 25)
 interface AndyMark3637

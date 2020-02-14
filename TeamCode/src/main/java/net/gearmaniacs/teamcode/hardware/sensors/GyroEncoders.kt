@@ -49,7 +49,7 @@ class GyroEncoders : IHardware, IUpdatable, Localizer {
     var showUpdateTime = true
 
     private fun encodersUpdate(rightPos: Double, backPos: Double, deltaAngle: Double) {
-        val currentAngle = -RobotPos.currentAngle
+        val currentAngle = RobotPos.currentAngle
 
         val deltaBack = Encoders.toCm(backPos - previousBackPosition)
         val deltaRight = Encoders.toCm(rightPos - previousRightPosition)
@@ -113,7 +113,7 @@ class GyroEncoders : IHardware, IUpdatable, Localizer {
 
         val deltaAngle = Gyro.computeAngle(lastAngle, newAngle)
 
-        RobotPos.currentAngle += deltaAngle
+        RobotPos.currentAngle -= deltaAngle
         lastAngle = newAngle
 
         return -deltaAngle

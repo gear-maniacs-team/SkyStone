@@ -40,14 +40,14 @@ abstract class MainTeleOp : TeamOpMode() {
     private val headingIndependentDrive = DelayedBoolean(400)
     private var resetAngle = 0.0
     private var resetRotationPid = true
-    private val rotationPid = PidController(0.0, 0.0, 0.0).apply {
+    private val rotationPid = PidController(0.5, 0.0, 0.0).apply {
         setOutputRange(-0.3, 0.3)
     }
 
     override fun init() {
         check(robot.isOpModeActive) { "TeamRobot::init must be called in all child classes" }
         RobotPos.resetAll()
-        wheels.setModeAll(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
+        wheels.setModeAll(DcMotor.RunMode.RUN_USING_ENCODER)
 
         gripper = hardwareMap.getDevice("gripper")
         spinner = hardwareMap.getDevice("spinner")
@@ -77,7 +77,13 @@ abstract class MainTeleOp : TeamOpMode() {
 
         if (gamepad1.left_stick_button && gamepad1.right_stick_button) {
             resetAngle = RobotPos.currentAngle
-            Thread.sleep(300L)
+            Thread.sleep(400L)
+        }
+
+        if (precisionModeOn) {
+            rotationPid.Kp = 0.0
+        } else {
+            rotationPid.Kp = 0.4
         }
 
         leftFrontPower = 0.0
@@ -119,7 +125,7 @@ abstract class MainTeleOp : TeamOpMode() {
 
         val angleVariation = if (curvedMovement) {
             resetRotationPid = true
-            DRIVE_BASE_CONSTANT * theta
+            DRIVE_BASE_CONSTANT * theta * powerMultiplier
         } else {
             if (resetRotationPid) {
                 rotationPid.reset()
@@ -138,23 +144,32 @@ abstract class MainTeleOp : TeamOpMode() {
 
         if (abs(x) == 0.0 && abs(y) == 0.0) return
 
-        val currentAngle = RobotPos.currentAngle
+        val currentAngle = if (headingIndependentDrive.value) RobotPos.currentAngle - resetAngle else 0.0
         val sinOrientation = sin(currentAngle)
         val cosOrientation = cos(currentAngle)
 
         val fieldOrientedX = x * cosOrientation - y * sinOrientation
         val fieldOrientedY = x * sinOrientation + y * cosOrientation
 
-        leftFrontPower += (-fieldOrientedX - fieldOrientedY) * powerMultiplier
-        leftRearPower += (fieldOrientedX - fieldOrientedY) * powerMultiplier
-        rightRearPower += (-fieldOrientedX - fieldOrientedY) * powerMultiplier
-        rightFrontPower += (fieldOrientedX - fieldOrientedY) * powerMultiplier
+        val denominator = abs(fieldOrientedX) + abs(fieldOrientedY)
+        var scaledX = fieldOrientedX * powerMultiplier
+        var scaledY = fieldOrientedY * powerMultiplier
+
+        if (denominator > 1.0) {
+            scaledX /= denominator
+            scaledY /= denominator
+        }
+
+        leftFrontPower += -scaledX - scaledY
+        leftRearPower += scaledX - scaledY
+        rightRearPower += -scaledX - scaledY
+        rightFrontPower += scaledX - scaledY
     }
 
     private fun intake() {
         val intakePower = when {
             gamepad2.right_bumper -> INTAKE_POWER
-            gamepad2.left_bumper -> -INTAKE_POWER * 0.8
+            gamepad2.left_bumper -> -INTAKE_POWER * 0.9
             else -> 0.0
         }
 
@@ -163,8 +178,8 @@ abstract class MainTeleOp : TeamOpMode() {
 
     private fun lift() {
         val posChange = when {
-            gamepad2.dpad_down -> -50
-            gamepad2.dpad_up -> 50
+            gamepad2.dpad_down -> -256
+            gamepad2.dpad_up -> 256
             else -> 0
         }
 
@@ -189,7 +204,7 @@ abstract class MainTeleOp : TeamOpMode() {
         else if (gamepad2.x)
             outtake.retract()
 
-        gripper.position = if (gamepad2.right_trigger > 0) 1.0 else 0.55
+        gripper.position = if (gamepad2.right_trigger > 0) 0.8 else 0.5
 
         if (gamepad2.a)
             spinner.position = 0.15
@@ -200,10 +215,12 @@ abstract class MainTeleOp : TeamOpMode() {
             outtake.extend()
             Thread.sleep(600)
             spinner.position = 0.15
+            Thread.sleep(1000)
+            outtake.semiExtend()
         }
 
         if (gamepad2.left_stick_button) {
-            spinner.position = 0.97
+            spinner.position = 0.87
             Thread.sleep(400)
             outtake.retract()
         }
@@ -220,9 +237,9 @@ abstract class MainTeleOp : TeamOpMode() {
         private const val WHEELS_POWER_TOLERANCE = 0.05
         private const val WHEELS_SPEED_PRECISION = 0.4
         private const val WHEELS_SPEED_NORMAL = 0.9
-        private const val INTAKE_POWER = 1.0
+        private const val INTAKE_POWER = 0.85
         private const val LIFT_POWER = 0.5
         private const val DRIVE_BASE_CONSTANT = 0.5 // measured in Maniacs
-        private const val MAX_LIFT_HEIGHT_TICKS = 1200
+        private const val MAX_LIFT_HEIGHT_TICKS = 3600
     }
 }

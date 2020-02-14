@@ -43,7 +43,7 @@ class TeamRobot(
         INSTANCE?.let {
             AppUtil.getInstance().showToast(UILocation.BOTH, "Another TeamRobot Instance already exists")
 
-            // Try to stop the old TeamRobot Instance to avoid memory leqks
+            // Try to stop the old TeamRobot Instance to avoid memory leaks
             justTry {
                 it.stop()
             }
@@ -73,7 +73,7 @@ class TeamRobot(
         }
 
         if (updatableInstances.isNotEmpty() || useBulkRead)
-            thread(block = ::updateAll)
+            thread(block = ::updateAll, name = "Team Robot")
     }
 
     private fun updateAll() {
@@ -85,7 +85,7 @@ class TeamRobot(
                 it.update()
             }
 
-            Thread.yield()
+//            Thread.yield()
         }
     }
 

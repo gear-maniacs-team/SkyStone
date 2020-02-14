@@ -10,26 +10,28 @@ import net.gearmaniacs.teamcode.utils.extensions.getDevice
 
 class Wheels : IHardware {
 
-    private var all = emptyList<DcMotorEx>()
-    lateinit var leftFront: DcMotorEx
-        private set
-    lateinit var leftRear: DcMotorEx
-        private set
-    lateinit var rightRear: DcMotorEx
-        private set
-    lateinit var rightFront: DcMotorEx
-        private set
+    private var all: List<DcMotorEx> = emptyList()
+
+    val leftFront: DcMotorEx
+        get() = all[0]
+    val leftRear: DcMotorEx
+        get() = all[1]
+    val rightRear: DcMotorEx
+        get() = all[2]
+    val rightFront: DcMotorEx
+        get() = all[3]
 
     override fun init(hardwareMap: HardwareMap) {
-        leftFront = hardwareMap.getDevice("left_front")
-        leftRear = hardwareMap.getDevice("left_rear")
-        rightRear = hardwareMap.getDevice("right_rear")
-        rightFront = hardwareMap.getDevice("right_front")
+        val leftFront = hardwareMap.getDevice<DcMotorEx>("left_front")
+        val leftRear = hardwareMap.getDevice<DcMotorEx>("left_rear")
+        val rightRear = hardwareMap.getDevice<DcMotorEx>("right_rear")
+        val rightFront = hardwareMap.getDevice<DcMotorEx>("right_front")
 
         leftFront.direction = DcMotorSimple.Direction.REVERSE
         leftRear.direction = DcMotorSimple.Direction.REVERSE
 
-        all = mutableListOf(leftFront, leftRear, rightFront, rightRear)
+        // Make sure the order of the motors match their index in the getters
+        all = listOf(leftFront, leftRear, rightRear, rightFront)
     }
 
     fun setModeAll(mode: RunMode) {
