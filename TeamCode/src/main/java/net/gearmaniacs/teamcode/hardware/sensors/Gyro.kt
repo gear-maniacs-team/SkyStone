@@ -13,15 +13,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference
 class Gyro : IHardware, IUpdatable {
 
     companion object {
-        private const val PI_F = Math.PI.toFloat()
-
-        private fun computeAngle(lastAngle: Float, newAngle: Float): Float {
+        fun computeAngle(lastAngle: Double, newAngle: Double): Double {
             var deltaAngle = newAngle - lastAngle
 
-            if (deltaAngle < -PI_F) // < -180
-                deltaAngle += PI_F * 2
-            else if (deltaAngle > PI_F) // > 180
-                deltaAngle -= PI_F * 2
+            if (deltaAngle < -Math.PI) // < -180
+                deltaAngle += Math.PI * 2
+            else if (deltaAngle > Math.PI) // > 180
+                deltaAngle -= Math.PI * 2
 
             return deltaAngle
         }
@@ -32,10 +30,10 @@ class Gyro : IHardware, IUpdatable {
     private val angleUnit = AngleUnit.RADIANS
 
     private lateinit var imu: BNO055IMU
-    private var lastAngle = 0f
+    private var lastAngle = 0.0
     var updateGlobalAngle = true
     @Volatile
-    var angle = 0f
+    var angle = 0.0
         private set
 
     override fun init(hardwareMap: HardwareMap) {
@@ -65,12 +63,12 @@ class Gyro : IHardware, IUpdatable {
      */
     private fun updateAngleValue() {
         // The third angle is the Z angle, which is needed for heading
-        val firstAngle = imu.getAngularOrientation(axesRef, angleOrder, angleUnit).thirdAngle
+        val newAngle = imu.getAngularOrientation(axesRef, angleOrder, angleUnit).thirdAngle.toDouble()
 
-        val deltaAngle = computeAngle(lastAngle, firstAngle)
+        val deltaAngle = computeAngle(lastAngle, newAngle)
 
         angle += deltaAngle
-        lastAngle = firstAngle
+        lastAngle = newAngle
     }
 
     override fun start() {
@@ -80,6 +78,6 @@ class Gyro : IHardware, IUpdatable {
     override fun update() {
         updateAngleValue()
         if (updateGlobalAngle)
-            RobotPos.currentAngle = angle.toDouble()
+            RobotPos.currentAngle = angle
     }
 }

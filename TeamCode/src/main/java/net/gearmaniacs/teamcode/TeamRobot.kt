@@ -43,6 +43,7 @@ class TeamRobot(
         INSTANCE?.let {
             AppUtil.getInstance().showToast(UILocation.BOTH, "Another TeamRobot Instance already exists")
 
+            // Try to stop the old TeamRobot Instance to avoid memory leqks
             justTry {
                 it.stop()
             }
@@ -58,7 +59,8 @@ class TeamRobot(
 
         expansionHub1 = hardwareMap.getDevice(EXPANSION_HUB_1_NAME)
         expansionHub2 = hardwareMap.getDevice(EXPANSION_HUB_2_NAME)
-        updateExpansionHubs()
+        if (useBulkRead)
+            internalUpdateExpansionHubs()
 
         hardwareInstances.forEach {
             it.init(hardwareMap)
@@ -76,7 +78,8 @@ class TeamRobot(
 
     private fun updateAll() {
         while (isOpModeActive) {
-            updateExpansionHubs()
+            if (useBulkRead)
+                internalUpdateExpansionHubs()
 
             updatableInstances.forEach {
                 it.update()
@@ -96,8 +99,11 @@ class TeamRobot(
         INSTANCE = null
     }
 
-    private fun updateExpansionHubs() {
-        if (!useBulkRead) return
+    fun forceUpdateExpansionHubs() {
+        internalUpdateExpansionHubs()
+    }
+
+    private fun internalUpdateExpansionHubs() {
         val bulkInputData1: RevBulkData? = expansionHub1.bulkInputData
         val bulkInputData2: RevBulkData? = expansionHub2.bulkInputData
 

@@ -25,9 +25,11 @@ class Encoders : IHardware, IUpdatable, Localizer {
     lateinit var back: DcMotorEx
         private set
 
+    private val performance = PerformanceProfiler()
     private var previousLeftPosition = 0.0
     private var previousRightPosition = 0.0
     private var previousBackPosition = 0.0
+    private var showUpdateTime = false
 
     override fun init(hardwareMap: HardwareMap) {
         left = hardwareMap.getDevice("intake_left")
@@ -48,21 +50,19 @@ class Encoders : IHardware, IUpdatable, Localizer {
         back.mode = mode
     }
 
-//    private external fun initNative()
-
-    private var previousAngle = 0.0
-    private val performance = PerformanceProfiler()
-
     private fun arcUpdate(leftPos: Double, rightPos: Double, backPos: Double) {
-        val ms = performance.update()
-        Log.v("Encoders", ms.toFloat().toString())
-        val currentAngle = -RobotPos.currentAngle
+        if (showUpdateTime) {
+            val ms = performance.update()
+            Log.v("Encoders", ms.toFloat().toString())
+        }
+
+        val currentAngle = RobotPos.currentAngle
 
         val deltaBack = toCm(backPos - previousBackPosition)
         val deltaRight = toCm(rightPos - previousRightPosition)
-        //val deltaLeft = toCm(leftPos - previousLeftPosition)
+        val deltaLeft = toCm(leftPos - previousLeftPosition)
 
-        val deltaAngle = currentAngle - previousAngle //(deltaLeft - deltaRight) / DISTANCE_BETWEEN_ENCODER_WHEELS
+        val deltaAngle = (deltaLeft - deltaRight) / DISTANCE_BETWEEN_ENCODER_WHEELS
 
         var newX = deltaBack
         var newY = deltaRight
@@ -86,15 +86,12 @@ class Encoders : IHardware, IUpdatable, Localizer {
         previousBackPosition = backPos
         previousLeftPosition = leftPos
         previousRightPosition = rightPos
-        previousAngle = currentAngle
     }
 
+    // Please do not question this
     override var poseEstimate: Pose2d
-        get() = Pose2d(RobotPos.currentY, RobotPos.currentX, RobotPos.currentAngle)
-        set(value) {
-            // Please do not question this
-            RobotPos.currentX = value.y; RobotPos.currentY = -value.x; RobotPos.currentAngle = value.heading
-        }
+        get() = Pose2d(RobotPos.currentY, -RobotPos.currentX, RobotPos.currentAngle)
+        set(value) { RobotPos.currentX = value.y; RobotPos.currentY = -value.x; RobotPos.currentAngle = value.heading }
 
     /**
      * Calling updateNative before initNative will result in undefined behavior
@@ -109,7 +106,6 @@ class Encoders : IHardware, IUpdatable, Localizer {
         val rightPos = right.getCurrentPosition(robot.bulkData1).toDouble()
         val backPos = back.getCurrentPosition(robot.bulkData2).toDouble()
 
-//        linearUpdate(leftPos, rightPos, backPos)
         arcUpdate(leftPos, rightPos, backPos)
     }
 
@@ -117,8 +113,8 @@ class Encoders : IHardware, IUpdatable, Localizer {
         private const val M_DIAMETER = 7.2
         private const val M_TICKS_PER_REVOLUTION = 8192
 
-        private const val DISTANCE_BETWEEN_ENCODER_WHEELS = 19.6125
-        private const val DISTANCE_BETWEEN_BACK_ENCODER_AND_CENTER = 14.2 // The distance to the tracking center
+        const val DISTANCE_BETWEEN_ENCODER_WHEELS = 19.6125
+        const val DISTANCE_BETWEEN_BACK_ENCODER_AND_CENTER = 14.2 // The distance to the tracking center
 
         fun toCm(ticks: Double) = (ticks * M_DIAMETER * Math.PI) / M_TICKS_PER_REVOLUTION
     }

@@ -47,7 +47,7 @@ open class PathAuto : LinearOpMode() {
     private lateinit var spinner: Servo
 
     private val path = listOf(
-        PathPoint(30.0, 30.0, Math.PI/2)
+        PathPoint(30.0, 30.0, Math.PI / 2)
 //        PathPoint(60.0, 10.0, 0.0),
 //        PathPoint(0.0, 0.0, 0.0)
     )
