@@ -28,6 +28,7 @@ class OdometryTest : TeamOpMode() {
     private var nextIndexTrajectory = 1
 
     override fun init() {
+        robot.useBulkRead = false
         RobotPos.resetAll()
         initRobot(listOf(encoder), listOf(encoder))
     }
@@ -35,7 +36,7 @@ class OdometryTest : TeamOpMode() {
     override fun loop() {
         performanceProfiler.update(telemetry)
 
-        val leftPos = 0.0 //-encoder.left.getCurrentPosition(robot.bulkData2)
+        val leftPos = 0 //-encoder.left.getCurrentPosition(robot.bulkData2)
         val rightPos = encoder.right.getCurrentPosition(robot.bulkData1)
         val backPos = encoder.back.getCurrentPosition(robot.bulkData2)
 

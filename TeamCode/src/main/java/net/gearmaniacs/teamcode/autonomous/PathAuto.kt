@@ -1,5 +1,6 @@
 package net.gearmaniacs.teamcode.autonomous
 
+import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.roadrunner.control.PIDCoefficients
 import com.acmerobotics.roadrunner.control.PIDFController
 import com.acmerobotics.roadrunner.profile.MotionProfile
@@ -16,38 +17,43 @@ import net.gearmaniacs.teamcode.hardware.motors.Intake
 import net.gearmaniacs.teamcode.hardware.motors.Wheels
 import net.gearmaniacs.teamcode.hardware.sensors.Encoders
 import net.gearmaniacs.teamcode.hardware.sensors.Gyro
+import net.gearmaniacs.teamcode.hardware.sensors.GyroEncoders
 import net.gearmaniacs.teamcode.hardware.servos.FoundationServos
 import net.gearmaniacs.teamcode.hardware.servos.OuttakeServos
 import net.gearmaniacs.teamcode.utils.PathPoint
 import net.gearmaniacs.teamcode.utils.RobotClock
 import net.gearmaniacs.teamcode.utils.extensions.getDevice
 import net.gearmaniacs.teamcode.utils.extensions.smaller
+import org.firstinspires.ftc.robotcore.external.Telemetry
 import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
 
 @Autonomous(name = "Path")
 open class PathAuto : LinearOpMode() {
 
     private val robot = TeamRobot()
     private val wheels = Wheels()
-    private val encoder = Encoders()
-    private val gyro = Gyro()
+    private val encoder = GyroEncoders()
     private val intake = Intake()
     private val foundation = FoundationServos()
     private val outtake = OuttakeServos()
+    private val dashboard = FtcDashboard.getInstance()
 
     private lateinit var xProfile: MotionProfile
     private lateinit var yProfile: MotionProfile
     private lateinit var rProfile: MotionProfile
 
-    private val xPid = PIDFController(PIDCoefficients(0.05, 0.0, 0.0), Drive.kV, clock = RobotClock)
-    private val yPid = PIDFController(PIDCoefficients(0.05, 0.0, 0.0), Drive.kV, clock = RobotClock)
-    private val rPid = PIDFController(PIDCoefficients(0.05, 0.0, 0.0), Drive.kV, clock = RobotClock)
+    private val axialCoefficients = PIDCoefficients(0.05, 0.0001, 0.0)
+    private val xPid = PIDFController(axialCoefficients, Drive.kV, clock = RobotClock)
+    private val yPid = PIDFController(axialCoefficients, Drive.kV, clock = RobotClock)
+    private val rPid = PIDFController(PIDCoefficients(0.5, 0.0, 0.0), Drive.kV, clock = RobotClock)
 
     private lateinit var gripper: Servo
     private lateinit var spinner: Servo
 
     private val path = listOf(
-        PathPoint(30.0, 30.0, Math.PI / 2)
+        PathPoint(30.0, 30.0, 0.0)
 //        PathPoint(60.0, 10.0, 0.0),
 //        PathPoint(0.0, 0.0, 0.0)
     )
@@ -57,19 +63,16 @@ open class PathAuto : LinearOpMode() {
         robot.init(
             hardwareMap, listOf(
                 wheels,
-                gyro,
                 intake,
                 foundation,
                 outtake,
                 encoder
-            ), listOf(gyro, encoder)
+            ), listOf(encoder)
         )
 
         gripper = hardwareMap.getDevice("gripper")
         spinner = hardwareMap.getDevice("spinner")
         wheels.setZeroPowerBehaviorAll(DcMotor.ZeroPowerBehavior.BRAKE)
-
-        gyro.waitForCalibration()
 
         while (!isStarted) {
             telemetry.addData("Status", "Waiting for start")
@@ -102,7 +105,7 @@ open class PathAuto : LinearOpMode() {
             )
 
             rProfile = MotionProfileGenerator.generateSimpleMotionProfile(
-                MotionState(RobotPos.currentAngle, 0.0, 0.0, 0.0),
+                MotionState(-RobotPos.currentAngle, 0.0, 0.0, 0.0),
                 MotionState(RobotPos.targetAngle, 0.0, 0.0, 0.0),
                 Drive.MAX_VEL,
                 Drive.MAX_ACC,
@@ -135,37 +138,51 @@ open class PathAuto : LinearOpMode() {
 
             val xCorrection = xProfile[elapsedTime]
             val yCorrection = yProfile[elapsedTime]
-            val rotationCorrection = rProfile[elapsedTime]
+            val rCorrection = rProfile[elapsedTime]
 
             xPid.targetPosition = xCorrection.x
             yPid.targetPosition = yCorrection.x
-            rPid.targetPosition = rotationCorrection.x
+            rPid.targetPosition = rCorrection.x
+//            xPid.setOutputBounds(-abs(xCorrection.v),abs(xCorrection.v))
+//            yPid.setOutputBounds(-abs(yCorrection.v),abs(yCorrection.v))
+//            rPid.setOutputBounds(-abs(rotationCorrection.v),abs(rotationCorrection.v))
 
             val x = xPid.update(RobotPos.currentX, xCorrection.v, xCorrection.a)
             val y = yPid.update(RobotPos.currentY, yCorrection.v, yCorrection.a)
-            val rot = rPid.update(RobotPos.currentAngle, rotationCorrection.v, rotationCorrection.a)
+            val rot = rPid.update(-RobotPos.currentAngle, rCorrection.v, rCorrection.a)
             movement(x, y, rot)
 
-            with(telemetry) {
-                addData("Current X", "%.3f", RobotPos.currentX)
-                addData("Current Y", "%.3f", RobotPos.currentY)
-                addData("Current Angle", "%.3f", RobotPos.currentAngle)
-                addLine("--")
-                addData("Target X", "%.3f", RobotPos.targetX)
-                addData("Target Y", "%.3f", RobotPos.targetY)
-                addData("Target Angle", "%.3f", RobotPos.targetAngle)
-                addLine("--")
-                addData("Profile X", xCorrection)
-                addData("Profile Y", yCorrection)
-                addData("Profile Rotation", rotationCorrection)
-                update()
-            }
+            printTelemetry(telemetry, xCorrection, yCorrection, rCorrection)
+            printTelemetry(dashboard.telemetry, xCorrection, yCorrection, rCorrection)
 
             if (RobotPos.targetX - RobotPos.currentX smaller 1.0
                 && RobotPos.targetY - RobotPos.currentY smaller 1.0
                 && RobotPos.targetAngle - RobotPos.currentAngle smaller 0.1
-            )
+            ) {
                 break
+            }
+        }
+    }
+
+    private fun printTelemetry(
+        telemetry: Telemetry,
+        xCorrection: MotionState,
+        yCorrection: MotionState,
+        rCorrection: MotionState
+    ) {
+        with(telemetry) {
+            addData("Current X", "%.3f", RobotPos.currentX)
+            addData("Current Y", "%.3f", RobotPos.currentY)
+            addData("Current Angle", "%.3f", RobotPos.currentAngle)
+            addLine("--")
+            addData("Target X", "%.3f", RobotPos.targetX)
+            addData("Target Y", "%.3f", RobotPos.targetY)
+            addData("Target Angle", "%.3f", RobotPos.targetAngle)
+            addLine("--")
+            addData("Profile X", xCorrection)
+            addData("Profile Y", yCorrection)
+            addData("Profile Rotation", rCorrection)
+            update()
         }
     }
 
@@ -181,11 +198,18 @@ open class PathAuto : LinearOpMode() {
             scaleR /= denom
         }
 
+        val currentAngle = RobotPos.currentAngle
+        val sinOrientation = sin(currentAngle)
+        val cosOrientation = cos(currentAngle)
+
+        val fieldOrientedX = scaleX * cosOrientation - scaleY * sinOrientation
+        val fieldOrientedY = scaleX * sinOrientation + scaleY * cosOrientation
+
         with(wheels) {
-            leftFront.power = (-scaleX - scaleY - scaleR)
-            leftRear.power = (scaleX - scaleY - scaleR)
-            rightRear.power = (-scaleX - scaleY + scaleR)
-            rightFront.power = (scaleX - scaleY + scaleR)
+            leftFront.power = (-fieldOrientedX - fieldOrientedY - scaleR)
+            leftRear.power = (fieldOrientedX - fieldOrientedY - scaleR)
+            rightRear.power = (-fieldOrientedX - fieldOrientedY + scaleR)
+            rightFront.power = (fieldOrientedX - fieldOrientedY + scaleR)
         }
     }
 

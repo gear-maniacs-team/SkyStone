@@ -1,6 +1,7 @@
 package net.gearmaniacs.teamcode.autonomous.demo
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import net.gearmaniacs.teamcode.TeamRobot
 import net.gearmaniacs.teamcode.hardware.motors.Wheels
@@ -59,6 +60,7 @@ abstract class ParkingAuto : LinearOpMode() {
     }
 }
 
+@Disabled
 @Autonomous(name = "Blue-Parking", group = "Parking")
 class BlueAuto : ParkingAuto() {
 
@@ -69,6 +71,7 @@ class BlueAuto : ParkingAuto() {
     }
 }
 
+@Disabled
 @Autonomous(name = "Red-Parking", group = "Parking")
 class RedAuto : ParkingAuto() {
 
@@ -79,6 +82,7 @@ class RedAuto : ParkingAuto() {
     }
 }
 
+@Disabled
 @Autonomous(name = "Simple-Parking", group = "Parking")
 class SimpleAuto : ParkingAuto() {
 

@@ -114,7 +114,7 @@ class Encoders : IHardware, IUpdatable, Localizer {
         private const val M_TICKS_PER_REVOLUTION = 8192
 
         const val DISTANCE_BETWEEN_ENCODER_WHEELS = 19.6125
-        const val DISTANCE_BETWEEN_BACK_ENCODER_AND_CENTER = 14.2 // The distance to the tracking center
+        const val DISTANCE_BETWEEN_BACK_ENCODER_AND_CENTER = 10.0 // The distance to the tracking center
 
         fun toCm(ticks: Double) = (ticks * M_DIAMETER * Math.PI) / M_TICKS_PER_REVOLUTION
     }

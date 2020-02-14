@@ -29,6 +29,11 @@ import kotlin.math.sin
  */
 class GyroEncoders : IHardware, IUpdatable, Localizer {
 
+    private val axesRef = AxesReference.EXTRINSIC
+    private val angleOrder = AxesOrder.XYZ
+    private val angleUnit = AngleUnit.RADIANS
+
+    private lateinit var imu: BNO055IMU
     lateinit var right: DcMotorEx
         private set
     lateinit var back: DcMotorEx
@@ -44,8 +49,6 @@ class GyroEncoders : IHardware, IUpdatable, Localizer {
     var showUpdateTime = true
 
     private fun encodersUpdate(rightPos: Double, backPos: Double, deltaAngle: Double) {
-        val ms = performance.update()
-        Log.v("Encoders", ms.toFloat().toString())
         val currentAngle = -RobotPos.currentAngle
 
         val deltaBack = Encoders.toCm(backPos - previousBackPosition)
@@ -70,12 +73,6 @@ class GyroEncoders : IHardware, IUpdatable, Localizer {
         previousRightPosition = rightPos
     }
 
-    private val axesRef = AxesReference.EXTRINSIC
-    private val angleOrder = AxesOrder.XYZ
-    private val angleUnit = AngleUnit.RADIANS
-
-    private lateinit var imu: BNO055IMU
-
     override fun init(hardwareMap: HardwareMap) {
         // Init Gyro
         imu = hardwareMap.getDevice("imu")
@@ -96,13 +93,18 @@ class GyroEncoders : IHardware, IUpdatable, Localizer {
         right.direction = DcMotorSimple.Direction.FORWARD
         back.direction = DcMotorSimple.Direction.FORWARD
 
-        right.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-        back.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+        setModeAll(DcMotor.RunMode.STOP_AND_RESET_ENCODER)
+        setModeAll(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
     }
 
     fun waitForCalibration() {
         while (!imu.isGyroCalibrated)
             Thread.sleep(10)
+    }
+
+    private fun setModeAll(mode: DcMotor.RunMode) {
+        right.mode = mode
+        back.mode = mode
     }
 
     private fun updateAngleValue(): Double {
@@ -114,7 +116,7 @@ class GyroEncoders : IHardware, IUpdatable, Localizer {
         RobotPos.currentAngle += deltaAngle
         lastAngle = newAngle
 
-        return deltaAngle
+        return -deltaAngle
     }
 
     override fun start() {
