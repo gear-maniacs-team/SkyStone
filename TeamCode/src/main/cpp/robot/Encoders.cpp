@@ -5,7 +5,7 @@
 namespace
 {
     constexpr double DISTANCE_BETWEEN_ENCODER_WHEELS = 19.6125;
-    constexpr double DISTANCE_TO_BACK_ENCODER = 14.2; // The distance to the tracking center
+    constexpr double DISTANCE_TO_BACK_ENCODER = 10.0; // The distance to the tracking center
 }
 
 void Encoders::init() noexcept
@@ -27,7 +27,7 @@ RobotPose Encoders::update(const RobotPose &pose, const double currentAngle) noe
 
     if (!Math::epsilonEquals(deltaAngle, 0.0))
     {
-        const double sinDeltaAngle = 2 * sin(deltaAngle / 2);
+        const double sinDeltaAngle = 2 * std::sin(deltaAngle / 2);
         newX = sinDeltaAngle * (deltaBack / deltaAngle + DISTANCE_TO_BACK_ENCODER);
         newY = sinDeltaAngle * (deltaRight / deltaAngle + DISTANCE_BETWEEN_ENCODER_WHEELS / 2);
     }
@@ -37,8 +37,8 @@ RobotPose Encoders::update(const RobotPose &pose, const double currentAngle) noe
     // Calculate and update the position values
     // Rotate the cartesian coordinate system by transforming into polar form, adding the angle and
     // then transforming back into cartesian form.
-    const double sinAverageOrientation = sin(averageOrientation);
-    const double cosAverageOrientation = cos(averageOrientation);
+    const double sinAverageOrientation = std::sin(averageOrientation);
+    const double cosAverageOrientation = std::cos(averageOrientation);
     return
     {
         newX * cosAverageOrientation - newY * sinAverageOrientation,

@@ -8,6 +8,6 @@ namespace Math
 
     inline bool epsilonEquals(const double lhs, const double rhs) noexcept
     {
-        return abs(lhs - rhs) < EPSILON;
+        return std::abs(lhs - rhs) < EPSILON;
     }
 }

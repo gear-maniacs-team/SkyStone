@@ -23,7 +23,6 @@ import net.gearmaniacs.teamcode.utils.PathPoint
 import net.gearmaniacs.teamcode.utils.PerformanceProfiler
 import net.gearmaniacs.teamcode.utils.RobotClock
 import net.gearmaniacs.teamcode.utils.extensions.getDevice
-import net.gearmaniacs.teamcode.utils.extensions.smaller
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import kotlin.math.abs
 import kotlin.math.cos
@@ -67,7 +66,7 @@ open class AutoPath : LinearOpMode() {
                 intake,
                 foundation,
                 outtake,
-                 encoder
+                encoder
             ), listOf(encoder)
         )
 
