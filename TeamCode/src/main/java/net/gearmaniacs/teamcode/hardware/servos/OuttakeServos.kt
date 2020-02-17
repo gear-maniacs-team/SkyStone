@@ -7,28 +7,46 @@ import net.gearmaniacs.teamcode.utils.extensions.getDevice
 
 class OuttakeServos : IHardware {
 
-    lateinit var left: Servo
-        private set
-    lateinit var right: Servo
-        private set
+    private var all = emptyList<Servo>()
+
+    val leftExtension: Servo
+        get() = all[0]
+    val rightExtension: Servo
+        get() = all[1]
+    val spinner: Servo
+        get() = all[2]
+    val gripper: Servo
+        get() = all[3]
 
     override fun init(hardwareMap: HardwareMap) {
-        left = hardwareMap.getDevice("out_left")
-        right = hardwareMap.getDevice("out_right")
+        val leftExtension = hardwareMap.getDevice<Servo>("out_left")
+        val rightExtension = hardwareMap.getDevice<Servo>("out_right")
+        val spinner = hardwareMap.getDevice<Servo>("spinner")
+        val gripper = hardwareMap.getDevice<Servo>("gripper")
+
+        all = listOf(leftExtension, rightExtension, spinner, gripper)
     }
 
     fun extend() {
-        left.position = 0.0
-        right.position = 1.0
+        leftExtension.position = 0.0
+        rightExtension.position = 1.0
     }
 
     fun semiExtend() {
-        left.position = 0.5
-        right.position = 0.5
+        leftExtension.position = 0.5
+        rightExtension.position = 0.5
     }
 
     fun retract() {
-        left.position = 0.8
-        right.position = 0.2
+        leftExtension.position = 0.8
+        rightExtension.position = 0.2
     }
+
+    fun activateGripper() { gripper.position = 0.8 }
+
+    fun releaseGripper() { gripper.position = 0.44 }
+
+    fun activateSpinner() { spinner.position = 0.15 }
+
+    fun deactivateSpinner() { spinner.position = 0.97 }
 }

@@ -3,13 +3,14 @@ package net.gearmaniacs.teamcode.autonomous
 import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.roadrunner.control.PIDCoefficients
 import com.acmerobotics.roadrunner.control.PIDFController
+import com.acmerobotics.roadrunner.geometry.Pose2d
 import com.acmerobotics.roadrunner.profile.MotionProfile
 import com.acmerobotics.roadrunner.profile.MotionProfileGenerator
 import com.acmerobotics.roadrunner.profile.MotionState
+import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.hardware.DcMotor
-import com.qualcomm.robotcore.hardware.Servo
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamRobot
 import net.gearmaniacs.teamcode.drive.Drive
@@ -19,17 +20,16 @@ import net.gearmaniacs.teamcode.hardware.motors.Wheels
 import net.gearmaniacs.teamcode.hardware.sensors.GyroEncoders
 import net.gearmaniacs.teamcode.hardware.servos.FoundationServos
 import net.gearmaniacs.teamcode.hardware.servos.OuttakeServos
+import net.gearmaniacs.teamcode.utils.PathAction
 import net.gearmaniacs.teamcode.utils.PathPoint
 import net.gearmaniacs.teamcode.utils.PerformanceProfiler
 import net.gearmaniacs.teamcode.utils.RobotClock
-import net.gearmaniacs.teamcode.utils.extensions.getDevice
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
 
-@Autonomous(name = "AutoPath")
-open class AutoPath : LinearOpMode() {
+abstract class AbstractAuto : LinearOpMode() {
 
     private val robot = TeamRobot()
     private val wheels = Wheels()
@@ -48,15 +48,7 @@ open class AutoPath : LinearOpMode() {
     private val yPid = PIDFController(axialCoefficients, Drive.kV, clock = RobotClock)
     private val rPid = PIDFController(PIDCoefficients(100.0, 1.0, 0.0), Drive.kV, clock = RobotClock)
 
-    private lateinit var gripper: Servo
-    private lateinit var spinner: Servo
-
-    private val path = listOf(
-        PathPoint(0.0, -60.0, 0.0, action = PathPoint.ACTION_ATTACH_FOUNDATION),
-        PathPoint(-10.0, -20.0, Math.PI / 2, action = PathPoint.ACTION_DETACH_FOUNDATION),
-        PathPoint(-20.0, -20.0, Math.PI / 2),
-        PathPoint(60.0, -20.0, Math.PI / 2)
-    )
+    abstract val path: List<PathPoint>
 
     override fun runOpMode() {
         RobotPos.resetAll()
@@ -70,11 +62,13 @@ open class AutoPath : LinearOpMode() {
             ), listOf(encoder)
         )
 
-        gripper = hardwareMap.getDevice("gripper")
-        spinner = hardwareMap.getDevice("spinner")
         wheels.setZeroPowerBehaviorAll(DcMotor.ZeroPowerBehavior.BRAKE)
         wheels.setModeAll(DcMotor.RunMode.STOP_AND_RESET_ENCODER)
         wheels.setModeAll(DcMotor.RunMode.RUN_USING_ENCODER)
+
+        xPid.setOutputBounds(-MAX_VEL, MAX_VEL)
+        yPid.setOutputBounds(-MAX_VEL, MAX_VEL)
+        rPid.setOutputBounds(-MAX_VEL, MAX_VEL)
 
         while (!isStarted) {
             telemetry.addData("Status", "Waiting for start")
@@ -82,6 +76,14 @@ open class AutoPath : LinearOpMode() {
             telemetry.update()
         }
         robot.start()
+
+        val builder = TrajectoryBuilder(encoder.poseEstimate, Drive.BASE_CONSTRAINTS)
+
+        path.forEach {
+            builder.splineTo(Pose2d(it.cmY, -it.cmX, it.angle))
+        }
+
+        val splinePath = builder.build()
 
         path.forEachIndexed { index, point ->
             telemetry.addData("Destination Index", index)
@@ -114,9 +116,9 @@ open class AutoPath : LinearOpMode() {
                 Drive.MAX_JERK
             )
 
-            goToPoint()
+            goToPoint(point)
             performAction(point.action)
-            Thread.sleep(500)
+            sleep(500)
         }
 
         wheels.setPowerAll(0.0)
@@ -124,7 +126,7 @@ open class AutoPath : LinearOpMode() {
         while (!isStopRequested);
     }
 
-    private fun goToPoint() {
+    private fun goToPoint(point: PathPoint) {
         xPid.reset()
         yPid.reset()
         rPid.reset()
@@ -144,14 +146,10 @@ open class AutoPath : LinearOpMode() {
             yPid.targetPosition = yState.x
             rPid.targetPosition = rState.x
 
-            xPid.setOutputBounds(-MAX_VEL, MAX_VEL)
-            yPid.setOutputBounds(-MAX_VEL, MAX_VEL)
-            rPid.setOutputBounds(-MAX_VEL, MAX_VEL)
-
             val x = xPid.update(RobotPos.currentX, xState.v, xState.a)
             val y = yPid.update(RobotPos.currentY, yState.v, yState.a)
             val theta = rPid.update(RobotPos.currentAngle, rState.v, rState.a)
-            movement(x, y, theta)
+            movement(x * point.moveSpeed, y * point.moveSpeed, theta * point.turnSpeed)
 
             printTelemetry(telemetry, xState, yState, rState, ms)
             printTelemetry(dashboard.telemetry, xState, yState, rState, ms)
@@ -217,12 +215,15 @@ open class AutoPath : LinearOpMode() {
             val thisAction = action and (1 shl i)
             a = a and (1 shl i)
             when (thisAction) {
-                PathPoint.ACTION_NONE -> return
-                PathPoint.ACTION_START_INTAKE -> actionIntake(true)
-                PathPoint.ACTION_STOP_INTAKE -> actionIntake(false)
-                PathPoint.ACTION_ATTACH_FOUNDATION -> foundation(true)
-                PathPoint.ACTION_DETACH_FOUNDATION -> foundation(false)
-                PathPoint.ACTION_SIMPLE_OUTTAKE -> outtake()
+                PathAction.NO_ACTION -> return
+                PathAction.START_INTAKE -> actionIntake(true)
+                PathAction.STOP_INTAKE -> actionIntake(false)
+                PathAction.ATTACH_FOUNDATION -> foundation(true)
+                PathAction.DETACH_FOUNDATION -> foundation(false)
+                PathAction.EXTEND_OUTTAKE -> outtake(true)
+                PathAction.RETRACT_OUTTAKE -> outtake(false)
+                PathAction.ATTACH_GRIPPER -> gripper(true)
+                PathAction.RELEASE_GRIPPER -> gripper(false)
                 else -> throw IllegalArgumentException("Unsupported Path Action")
             }
             i++
@@ -238,24 +239,22 @@ open class AutoPath : LinearOpMode() {
         if (attach) foundation.attach() else foundation.detach()
     }
 
-    private fun outtake() {
-        gripper.position = 0.75
-        Thread.sleep(500)
+    private fun outtake(extend: Boolean) {
+        if (extend) {
+            outtake.extend()
+            sleep(600)
+            outtake.activateSpinner()
+            sleep(1000)
+            outtake.semiExtend()
+        } else {
+            // Full retract
+            outtake.deactivateSpinner()
+            sleep(400)
+            outtake.retract()
+        }
+    }
 
-        outtake.extend()
-        Thread.sleep(500)
-
-        spinner.position = 1.0
-        Thread.sleep(500)
-        gripper.position = 0.35
-        Thread.sleep(500)
-
-        /////
-        gripper.position = 0.75
-        spinner.position = 0.1
-        Thread.sleep(500)
-
-        outtake.retract()
-        Thread.sleep(500)
+    fun gripper(attach: Boolean) {
+        if (attach) outtake.activateGripper() else outtake.releaseGripper()
     }
 }

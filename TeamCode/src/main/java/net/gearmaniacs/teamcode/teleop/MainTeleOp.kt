@@ -1,7 +1,6 @@
 package net.gearmaniacs.teamcode.teleop
 
 import com.qualcomm.robotcore.hardware.DcMotor
-import com.qualcomm.robotcore.hardware.Servo
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamOpMode
 import net.gearmaniacs.teamcode.hardware.motors.Intake
@@ -15,13 +14,10 @@ import net.gearmaniacs.teamcode.utils.MathUtils
 import net.gearmaniacs.teamcode.utils.MathUtils.expo
 import net.gearmaniacs.teamcode.utils.PerformanceProfiler
 import net.gearmaniacs.teamcode.utils.extensions.coerceRange
-import net.gearmaniacs.teamcode.utils.extensions.getDevice
 import kotlin.concurrent.thread
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
-
-private fun Toggle() = DelayedBoolean(400)
 
 abstract class MainTeleOp : TeamOpMode() {
 
@@ -31,9 +27,6 @@ abstract class MainTeleOp : TeamOpMode() {
     protected val lift = Lift()
     protected val foundation = FoundationServos()
     protected val outtake = OuttakeServos()
-
-    private lateinit var gripper: Servo
-    private lateinit var spinner: Servo
 
     private var liftTargetPosition = 0
     private var precisionModeOn = false
@@ -59,9 +52,6 @@ abstract class MainTeleOp : TeamOpMode() {
         check(robot.isOpModeActive) { "TeamRobot::init must be called in all child classes" }
         RobotPos.resetAll()
         wheels.setModeAll(DcMotor.RunMode.RUN_USING_ENCODER)
-
-        gripper = hardwareMap.getDevice("gripper")
-        spinner = hardwareMap.getDevice("spinner")
 
         wheels.setModeAll(DcMotor.RunMode.RUN_USING_ENCODER)
 
@@ -205,7 +195,6 @@ abstract class MainTeleOp : TeamOpMode() {
 
         if (gamepad2.back) {
             liftTargetPosition = 0
-            gamepad2.right_stick_button = true
         }
 
         if (posChange != 0)
@@ -221,19 +210,21 @@ abstract class MainTeleOp : TeamOpMode() {
         if (gamepad2.a) gripperToggle.invert()
 
         if (extensionToggle.value) outtake.extend() else outtake.retract()
-        spinner.position = if (spinnerToggle.value) 0.15 else 0.97
-        gripper.position = if (gripperToggle.value) 0.8 else 0.5
+        if (spinnerToggle.value) outtake.activateSpinner() else outtake.deactivateSpinner()
+        if (gripperToggle.value) outtake.activateGripper() else outtake.releaseGripper()
 
         if (gamepad2.right_stick_button) {
+            // Full outtake
             outtake.extend()
             Thread.sleep(600)
-            spinner.position = 0.15
+            outtake.activateSpinner()
             Thread.sleep(1000)
             outtake.semiExtend()
         }
 
         if (gamepad2.left_stick_button) {
-            spinner.position = 0.87
+            // Full retract
+            outtake.deactivateSpinner()
             Thread.sleep(400)
             outtake.retract()
         }
@@ -246,11 +237,14 @@ abstract class MainTeleOp : TeamOpMode() {
             foundation.detach()
     }
 
+    @Suppress("FunctionName")
     private companion object {
+        private fun Toggle() = DelayedBoolean(400)
+
         private const val WHEELS_POWER_TOLERANCE = 0.05
         private const val WHEELS_SPEED_PRECISION = 0.4
         private const val WHEELS_SPEED_NORMAL = 0.9
-        private const val INTAKE_POWER = 0.85
+        private const val INTAKE_POWER = 0.9
         private const val LIFT_POWER = 0.5
         private const val DRIVE_BASE_CONSTANT = 0.5 // measured in Maniacs
         private const val MAX_LIFT_HEIGHT_TICKS = 3600

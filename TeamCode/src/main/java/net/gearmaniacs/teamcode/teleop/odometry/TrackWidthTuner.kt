@@ -1,4 +1,4 @@
-package net.gearmaniacs.teamcode.autonomous
+package net.gearmaniacs.teamcode.teleop.odometry
 
 import com.acmerobotics.roadrunner.util.Angle.norm
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous

@@ -11,8 +11,9 @@ class DelayedBoolean @JvmOverloads constructor(
 
     private var _value = initialValue
 
-    val value: Boolean
+    var value: Boolean
         get() = _value
+        set(newValue) = update(System.currentTimeMillis(), newValue)
 
     fun invert() = updateAndGet(!value)
 
@@ -24,8 +25,6 @@ class DelayedBoolean @JvmOverloads constructor(
             transitionTimestamp = timestamp
         }
     }
-
-    fun update(newValue: Boolean) = update(System.currentTimeMillis(), newValue)
 
     fun updateAndGet(timestamp: Long, newValue: Boolean): Boolean {
         update(timestamp, newValue)
