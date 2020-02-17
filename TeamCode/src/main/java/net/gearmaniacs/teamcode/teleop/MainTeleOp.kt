@@ -38,7 +38,7 @@ abstract class MainTeleOp : TeamOpMode() {
 
     private var resetAngle = 0.0
     private var resetRotationPid = true
-    private val rotationPid = PidController(0.5, 0.0, 0.0).apply {
+    private val rotationPid = PidController(0.4, 0.0, 0.0).apply {
         setOutputRange(-0.3, 0.3)
     }
 
@@ -47,14 +47,13 @@ abstract class MainTeleOp : TeamOpMode() {
     private val extensionToggle = Toggle()
     private val spinnerToggle = Toggle()
     private val gripperToggle = Toggle()
+    private val foundationToggle = Toggle()
 
     override fun init() {
         check(robot.isOpModeActive) { "TeamRobot::init must be called in all child classes" }
         RobotPos.resetAll()
-        wheels.setModeAll(DcMotor.RunMode.RUN_USING_ENCODER)
 
         wheels.setModeAll(DcMotor.RunMode.RUN_USING_ENCODER)
-
         gamepad1.setJoystickDeadzone(0f)
     }
 
@@ -205,6 +204,11 @@ abstract class MainTeleOp : TeamOpMode() {
     }
 
     private fun outtake() {
+        if (gamepad2.start) {
+            // Avoid executing command while initializing the controller
+            return
+        }
+
         if (gamepad2.y) extensionToggle.invert()
         if (gamepad2.b) spinnerToggle.invert()
         if (gamepad2.a) gripperToggle.invert()
@@ -220,21 +224,25 @@ abstract class MainTeleOp : TeamOpMode() {
             outtake.activateSpinner()
             Thread.sleep(1000)
             outtake.semiExtend()
+
+            extensionToggle.value = true
+            spinnerToggle.value = true
         }
 
         if (gamepad2.left_stick_button) {
             // Full retract
             outtake.deactivateSpinner()
-            Thread.sleep(400)
+            Thread.sleep(450)
             outtake.retract()
+
+            spinnerToggle.value = false
+            extensionToggle.value = false
         }
     }
 
     private fun foundation() {
-        if (gamepad2.left_trigger > 0)
-            foundation.attach()
-        else
-            foundation.detach()
+        if (gamepad2.x) foundationToggle.invert()
+        if (foundationToggle.value) foundation.attach() else foundation.detach()
     }
 
     @Suppress("FunctionName")
@@ -245,7 +253,7 @@ abstract class MainTeleOp : TeamOpMode() {
         private const val WHEELS_SPEED_PRECISION = 0.4
         private const val WHEELS_SPEED_NORMAL = 0.9
         private const val INTAKE_POWER = 0.9
-        private const val LIFT_POWER = 0.5
+        private const val LIFT_POWER = 0.6
         private const val DRIVE_BASE_CONSTANT = 0.5 // measured in Maniacs
         private const val MAX_LIFT_HEIGHT_TICKS = 3600
     }

@@ -42,11 +42,19 @@ class OuttakeServos : IHardware {
         rightExtension.position = 0.2
     }
 
-    fun activateGripper() { gripper.position = 0.8 }
+    fun activateGripper() {
+        gripper.position = 0.8
+    }
 
-    fun releaseGripper() { gripper.position = 0.44 }
+    fun releaseGripper() {
+        gripper.position = 0.44
+    }
 
-    fun activateSpinner() { spinner.position = 0.15 }
+    fun activateSpinner() {
+        spinner.position = 0.15
+    }
 
-    fun deactivateSpinner() { spinner.position = 0.97 }
+    fun deactivateSpinner() {
+        spinner.position = 0.97
+    }
 }

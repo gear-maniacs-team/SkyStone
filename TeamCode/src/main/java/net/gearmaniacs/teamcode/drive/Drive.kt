@@ -12,7 +12,7 @@ object Drive {
     const val TRACK_WIDTH = 19.1
     const val MOTOR_VELOCITY_F = 32767 / (MAX_RPM * TICKS / 60.0)
 
-    var BASE_CONSTRAINTS = DriveConstraints(
+    val BASE_CONSTRAINTS = DriveConstraints(
         MAX_VEL, MAX_ACC, MAX_JERK,
         Math.toRadians(180.0), Math.toRadians(180.0), 0.0
     )

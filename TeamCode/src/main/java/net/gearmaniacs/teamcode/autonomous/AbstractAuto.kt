@@ -3,12 +3,9 @@ package net.gearmaniacs.teamcode.autonomous
 import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.roadrunner.control.PIDCoefficients
 import com.acmerobotics.roadrunner.control.PIDFController
-import com.acmerobotics.roadrunner.geometry.Pose2d
 import com.acmerobotics.roadrunner.profile.MotionProfile
 import com.acmerobotics.roadrunner.profile.MotionProfileGenerator
 import com.acmerobotics.roadrunner.profile.MotionState
-import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.hardware.DcMotor
 import net.gearmaniacs.teamcode.RobotPos
@@ -77,14 +74,6 @@ abstract class AbstractAuto : LinearOpMode() {
         }
         robot.start()
 
-        val builder = TrajectoryBuilder(encoder.poseEstimate, Drive.BASE_CONSTRAINTS)
-
-        path.forEach {
-            builder.splineTo(Pose2d(it.cmY, -it.cmX, it.angle))
-        }
-
-        val splinePath = builder.build()
-
         path.forEachIndexed { index, point ->
             telemetry.addData("Destination Index", index)
 
@@ -146,9 +135,9 @@ abstract class AbstractAuto : LinearOpMode() {
             yPid.targetPosition = yState.x
             rPid.targetPosition = rState.x
 
-            val x = xPid.update(RobotPos.currentX, xState.v, xState.a)
-            val y = yPid.update(RobotPos.currentY, yState.v, yState.a)
-            val theta = rPid.update(RobotPos.currentAngle, rState.v, rState.a)
+            val x = xPid.update(RobotPos.currentX, xState.v)
+            val y = yPid.update(RobotPos.currentY, yState.v)
+            val theta = rPid.update(RobotPos.currentAngle, rState.v)
             movement(x * point.moveSpeed, y * point.moveSpeed, theta * point.turnSpeed)
 
             printTelemetry(telemetry, xState, yState, rState, ms)
@@ -254,7 +243,7 @@ abstract class AbstractAuto : LinearOpMode() {
         }
     }
 
-    fun gripper(attach: Boolean) {
+    private fun gripper(attach: Boolean) {
         if (attach) outtake.activateGripper() else outtake.releaseGripper()
     }
 }
