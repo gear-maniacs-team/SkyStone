@@ -10,12 +10,18 @@ import net.gearmaniacs.teamcode.hardware.motors.Wheels
 import net.gearmaniacs.teamcode.hardware.servos.FoundationServos
 import net.gearmaniacs.teamcode.hardware.servos.OuttakeServos
 import net.gearmaniacs.teamcode.pid.PidController
-import net.gearmaniacs.teamcode.utils.*
+import net.gearmaniacs.teamcode.utils.DelayedBoolean
+import net.gearmaniacs.teamcode.utils.MathUtils
 import net.gearmaniacs.teamcode.utils.MathUtils.expo
+import net.gearmaniacs.teamcode.utils.PerformanceProfiler
 import net.gearmaniacs.teamcode.utils.extensions.coerceRange
 import net.gearmaniacs.teamcode.utils.extensions.getDevice
 import kotlin.concurrent.thread
-import kotlin.math.*
+import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
+
+private fun Toggle() = DelayedBoolean(400)
 
 abstract class MainTeleOp : TeamOpMode() {
 
@@ -37,12 +43,17 @@ abstract class MainTeleOp : TeamOpMode() {
     private var rightRearPower = 0.0
     private var rightFrontPower = 0.0
 
-    private val headingIndependentDrive = DelayedBoolean(400)
     private var resetAngle = 0.0
     private var resetRotationPid = true
     private val rotationPid = PidController(0.5, 0.0, 0.0).apply {
         setOutputRange(-0.3, 0.3)
     }
+
+    // Toggle Variables
+    private val fieldOrientedToggle = Toggle()
+    private val extensionToggle = Toggle()
+    private val spinnerToggle = Toggle()
+    private val gripperToggle = Toggle()
 
     override fun init() {
         check(robot.isOpModeActive) { "TeamRobot::init must be called in all child classes" }
@@ -53,6 +64,8 @@ abstract class MainTeleOp : TeamOpMode() {
         spinner = hardwareMap.getDevice("spinner")
 
         wheels.setModeAll(DcMotor.RunMode.RUN_USING_ENCODER)
+
+        gamepad1.setJoystickDeadzone(0f)
     }
 
     override fun start() {
@@ -60,10 +73,7 @@ abstract class MainTeleOp : TeamOpMode() {
 
         thread {
             while (robot.isOpModeActive) {
-                intake()
-                lift()
-                outtake()
-                foundation()
+                secondaryLoop()
                 Thread.yield()
             }
         }
@@ -73,17 +83,12 @@ abstract class MainTeleOp : TeamOpMode() {
         performanceProfiler.update(telemetry)
 
         precisionModeOn = gamepad1.right_bumper
-        if (gamepad1.b) headingIndependentDrive.invert()
+        if (gamepad1.b) fieldOrientedToggle.invert()
+        rotationPid.Kp = if (precisionModeOn) 0.0 else 0.4
 
         if (gamepad1.left_stick_button && gamepad1.right_stick_button) {
             resetAngle = RobotPos.currentAngle
             Thread.sleep(400L)
-        }
-
-        if (precisionModeOn) {
-            rotationPid.Kp = 0.0
-        } else {
-            rotationPid.Kp = 0.4
         }
 
         leftFrontPower = 0.0
@@ -101,7 +106,7 @@ abstract class MainTeleOp : TeamOpMode() {
         }
 
         with(telemetry) {
-            addData("Heading Independent", headingIndependentDrive.value)
+            addData("Field Oriented Enabled", fieldOrientedToggle.value)
             addLine("---")
             addData("X Pos", "%3f", RobotPos.currentX)
             addData("Y Pos", "%3f", RobotPos.currentY)
@@ -144,7 +149,7 @@ abstract class MainTeleOp : TeamOpMode() {
 
         if (abs(x) == 0.0 && abs(y) == 0.0) return
 
-        val currentAngle = if (headingIndependentDrive.value) RobotPos.currentAngle - resetAngle else 0.0
+        val currentAngle = if (fieldOrientedToggle.value) RobotPos.currentAngle - resetAngle else 0.0
         val sinOrientation = sin(currentAngle)
         val cosOrientation = cos(currentAngle)
 
@@ -164,6 +169,13 @@ abstract class MainTeleOp : TeamOpMode() {
         leftRearPower += scaledX - scaledY
         rightRearPower += -scaledX - scaledY
         rightFrontPower += scaledX - scaledY
+    }
+
+    private fun secondaryLoop() {
+        intake()
+        lift()
+        outtake()
+        foundation()
     }
 
     private fun intake() {
@@ -191,6 +203,11 @@ abstract class MainTeleOp : TeamOpMode() {
         if (liftTargetPosition < 0)
             liftTargetPosition = 0
 
+        if (gamepad2.back) {
+            liftTargetPosition = 0
+            gamepad2.right_stick_button = true
+        }
+
         if (posChange != 0)
             Thread.sleep(200)
 
@@ -199,17 +216,13 @@ abstract class MainTeleOp : TeamOpMode() {
     }
 
     private fun outtake() {
-        if (gamepad2.y)
-            outtake.extend()
-        else if (gamepad2.x)
-            outtake.retract()
+        if (gamepad2.y) extensionToggle.invert()
+        if (gamepad2.b) spinnerToggle.invert()
+        if (gamepad2.a) gripperToggle.invert()
 
-        gripper.position = if (gamepad2.right_trigger > 0) 0.8 else 0.5
-
-        if (gamepad2.a)
-            spinner.position = 0.15
-        else if (gamepad2.b)
-            spinner.position = 0.97
+        if (extensionToggle.value) outtake.extend() else outtake.retract()
+        spinner.position = if (spinnerToggle.value) 0.15 else 0.97
+        gripper.position = if (gripperToggle.value) 0.8 else 0.5
 
         if (gamepad2.right_stick_button) {
             outtake.extend()
