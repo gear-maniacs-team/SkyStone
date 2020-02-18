@@ -3,6 +3,7 @@ package net.gearmaniacs.teamcode.teleop
 import com.qualcomm.robotcore.hardware.DcMotor
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamOpMode
+import net.gearmaniacs.teamcode.drive.Drive
 import net.gearmaniacs.teamcode.hardware.motors.Intake
 import net.gearmaniacs.teamcode.hardware.motors.Lift
 import net.gearmaniacs.teamcode.hardware.motors.Wheels
@@ -75,7 +76,7 @@ abstract class MainTeleOp : TeamOpMode() {
         if (gamepad1.b) fieldOrientedToggle.invert()
         rotationPid.Kp = if (precisionModeOn) 0.0 else 0.4
 
-        if (gamepad1.left_stick_button && gamepad1.right_stick_button) {
+        if (gamepad1.back) {
             resetAngle = RobotPos.currentAngle
             Thread.sleep(400L)
         }
@@ -88,10 +89,10 @@ abstract class MainTeleOp : TeamOpMode() {
         movement()
 
         with(wheels) {
-            leftFront.power = leftFrontPower.coerceRange(WHEELS_POWER_TOLERANCE)
-            leftRear.power = leftRearPower.coerceRange(WHEELS_POWER_TOLERANCE)
-            rightRear.power = rightRearPower.coerceRange(WHEELS_POWER_TOLERANCE)
-            rightFront.power = rightFrontPower.coerceRange(WHEELS_POWER_TOLERANCE)
+            leftFront.velocity = Drive.cmToTicks(leftFrontPower.coerceRange(WHEELS_POWER_TOLERANCE))
+            leftRear.velocity = Drive.cmToTicks(leftRearPower.coerceRange(WHEELS_POWER_TOLERANCE))
+            rightRear.velocity = Drive.cmToTicks(rightRearPower.coerceRange(WHEELS_POWER_TOLERANCE))
+            rightFront.velocity = Drive.cmToTicks(rightFrontPower.coerceRange(WHEELS_POWER_TOLERANCE))
         }
 
         with(telemetry) {
@@ -179,8 +180,8 @@ abstract class MainTeleOp : TeamOpMode() {
 
     private fun lift() {
         val posChange = when {
-            gamepad2.dpad_down -> -256
-            gamepad2.dpad_up -> 256
+            gamepad2.dpad_down -> -250
+            gamepad2.dpad_up -> 250
             else -> 0
         }
 
@@ -255,6 +256,6 @@ abstract class MainTeleOp : TeamOpMode() {
         private const val INTAKE_POWER = 0.9
         private const val LIFT_POWER = 0.6
         private const val DRIVE_BASE_CONSTANT = 0.5 // measured in Maniacs
-        private const val MAX_LIFT_HEIGHT_TICKS = 3600
+        private const val MAX_LIFT_HEIGHT_TICKS = 4500
     }
 }

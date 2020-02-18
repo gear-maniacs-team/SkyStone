@@ -88,7 +88,7 @@ class PidController(
             return 0.0
 
         if (Ranges.isRangeValid(lastOutput, minOutput, maxOutput) || sign(cumulativeError) != sign(error))
-            cumulativeError += error * deltaTime
+            cumulativeError += 0.5 * (error + lastError) * deltaTime
 
         val derivative = (error - lastError) / deltaTime
 

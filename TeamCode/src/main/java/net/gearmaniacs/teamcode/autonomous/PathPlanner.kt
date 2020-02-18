@@ -28,17 +28,15 @@ class PathPlanner : MainTeleOp() {
     @SuppressLint("MissingSuperCall")
     override fun start() {
         robot.start()
+    }
 
-        thread {
-            while (robot.isOpModeActive) {
-                if (gamepad1.x) {
-                    val it = PathPoint(RobotPos.currentX, RobotPos.currentY, RobotPos.currentAngle)
-                    list.add(it)
-                    Log.v("Point", it.toString())
-                    Thread.sleep(400)
-                }
-                Thread.sleep(20)
-            }
+    override fun loop() {
+        if (gamepad1.x) {
+            val it = PathPoint(RobotPos.currentX, RobotPos.currentY, RobotPos.currentAngle)
+            list.add(it)
+            Log.v("Point", it.toString())
+            Thread.sleep(400)
         }
+        Thread.sleep(20)
     }
 }

@@ -55,6 +55,6 @@ class OuttakeServos : IHardware {
     }
 
     fun deactivateSpinner() {
-        spinner.position = 0.97
+        spinner.position = 0.95
     }
 }

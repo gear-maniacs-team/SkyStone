@@ -124,15 +124,12 @@ class GyroEncoders : IHardware, IUpdatable, Localizer {
     }
 
     override fun update() {
-        val robot = TeamRobot.getRobot() ?: return
         val future = executor.submit(Callable<Double> {
             updateAngleValue()
         })
 
-        robot.forceUpdateExpansionHubs()
-
-        val rightPos = right.getCurrentPosition(robot.bulkData1).toDouble()
-        val backPos = back.getCurrentPosition(robot.bulkData2).toDouble()
+        val rightPos = right.currentPosition.toDouble()
+        val backPos = back.currentPosition.toDouble()
         val deltaAngle = future.get()
 
         encodersUpdate(rightPos, backPos, deltaAngle)

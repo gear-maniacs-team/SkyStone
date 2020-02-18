@@ -99,10 +99,6 @@ class TeamRobot(
         INSTANCE = null
     }
 
-    fun forceUpdateExpansionHubs() {
-        internalUpdateExpansionHubs()
-    }
-
     private fun internalUpdateExpansionHubs() {
         val bulkInputData1: RevBulkData? = expansionHub1.bulkInputData
         val bulkInputData2: RevBulkData? = expansionHub2.bulkInputData

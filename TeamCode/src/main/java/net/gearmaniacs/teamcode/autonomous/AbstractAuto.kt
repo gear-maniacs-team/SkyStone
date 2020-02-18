@@ -43,20 +43,22 @@ abstract class AbstractAuto : LinearOpMode() {
     private val axialCoefficients = PIDCoefficients(5.0, 0.001, 0.1)
     private val xPid = PIDFController(axialCoefficients, Drive.kV, clock = RobotClock)
     private val yPid = PIDFController(axialCoefficients, Drive.kV, clock = RobotClock)
-    private val rPid = PIDFController(PIDCoefficients(100.0, 1.0, 0.0), Drive.kV, clock = RobotClock)
+    private val rPid = PIDFController(PIDCoefficients(150.0, 0.0, 6.0), Drive.kV, clock = RobotClock)
 
     abstract val path: List<PathPoint>
 
     override fun runOpMode() {
         RobotPos.resetAll()
         robot.init(
-            hardwareMap, listOf(
+            hardwareMap,
+            listOf(
                 wheels,
                 intake,
                 foundation,
                 outtake,
                 encoder
-            ), listOf(encoder)
+            ),
+            listOf(encoder)
         )
 
         wheels.setZeroPowerBehaviorAll(DcMotor.ZeroPowerBehavior.BRAKE)
@@ -98,11 +100,11 @@ abstract class AbstractAuto : LinearOpMode() {
             )
 
             rProfile = MotionProfileGenerator.generateSimpleMotionProfile(
-                MotionState(-RobotPos.currentAngle, 0.0, 0.0, 0.0),
+                MotionState(RobotPos.currentAngle, 0.0, 0.0, 0.0),
                 MotionState(RobotPos.targetAngle, 0.0, 0.0, 0.0),
-                MAX_VEL,
-                Drive.MAX_ACC,
-                Drive.MAX_JERK
+                Drive.MAX_VEL_ANG,
+                Drive.MAX_ACC_ANG,
+                0.0
             )
 
             goToPoint(point)
@@ -200,11 +202,11 @@ abstract class AbstractAuto : LinearOpMode() {
     private fun performAction(action: Int) {
         var a = action
         var i = 0
-        while (action != 0) {
+        while  (action != 0) {
             val thisAction = action and (1 shl i)
             a = a and (1 shl i)
+
             when (thisAction) {
-                PathAction.NO_ACTION -> return
                 PathAction.START_INTAKE -> actionIntake(true)
                 PathAction.STOP_INTAKE -> actionIntake(false)
                 PathAction.ATTACH_FOUNDATION -> foundation(true)
@@ -213,7 +215,6 @@ abstract class AbstractAuto : LinearOpMode() {
                 PathAction.RETRACT_OUTTAKE -> outtake(false)
                 PathAction.ATTACH_GRIPPER -> gripper(true)
                 PathAction.RELEASE_GRIPPER -> gripper(false)
-                else -> throw IllegalArgumentException("Unsupported Path Action")
             }
             i++
         }

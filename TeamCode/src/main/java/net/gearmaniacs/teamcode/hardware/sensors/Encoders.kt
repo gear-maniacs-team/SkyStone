@@ -93,11 +93,6 @@ class Encoders : IHardware, IUpdatable, Localizer {
         get() = Pose2d(RobotPos.currentY, -RobotPos.currentX, RobotPos.currentAngle)
         set(value) { RobotPos.currentX = value.y; RobotPos.currentY = -value.x; RobotPos.currentAngle = value.heading }
 
-    /**
-     * Calling updateNative before initNative will result in undefined behavior
-     */
-//    private external fun updateNative(leftPos: Double, rightPos: Double, backPos: Double)
-
     override fun update() {
         val robot = TeamRobot.getRobot()
         if (robot == null || !robot.isOpModeActive) return
