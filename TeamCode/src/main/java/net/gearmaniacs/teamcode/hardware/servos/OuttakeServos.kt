@@ -28,13 +28,13 @@ class OuttakeServos : IHardware {
     }
 
     fun extend() {
-        leftExtension.position = 0.0
-        rightExtension.position = 1.0
+        leftExtension.position = 0.3
+        rightExtension.position = 0.67
     }
 
     fun semiExtend() {
-        leftExtension.position = 0.5
-        rightExtension.position = 0.5
+        leftExtension.position = 0.6
+        rightExtension.position = 0.4
     }
 
     fun retract() {

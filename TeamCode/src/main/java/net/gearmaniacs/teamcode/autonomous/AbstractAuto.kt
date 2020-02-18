@@ -204,12 +204,8 @@ abstract class AbstractAuto : LinearOpMode() {
         var index = 0
         var a = action
 
-        while (a != 0) {
-            val thisAction = a and (1 shl index)
-            if (thisAction == PathAction.NO_ACTION)
-                continue
-
-            when (thisAction) {
+        with(a) {
+            when (a) {
                 PathAction.START_INTAKE -> actionIntake(true)
                 PathAction.STOP_INTAKE -> actionIntake(false)
                 PathAction.ATTACH_FOUNDATION -> foundation(true)
@@ -220,10 +216,28 @@ abstract class AbstractAuto : LinearOpMode() {
                 PathAction.RELEASE_GRIPPER -> gripper(false)
                 else -> Log.e("AbstractAuto", "Invalid PathAction")
             }
-
-            a = a xor thisAction
-            ++index
         }
+
+//        while (a != 0) {
+//            val thisAction = (a and (1 shl index)) shr index
+//            if (thisAction == PathAction.NO_ACTION)
+//                continue
+//
+//            when (thisAction) {
+//                PathAction.START_INTAKE -> actionIntake(true)
+//                PathAction.STOP_INTAKE -> actionIntake(false)
+//                PathAction.ATTACH_FOUNDATION -> foundation(true)
+//                PathAction.DETACH_FOUNDATION -> foundation(false)
+//                PathAction.EXTEND_OUTTAKE -> outtake(true)
+//                PathAction.RETRACT_OUTTAKE -> outtake(false)
+//                PathAction.ATTACH_GRIPPER -> gripper(true)
+//                PathAction.RELEASE_GRIPPER -> gripper(false)
+//                else -> Log.e("AbstractAuto", "Invalid PathAction")
+//            }
+//
+//            a = a and thisAction
+//            ++index
+//        }
     }
 
     private fun actionIntake(start: Boolean) {
@@ -238,7 +252,7 @@ abstract class AbstractAuto : LinearOpMode() {
     private fun outtake(extend: Boolean) {
         if (extend) {
             outtake.extend()
-            sleep(600)
+            sleep(900)
             outtake.activateSpinner()
             sleep(1000)
             outtake.semiExtend()

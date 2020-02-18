@@ -89,10 +89,10 @@ abstract class MainTeleOp : TeamOpMode() {
         movement()
 
         with(wheels) {
-            leftFront.velocity = Drive.cmToTicks(leftFrontPower.coerceRange(WHEELS_POWER_TOLERANCE))
-            leftRear.velocity = Drive.cmToTicks(leftRearPower.coerceRange(WHEELS_POWER_TOLERANCE))
-            rightRear.velocity = Drive.cmToTicks(rightRearPower.coerceRange(WHEELS_POWER_TOLERANCE))
-            rightFront.velocity = Drive.cmToTicks(rightFrontPower.coerceRange(WHEELS_POWER_TOLERANCE))
+            leftFront.velocity = Drive.cmToTicks(leftFrontPower.coerceRange(WHEELS_POWER_TOLERANCE)) * Drive.MAX_VEL
+            leftRear.velocity = Drive.cmToTicks(leftRearPower.coerceRange(WHEELS_POWER_TOLERANCE)) * Drive.MAX_VEL
+            rightRear.velocity = Drive.cmToTicks(rightRearPower.coerceRange(WHEELS_POWER_TOLERANCE)) * Drive.MAX_VEL
+            rightFront.velocity = Drive.cmToTicks(rightFrontPower.coerceRange(WHEELS_POWER_TOLERANCE)) * Drive.MAX_VEL
         }
 
         with(telemetry) {
