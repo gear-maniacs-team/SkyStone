@@ -1,5 +1,6 @@
 package net.gearmaniacs.teamcode.autonomous
 
+import android.util.Log
 import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.roadrunner.control.PIDCoefficients
 import com.acmerobotics.roadrunner.control.PIDFController
@@ -104,7 +105,7 @@ abstract class AbstractAuto : LinearOpMode() {
                 MotionState(RobotPos.targetAngle, 0.0, 0.0, 0.0),
                 Drive.MAX_VEL_ANG,
                 Drive.MAX_ACC_ANG,
-                0.0
+                Drive.MAX_JERK_ANG
             )
 
             goToPoint(point)
@@ -200,11 +201,13 @@ abstract class AbstractAuto : LinearOpMode() {
     }
 
     private fun performAction(action: Int) {
+        var index = 0
         var a = action
-        var i = 0
-        while  (action != 0) {
-            val thisAction = action and (1 shl i)
-            a = a and (1 shl i)
+
+        while (a != 0) {
+            val thisAction = a and (1 shl index)
+            if (thisAction == PathAction.NO_ACTION)
+                continue
 
             when (thisAction) {
                 PathAction.START_INTAKE -> actionIntake(true)
@@ -215,8 +218,11 @@ abstract class AbstractAuto : LinearOpMode() {
                 PathAction.RETRACT_OUTTAKE -> outtake(false)
                 PathAction.ATTACH_GRIPPER -> gripper(true)
                 PathAction.RELEASE_GRIPPER -> gripper(false)
+                else -> Log.e("AbstractAuto", "Invalid PathAction")
             }
-            i++
+
+            a = a xor thisAction
+            ++index
         }
     }
 

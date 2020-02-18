@@ -12,12 +12,9 @@ data class PathPoint(
     override fun toString(): String {
         return buildString {
             append("PathPoint(")
-            append("cmX = ")
-            append(cmX)
-            append(", cmY = ")
-            append(cmY)
-            append(", angle = ")
-            append(angle)
+            append(String.format("%.5f", cmX))
+            append(String.format("%.5f", cmY))
+            append(String.format("%.5f", angle))
             append(')')
         }
     }

@@ -16,7 +16,7 @@ import net.gearmaniacs.teamcode.utils.extensions.getCurrentPosition
 import kotlin.math.pow
 
 @TeleOp(name = "Odometry Test", group = "Odometry")
-class OdometryTest : TeamOpMode() {
+open class OdometryTest : TeamOpMode() {
 
     private val encoder = GyroEncoders()
     private val performanceProfiler = PerformanceProfiler()

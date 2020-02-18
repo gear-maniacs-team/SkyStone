@@ -4,10 +4,12 @@ import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints
 
 object Drive {
     const val MAX_VEL = 145.0
-    const val MAX_VEL_ANG = 2.0 * Math.PI
     const val MAX_ACC = 200.0
-    const val MAX_ACC_ANG = Math.PI
     const val MAX_JERK = 100.0
+    const val MAX_VEL_ANG = 2.0 * Math.PI
+    const val MAX_ACC_ANG = Math.PI
+    const val MAX_JERK_ANG = 0.0
+
     const val TICKS = 537.6
     const val DIAMETER = 10
     const val MAX_RPM = 340
@@ -16,7 +18,7 @@ object Drive {
 
     val BASE_CONSTRAINTS = DriveConstraints(
         MAX_VEL, MAX_ACC, MAX_JERK,
-        Math.toRadians(180.0), Math.toRadians(180.0), 0.0
+        MAX_VEL_ANG, MAX_ACC_ANG, MAX_JERK_ANG
     )
 
     const val kV = 1.0 // MAX_VEL
