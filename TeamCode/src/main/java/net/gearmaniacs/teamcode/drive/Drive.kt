@@ -5,7 +5,7 @@ import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints
 object Drive {
     const val MAX_VEL = 145.0
     const val MAX_ACC = 200.0
-    const val MAX_JERK = 100.0
+    const val MAX_JERK = 160.0
     const val MAX_VEL_ANG = 2.0 * Math.PI
     const val MAX_ACC_ANG = Math.PI
     const val MAX_JERK_ANG = 0.0

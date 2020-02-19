@@ -9,19 +9,18 @@ import com.acmerobotics.roadrunner.profile.MotionProfileGenerator
 import com.acmerobotics.roadrunner.profile.MotionState
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.hardware.DcMotor
+import com.qualcomm.robotcore.util.ElapsedTime
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamRobot
 import net.gearmaniacs.teamcode.drive.Drive
 import net.gearmaniacs.teamcode.drive.Drive.MAX_VEL
 import net.gearmaniacs.teamcode.hardware.motors.Intake
+import net.gearmaniacs.teamcode.hardware.motors.Lift
 import net.gearmaniacs.teamcode.hardware.motors.Wheels
 import net.gearmaniacs.teamcode.hardware.sensors.GyroEncoders
 import net.gearmaniacs.teamcode.hardware.servos.FoundationServos
 import net.gearmaniacs.teamcode.hardware.servos.OuttakeServos
-import net.gearmaniacs.teamcode.utils.PathAction
-import net.gearmaniacs.teamcode.utils.PathPoint
-import net.gearmaniacs.teamcode.utils.PerformanceProfiler
-import net.gearmaniacs.teamcode.utils.RobotClock
+import net.gearmaniacs.teamcode.utils.*
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import kotlin.math.abs
 import kotlin.math.cos
@@ -33,6 +32,7 @@ abstract class AbstractAuto : LinearOpMode() {
     private val wheels = Wheels()
     private val encoder = GyroEncoders()
     private val intake = Intake()
+    private val lift = Lift()
     private val foundation = FoundationServos()
     private val outtake = OuttakeServos()
     private val dashboard = FtcDashboard.getInstance()
@@ -41,7 +41,7 @@ abstract class AbstractAuto : LinearOpMode() {
     private lateinit var yProfile: MotionProfile
     private lateinit var rProfile: MotionProfile
 
-    private val axialCoefficients = PIDCoefficients(5.0, 0.001, 0.1)
+    private val axialCoefficients = PIDCoefficients(7.3, 0.005, 0.1)
     private val xPid = PIDFController(axialCoefficients, Drive.kV, clock = RobotClock)
     private val yPid = PIDFController(axialCoefficients, Drive.kV, clock = RobotClock)
     private val rPid = PIDFController(PIDCoefficients(150.0, 0.0, 6.0), Drive.kV, clock = RobotClock)
@@ -57,6 +57,7 @@ abstract class AbstractAuto : LinearOpMode() {
                 intake,
                 foundation,
                 outtake,
+                lift,
                 encoder
             ),
             listOf(encoder)
@@ -76,12 +77,13 @@ abstract class AbstractAuto : LinearOpMode() {
             telemetry.update()
         }
         robot.start()
+        val elapsedTime = ElapsedTime()
 
-        path.forEachIndexed { index, point ->
-            telemetry.addData("Destination Index", index)
+        resetServos()
 
-            RobotPos.targetX = point.cmX
-            RobotPos.targetY = point.cmY
+        path.forEach { point ->
+            RobotPos.targetX = point.x
+            RobotPos.targetY = point.y
             RobotPos.targetAngle = point.angle
 
             xProfile = MotionProfileGenerator.generateSimpleMotionProfile(
@@ -113,8 +115,13 @@ abstract class AbstractAuto : LinearOpMode() {
             sleep(500)
         }
 
+        telemetry.addData("Elapsed Time", elapsedTime.seconds())
+        telemetry.update()
+
         wheels.setPowerAll(0.0)
         robot.stop()
+        sleep(200)
+        wheels.setZeroPowerBehaviorAll(DcMotor.ZeroPowerBehavior.FLOAT)
         while (!isStopRequested);
     }
 
@@ -150,7 +157,7 @@ abstract class AbstractAuto : LinearOpMode() {
             val yError = abs(RobotPos.targetY - RobotPos.currentY)
             val thetaError = abs(RobotPos.targetAngle - RobotPos.currentAngle)
 
-            if (xError < 2 && yError < 2 && thetaError < Math.toRadians(5.0)) {
+            if (xError < point.moveError && yError < point.moveError && thetaError < point.turnError) {
                 break
             }
         }
@@ -200,16 +207,21 @@ abstract class AbstractAuto : LinearOpMode() {
         }
     }
 
+    private fun resetServos() {
+        foundation.detach()
+        outtake.deactivateSpinner()
+        outtake.releaseGripper()
+        outtake.retract()
+    }
+
     private fun performAction(action: Int) {
         var index = 0
         var a = action
 
         while (a != 0) {
-            val thisAction = (a and (1 shl index))
-            if (thisAction == PathAction.NO_ACTION) {
-                ++index
+            val thisAction = (a and (1 shl index++))
+            if (thisAction == PathAction.NO_ACTION)
                 continue
-            }
 
             when (thisAction) {
                 PathAction.START_INTAKE -> actionIntake(true)
@@ -223,14 +235,12 @@ abstract class AbstractAuto : LinearOpMode() {
                 else -> Log.e("AbstractAuto", "Invalid PathAction")
             }
 
-            a = a and thisAction
-            ++index
+            a = a xor thisAction
         }
     }
 
     private fun actionIntake(start: Boolean) {
-        val power = if (start) 0.8 else 0.0
-        intake.setPowerAll(power)
+        intake.setPowerAll(if (start) 0.8 else 0.0)
     }
 
     private fun foundation(attach: Boolean) {
@@ -239,20 +249,28 @@ abstract class AbstractAuto : LinearOpMode() {
 
     private fun outtake(extend: Boolean) {
         if (extend) {
+            lift.setPowerAll(0.6)
+            lift.setTargetPositionAll(500)
+            sleep(500)
             outtake.extend()
-            sleep(900)
+            sleep(700)
             outtake.activateSpinner()
-            sleep(1000)
-            outtake.semiExtend()
         } else {
             // Full retract
-            outtake.deactivateSpinner()
-            sleep(400)
             outtake.retract()
+            outtake.deactivateSpinner()
+            lift.setPowerAll(0.6)
+            lift.setTargetPositionAll(0)
+            sleep(400)
         }
     }
 
     private fun gripper(attach: Boolean) {
-        if (attach) outtake.activateGripper() else outtake.releaseGripper()
+        if (attach) {
+            outtake.activateGripper()
+        } else {
+            outtake.releaseGripper()
+            sleep(500)
+        }
     }
 }

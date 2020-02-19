@@ -28,8 +28,8 @@ class OuttakeServos : IHardware {
     }
 
     fun extend() {
-        leftExtension.position = 0.3
-        rightExtension.position = 0.67
+        leftExtension.position = 0.0
+        rightExtension.position = 1.0
     }
 
     fun semiExtend() {
@@ -38,8 +38,8 @@ class OuttakeServos : IHardware {
     }
 
     fun retract() {
-        leftExtension.position = 0.8
-        rightExtension.position = 0.2
+        leftExtension.position = 1.0
+        rightExtension.position = 0.0
     }
 
     fun activateGripper() {
