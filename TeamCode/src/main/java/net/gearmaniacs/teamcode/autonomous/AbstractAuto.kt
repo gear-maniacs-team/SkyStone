@@ -3,7 +3,7 @@ package net.gearmaniacs.teamcode.autonomous
 import android.util.Log
 import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.roadrunner.control.PIDCoefficients
-import com.acmerobotics.roadrunner.control.PIDFController
+import net.gearmaniacs.teamcode.pid.PIDFController
 import com.acmerobotics.roadrunner.profile.MotionProfile
 import com.acmerobotics.roadrunner.profile.MotionProfileGenerator
 import com.acmerobotics.roadrunner.profile.MotionState
@@ -14,6 +14,7 @@ import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamRobot
 import net.gearmaniacs.teamcode.drive.Drive
 import net.gearmaniacs.teamcode.drive.Drive.MAX_VEL
+import net.gearmaniacs.teamcode.drive.Drive.MAX_VEL_ANG
 import net.gearmaniacs.teamcode.hardware.motors.Intake
 import net.gearmaniacs.teamcode.hardware.motors.Lift
 import net.gearmaniacs.teamcode.hardware.motors.Wheels
@@ -22,13 +23,15 @@ import net.gearmaniacs.teamcode.hardware.servos.FoundationServos
 import net.gearmaniacs.teamcode.hardware.servos.OuttakeServos
 import net.gearmaniacs.teamcode.utils.*
 import org.firstinspires.ftc.robotcore.external.Telemetry
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
 
 abstract class AbstractAuto : LinearOpMode() {
 
-    private val robot = TeamRobot()
+    private val robot = TeamRobot(false)
     private val wheels = Wheels()
     private val encoder = GyroEncoders()
     private val intake = Intake()
@@ -41,12 +44,15 @@ abstract class AbstractAuto : LinearOpMode() {
     private lateinit var yProfile: MotionProfile
     private lateinit var rProfile: MotionProfile
 
-    private val axialCoefficients = PIDCoefficients(7.3, 0.005, 0.1)
+    private val axialCoefficients = PIDCoefficients(7.3, 1.82, 0.0)
     private val xPid = PIDFController(axialCoefficients, Drive.kV, clock = RobotClock)
     private val yPid = PIDFController(axialCoefficients, Drive.kV, clock = RobotClock)
-    private val rPid = PIDFController(PIDCoefficients(150.0, 0.0, 6.0), Drive.kV, clock = RobotClock)
+    private val rPid = PIDFController(PIDCoefficients(150.0, 25.0, 6.25), Drive.kV, clock = RobotClock)
 
-    abstract val path: List<PathPoint>
+    private val executor = Executors.newSingleThreadExecutor()
+    private val asyncActions = mutableListOf<Future<*>>()
+
+    abstract val pathRight: List<PathPoint>
 
     override fun runOpMode() {
         RobotPos.resetAll()
@@ -73,7 +79,7 @@ abstract class AbstractAuto : LinearOpMode() {
 
         while (!isStarted) {
             telemetry.addData("Status", "Waiting for start")
-            telemetry.addData("Path Size", path.size)
+            telemetry.addData("Path Size", pathRight.size)
             telemetry.update()
         }
         robot.start()
@@ -81,7 +87,12 @@ abstract class AbstractAuto : LinearOpMode() {
 
         resetServos()
 
-        path.forEach { point ->
+        pathRight.forEachIndexed { index, point ->
+            if (isStopRequested) return
+            outtake.deactivateSpinner()
+            asyncActions.forEach { it.get() }
+            asyncActions.clear()
+
             RobotPos.targetX = point.x
             RobotPos.targetY = point.y
             RobotPos.targetAngle = point.angle
@@ -105,7 +116,7 @@ abstract class AbstractAuto : LinearOpMode() {
             rProfile = MotionProfileGenerator.generateSimpleMotionProfile(
                 MotionState(RobotPos.currentAngle, 0.0, 0.0, 0.0),
                 MotionState(RobotPos.targetAngle, 0.0, 0.0, 0.0),
-                Drive.MAX_VEL_ANG,
+                MAX_VEL_ANG,
                 Drive.MAX_ACC_ANG,
                 Drive.MAX_JERK_ANG
             )
@@ -120,9 +131,11 @@ abstract class AbstractAuto : LinearOpMode() {
 
         wheels.setPowerAll(0.0)
         robot.stop()
-        sleep(200)
+        sleep(500)
         wheels.setZeroPowerBehaviorAll(DcMotor.ZeroPowerBehavior.FLOAT)
-        while (!isStopRequested);
+        while (!isStopRequested) {
+            Thread.yield()
+        }
     }
 
     private fun goToPoint(point: PathPoint) {
@@ -224,10 +237,11 @@ abstract class AbstractAuto : LinearOpMode() {
                 continue
 
             when (thisAction) {
-                PathAction.START_INTAKE -> actionIntake(true)
-                PathAction.STOP_INTAKE -> actionIntake(false)
-                PathAction.ATTACH_FOUNDATION -> foundation(true)
-                PathAction.DETACH_FOUNDATION -> foundation(false)
+                PathAction.START_INTAKE -> intake.setPowerAll(0.75)
+                PathAction.STOP_INTAKE -> intake.setPowerAll(0.0)
+                PathAction.ATTACH_FOUNDATION -> foundation.attach()
+                PathAction.PREPARE_ATTACH_FOUNDATION -> foundation.prepareAttach()
+                PathAction.DETACH_FOUNDATION -> foundation.detach()
                 PathAction.EXTEND_OUTTAKE -> outtake(true)
                 PathAction.RETRACT_OUTTAKE -> outtake(false)
                 PathAction.ATTACH_GRIPPER -> gripper(true)
@@ -239,29 +253,26 @@ abstract class AbstractAuto : LinearOpMode() {
         }
     }
 
-    private fun actionIntake(start: Boolean) {
-        intake.setPowerAll(if (start) 0.8 else 0.0)
-    }
-
-    private fun foundation(attach: Boolean) {
-        if (attach) foundation.attach() else foundation.detach()
-    }
-
     private fun outtake(extend: Boolean) {
         if (extend) {
-            lift.setPowerAll(0.6)
-            lift.setTargetPositionAll(500)
-            sleep(500)
-            outtake.extend()
-            sleep(700)
-            outtake.activateSpinner()
+            asyncActions += executor.submit {
+                lift.setPowerAll(0.6)
+                lift.setTargetPositionAll(400)
+                sleep(400)
+                outtake.extend()
+                sleep(600)
+                outtake.activateSpinner()
+            }
         } else {
             // Full retract
+            outtake.releaseGripper()
+            lift.setPowerAll(0.3)
+            lift.setTargetPositionAll(0)
+            Thread.sleep(350)
+            lift.setPowerAll(0.6)
             outtake.retract()
             outtake.deactivateSpinner()
-            lift.setPowerAll(0.6)
-            lift.setTargetPositionAll(0)
-            sleep(400)
+            sleep(350)
         }
     }
 
@@ -269,8 +280,10 @@ abstract class AbstractAuto : LinearOpMode() {
         if (attach) {
             outtake.activateGripper()
         } else {
-            outtake.releaseGripper()
-            sleep(500)
+            asyncActions += executor.submit {
+                outtake.releaseGripper()
+                sleep(800)
+            }
         }
     }
 }

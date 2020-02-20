@@ -217,10 +217,6 @@ class I2CEncoderV2(val i2cInterface: II2CInterface) {
         return this.read32(EncoderRegistry.REG_CVALB4)
     }
 
-    fun readCounterFloat(): Float {
-        return this.readFloat(EncoderRegistry.REG_CVALB4)
-    }
-
     fun readMax(): Int {
         return this.read32(EncoderRegistry.REG_CMAXB4)
     }
@@ -229,20 +225,8 @@ class I2CEncoderV2(val i2cInterface: II2CInterface) {
         return this.read32(EncoderRegistry.REG_CMINB4)
     }
 
-    fun readMaxFloat(): Float {
-        return this.readFloat(EncoderRegistry.REG_CMAXB4)
-    }
-
-    fun readMinFloat(): Float {
-        return this.readFloat(EncoderRegistry.REG_CMINB4)
-    }
-
     fun readStep(): Int {
         return this.read32(EncoderRegistry.REG_ISTEPB4)
-    }
-
-    fun readStepFloat(): Float {
-        return this.readFloat(EncoderRegistry.REG_ISTEPB4)
     }
 
     fun readGP1(): Int {
@@ -313,10 +297,6 @@ class I2CEncoderV2(val i2cInterface: II2CInterface) {
         return this.write32(EncoderRegistry.REG_CVALB4, value)
     }
 
-    fun writeCounterFloat(value: Float): Boolean {
-        return this.writeFloat(EncoderRegistry.REG_CVALB4, value)
-    }
-
     fun writeMax(value: Int): Boolean {
         return this.write32(EncoderRegistry.REG_CMAXB4, value)
     }
@@ -325,20 +305,8 @@ class I2CEncoderV2(val i2cInterface: II2CInterface) {
         return this.write32(EncoderRegistry.REG_CMINB4, value)
     }
 
-    fun writeMaxFloat(value: Float): Boolean {
-        return this.writeFloat(EncoderRegistry.REG_CMAXB4, value)
-    }
-
-    fun writeMinFloat(value: Float): Boolean {
-        return this.writeFloat(EncoderRegistry.REG_CMINB4, value)
-    }
-
     fun writeStep(value: Int): Boolean {
         return this.write32(EncoderRegistry.REG_ISTEPB4, value)
-    }
-
-    fun writeStepFloat(value: Float): Boolean {
-        return this.writeFloat(EncoderRegistry.REG_ISTEPB4, value)
     }
 
     fun writeGP1(value: Int): Boolean {
@@ -391,20 +359,12 @@ class I2CEncoderV2(val i2cInterface: II2CInterface) {
         return this.i2cInterface.write32(register.address, value)
     }
 
-    private fun writeFloat(registry: EncoderRegistry, value: Float): Boolean {
-        return this.i2cInterface.writeFloat(registry.address, value);
-    }
-
     private fun read8(register: EncoderRegistry): Int {
         return this.i2cInterface.read8(register.address)
     }
 
     private fun read32(register: EncoderRegistry): Int {
         return this.i2cInterface.read32(register.address)
-    }
-
-    private fun readFloat(register: EncoderRegistry): Float {
-        return this.i2cInterface.readFloat(register.address)
     }
 
     // ***************************

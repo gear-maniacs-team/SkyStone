@@ -4,7 +4,7 @@ import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.dashboard.canvas.Canvas
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.acmerobotics.roadrunner.control.PIDCoefficients
-import com.acmerobotics.roadrunner.control.PIDFController
+import net.gearmaniacs.teamcode.pid.PIDFController
 import com.acmerobotics.roadrunner.drive.DriveSignal
 import com.acmerobotics.roadrunner.drive.MecanumDrive
 import com.acmerobotics.roadrunner.followers.HolonomicPIDVAFollower

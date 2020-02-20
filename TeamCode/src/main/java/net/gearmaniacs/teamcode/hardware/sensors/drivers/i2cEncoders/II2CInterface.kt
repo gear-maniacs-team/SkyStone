@@ -4,7 +4,5 @@ interface II2CInterface {
     fun write8(address: Int, bValue: Int): Boolean
     fun read8(address: Int): Int
     fun read32(address: Int): Int
-    fun readFloat(address: Int): Float
     fun write32(address: Int, value: Int): Boolean
-    fun writeFloat(address: Int, value: Float): Boolean
 }

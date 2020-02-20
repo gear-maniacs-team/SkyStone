@@ -55,7 +55,7 @@ abstract class MainTeleOp : TeamOpMode() {
         RobotPos.resetAll()
 
         wheels.setModeAll(DcMotor.RunMode.RUN_USING_ENCODER)
-        gamepad1.setJoystickDeadzone(0f)
+        gamepad1.setJoystickDeadzone(0.5f)
     }
 
     override fun start() {
@@ -89,10 +89,14 @@ abstract class MainTeleOp : TeamOpMode() {
         movement()
 
         with(wheels) {
-            leftFront.velocity = Drive.cmToTicks(leftFrontPower.coerceRange(WHEELS_POWER_TOLERANCE) * Drive.MAX_VEL)
-            leftRear.velocity = Drive.cmToTicks(leftRearPower.coerceRange(WHEELS_POWER_TOLERANCE) * Drive.MAX_VEL)
-            rightRear.velocity = Drive.cmToTicks(rightRearPower.coerceRange(WHEELS_POWER_TOLERANCE) * Drive.MAX_VEL)
-            rightFront.velocity = Drive.cmToTicks(rightFrontPower.coerceRange(WHEELS_POWER_TOLERANCE) * Drive.MAX_VEL)
+//            leftFront.velocity = Drive.cmToTicks(leftFrontPower.coerceRange(WHEELS_POWER_TOLERANCE) * Drive.MAX_VEL)
+//            leftRear.velocity = Drive.cmToTicks(leftRearPower.coerceRange(WHEELS_POWER_TOLERANCE) * Drive.MAX_VEL)
+//            rightRear.velocity = Drive.cmToTicks(rightRearPower.coerceRange(WHEELS_POWER_TOLERANCE) * Drive.MAX_VEL)
+//            rightFront.velocity = Drive.cmToTicks(rightFrontPower.coerceRange(WHEELS_POWER_TOLERANCE) * Drive.MAX_VEL)
+            leftFront.power = leftFrontPower.coerceRange(WHEELS_POWER_TOLERANCE)
+            leftRear.power = leftRearPower.coerceRange(WHEELS_POWER_TOLERANCE)
+            rightRear.power = rightRearPower.coerceRange(WHEELS_POWER_TOLERANCE)
+            rightFront.power = rightFrontPower.coerceRange(WHEELS_POWER_TOLERANCE)
         }
 
         with(telemetry) {
@@ -252,7 +256,7 @@ abstract class MainTeleOp : TeamOpMode() {
 
         private const val WHEELS_POWER_TOLERANCE = 0.05
         private const val WHEELS_SPEED_PRECISION = 0.4
-        private const val WHEELS_SPEED_NORMAL = 0.9
+        private const val WHEELS_SPEED_NORMAL = 1.0
         private const val INTAKE_POWER = 0.9
         private const val LIFT_POWER = 0.6
         private const val DRIVE_BASE_CONSTANT = 0.5 // measured in Maniacs

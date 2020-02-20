@@ -10,7 +10,7 @@ import net.gearmaniacs.teamcode.utils.PathPoint
 @Autonomous(name = "MotionProfilePath")
 class MotionProfilePath : AbstractAuto() {
 
-    override val path = listOf(
+    override val pathRight = listOf(
         PathPoint(40.0, 40.0, 0.0),
         PathPoint(20.0, 200.0, Math.PI),
         PathPoint(0.0, 0.0, 0.0)

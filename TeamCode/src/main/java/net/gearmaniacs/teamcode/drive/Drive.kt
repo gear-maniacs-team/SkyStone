@@ -3,12 +3,12 @@ package net.gearmaniacs.teamcode.drive
 import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints
 
 object Drive {
-    const val MAX_VEL = 145.0
+    const val MAX_VEL = 150.0 / 2
     const val MAX_ACC = 200.0
-    const val MAX_JERK = 160.0
-    const val MAX_VEL_ANG = 2.0 * Math.PI
-    const val MAX_ACC_ANG = Math.PI
-    const val MAX_JERK_ANG = 0.0
+    const val MAX_JERK = 150.0
+    const val MAX_VEL_ANG = 3.0 * Math.PI / 2
+    const val MAX_ACC_ANG = 2 * Math.PI
+    const val MAX_JERK_ANG = 4 * Math.PI
 
     const val TICKS = 537.6
     const val DIAMETER = 10
