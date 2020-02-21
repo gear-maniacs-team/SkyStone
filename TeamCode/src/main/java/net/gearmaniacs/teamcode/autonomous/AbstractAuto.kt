@@ -1,9 +1,7 @@
 package net.gearmaniacs.teamcode.autonomous
 
 import android.util.Log
-import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.roadrunner.control.PIDCoefficients
-import net.gearmaniacs.teamcode.pid.PIDFController
 import com.acmerobotics.roadrunner.profile.MotionProfile
 import com.acmerobotics.roadrunner.profile.MotionProfileGenerator
 import com.acmerobotics.roadrunner.profile.MotionState
@@ -14,14 +12,16 @@ import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamRobot
 import net.gearmaniacs.teamcode.drive.Drive
 import net.gearmaniacs.teamcode.drive.Drive.MAX_VEL
-import net.gearmaniacs.teamcode.drive.Drive.MAX_VEL_ANG
 import net.gearmaniacs.teamcode.hardware.motors.Intake
 import net.gearmaniacs.teamcode.hardware.motors.Lift
 import net.gearmaniacs.teamcode.hardware.motors.Wheels
 import net.gearmaniacs.teamcode.hardware.sensors.GyroEncoders
 import net.gearmaniacs.teamcode.hardware.servos.FoundationServos
 import net.gearmaniacs.teamcode.hardware.servos.OuttakeServos
-import net.gearmaniacs.teamcode.utils.*
+import net.gearmaniacs.teamcode.pid.PIDFController
+import net.gearmaniacs.teamcode.utils.PathAction
+import net.gearmaniacs.teamcode.utils.PathPoint
+import net.gearmaniacs.teamcode.utils.RobotClock
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
@@ -38,7 +38,6 @@ abstract class AbstractAuto : LinearOpMode() {
     private val lift = Lift()
     private val foundation = FoundationServos()
     private val outtake = OuttakeServos()
-    private val dashboard = FtcDashboard.getInstance()
 
     private lateinit var xProfile: MotionProfile
     private lateinit var yProfile: MotionProfile
@@ -52,10 +51,15 @@ abstract class AbstractAuto : LinearOpMode() {
     private val executor = Executors.newSingleThreadExecutor()
     private val asyncActions = mutableListOf<Future<*>>()
 
+    abstract val isBluePath: Boolean
+
+    abstract val pathLeft: List<PathPoint>
+    abstract val pathMiddle: List<PathPoint>
     abstract val pathRight: List<PathPoint>
 
     override fun runOpMode() {
         RobotPos.resetAll()
+        encoder.showUpdateTime = false
         robot.init(
             hardwareMap,
             listOf(
@@ -77,6 +81,8 @@ abstract class AbstractAuto : LinearOpMode() {
         yPid.setOutputBounds(-MAX_VEL, MAX_VEL)
         rPid.setOutputBounds(-MAX_VEL, MAX_VEL)
 
+        encoder.start()
+
         while (!isStarted) {
             telemetry.addData("Status", "Waiting for start")
             telemetry.addData("Path Size", pathRight.size)
@@ -87,7 +93,7 @@ abstract class AbstractAuto : LinearOpMode() {
 
         resetServos()
 
-        pathRight.forEachIndexed { index, point ->
+        pathLeft.forEach { point ->
             if (isStopRequested) return
             outtake.deactivateSpinner()
             asyncActions.forEach { it.get() }
@@ -96,6 +102,12 @@ abstract class AbstractAuto : LinearOpMode() {
             RobotPos.targetX = point.x
             RobotPos.targetY = point.y
             RobotPos.targetAngle = point.angle
+
+            if (!isBluePath) {
+                RobotPos.targetY -= 11.0
+                RobotPos.targetX *= -1.0
+                RobotPos.targetAngle *= -1.0
+            }
 
             xProfile = MotionProfileGenerator.generateSimpleMotionProfile(
                 MotionState(RobotPos.currentX, 0.0, 0.0, 0.0),
@@ -116,14 +128,13 @@ abstract class AbstractAuto : LinearOpMode() {
             rProfile = MotionProfileGenerator.generateSimpleMotionProfile(
                 MotionState(RobotPos.currentAngle, 0.0, 0.0, 0.0),
                 MotionState(RobotPos.targetAngle, 0.0, 0.0, 0.0),
-                MAX_VEL_ANG,
+                Drive.MAX_VEL_ANG,
                 Drive.MAX_ACC_ANG,
                 Drive.MAX_JERK_ANG
             )
 
             goToPoint(point)
             performAction(point.action)
-            sleep(500)
         }
 
         telemetry.addData("Elapsed Time", elapsedTime.seconds())
@@ -143,11 +154,9 @@ abstract class AbstractAuto : LinearOpMode() {
         yPid.reset()
         rPid.reset()
 
-        val performanceProfiler = PerformanceProfiler()
         val startOfMotion = RobotClock.seconds()
 
         while (opModeIsActive()) {
-            val ms = performanceProfiler.update()
             val elapsedTime = RobotClock.seconds() - startOfMotion
 
             val xState = xProfile[elapsedTime]
@@ -163,8 +172,8 @@ abstract class AbstractAuto : LinearOpMode() {
             val theta = rPid.update(RobotPos.currentAngle, rState.v)
             movement(x * point.moveSpeed, y * point.moveSpeed, theta * point.turnSpeed)
 
-            printTelemetry(telemetry, xState, yState, rState, ms)
-            printTelemetry(dashboard.telemetry, xState, yState, rState, ms)
+            printTelemetry(telemetry, xState, yState, rState)
+            //printTelemetry(FtcDashboard.getInstance().telemetry, xState, yState, rState)
 
             val xError = abs(RobotPos.targetX - RobotPos.currentX)
             val yError = abs(RobotPos.targetY - RobotPos.currentY)
@@ -180,11 +189,9 @@ abstract class AbstractAuto : LinearOpMode() {
         telemetry: Telemetry,
         xState: MotionState,
         yState: MotionState,
-        rState: MotionState,
-        ms: Double
+        rState: MotionState
     ) {
         with(telemetry) {
-            addData("Ms/Update", ms.toFloat())
             addData("Current X", "%.3f", RobotPos.currentX)
             addData("Current Y", "%.3f", RobotPos.currentY)
             addData("Current Angle", "%.3f", RobotPos.currentAngle)
@@ -237,6 +244,7 @@ abstract class AbstractAuto : LinearOpMode() {
                 continue
 
             when (thisAction) {
+                PathAction.SLEEP_500 -> sleep(500L)
                 PathAction.START_INTAKE -> intake.setPowerAll(0.75)
                 PathAction.STOP_INTAKE -> intake.setPowerAll(0.0)
                 PathAction.ATTACH_FOUNDATION -> foundation.attach()

@@ -1,11 +1,17 @@
 package net.gearmaniacs.teamcode
 
+import android.content.Context
+import com.qualcomm.robotcore.eventloop.opmode.AnnotatedOpModeManager
+import com.qualcomm.robotcore.eventloop.opmode.OpMode
+import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier.Notifications
+import com.qualcomm.robotcore.eventloop.opmode.OpModeRegistrar
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.util.RobotLog
 import net.gearmaniacs.teamcode.utils.IHardware
 import net.gearmaniacs.teamcode.utils.IUpdatable
 import net.gearmaniacs.teamcode.utils.extensions.getDevice
 import net.gearmaniacs.teamcode.utils.extensions.justTry
+import org.firstinspires.ftc.robotcore.internal.opmode.OpModeManagerImpl
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil
 import org.firstinspires.ftc.robotcore.internal.ui.UILocation
 import org.openftc.revextensions2.ExpansionHubEx
@@ -138,9 +144,35 @@ class TeamRobot(
 
         fun isOpModeActive() = getRobot()?.isOpModeActive ?: false
 
-        /*init {
-            Log.v("GearManiacsLib", "Loaded Library")
-            System.loadLibrary("gear_maniacs")
-        }*/
+        /*
+         * NOTE: We cannot simply pass `new OpModeNotifications()` inline to the call
+         * to register the listener, because the SDK stores the list of listeners in
+         * a WeakReference set. This causes the object to be garbage collected because
+         * nothing else is holding a reference to it.
+         */
+        private val opModeNotifications = OpModeNotifications()
+
+        @OpModeRegistrar
+        @JvmStatic
+        fun setupOpModeListenerOnStartRobot(
+            context: Context?,
+            manager: AnnotatedOpModeManager?
+        ) {
+            OpModeManagerImpl.getOpModeManagerOfActivity(AppUtil.getInstance().rootActivity).registerListener(
+                opModeNotifications
+            )
+        }
+
+        private class OpModeNotifications : Notifications {
+            override fun onOpModePreInit(opMode: OpMode) = Unit
+
+            override fun onOpModePreStart(opMode: OpMode) = Unit
+
+            override fun onOpModePostStop(opMode: OpMode) {
+                getRobot()?.let {
+                    justTry { it.stop() }
+                }
+            }
+        }
     }
 }

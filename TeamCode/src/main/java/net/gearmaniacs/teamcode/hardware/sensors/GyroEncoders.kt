@@ -97,7 +97,7 @@ class GyroEncoders : IHardware, IUpdatable, Localizer {
         setModeAll(DcMotor.RunMode.RUN_WITHOUT_ENCODER)
     }
 
-    fun waitForCalibration() {
+    private fun waitForCalibration() {
         while (!imu.isGyroCalibrated)
             Thread.sleep(10)
     }
