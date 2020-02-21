@@ -6,6 +6,7 @@ import net.gearmaniacs.teamcode.utils.extensions.getDevice
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
 import org.openftc.easyopencv.*
+import java.lang.Exception
 
 class OpenCvManager(private var pipeline: OpenCvPipeline) : IHardware {
 
@@ -20,11 +21,30 @@ class OpenCvManager(private var pipeline: OpenCvPipeline) : IHardware {
         camera.setPipeline(pipeline)
     }
 
-    fun startDetector(width: Int, height: Int) {
+    override fun start() {
+        start(640, 480)
+    }
+
+    fun start(width: Int, height: Int) {
         camera.startStreaming(width, height, OpenCvCameraRotation.UPRIGHT)
     }
 
-    fun stopDetector() {
+    fun tryInitAndStart(hardwareMap: HardwareMap, tryouts: Int = 3): Boolean {
+        for (i in 0 until tryouts) {
+            try {
+                init(hardwareMap)
+                start()
+                return true
+            } catch (e: Exception) {
+                Thread.sleep(500)
+                continue
+            }
+
+        }
+        return false
+    }
+
+    override fun stop() {
         camera.stopStreaming()
     }
 
@@ -39,11 +59,7 @@ class OpenCvManager(private var pipeline: OpenCvPipeline) : IHardware {
 
     fun switchPipeline(pipeline: OpenCvPipeline) {
         this.pipeline = pipeline
-    }
-
-    fun stopCamera() {
-        camera.stopStreaming()
-        camera.closeCameraDevice()
+        camera.setPipeline(pipeline)
     }
 
     fun getPipeline() = pipeline

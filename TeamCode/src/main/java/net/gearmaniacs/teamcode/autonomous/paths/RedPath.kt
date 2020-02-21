@@ -86,7 +86,7 @@ class RedPath : AbstractAuto() {
         )
     )
 
-    override val pathMiddle = listOf(
+    override val pathCenter = listOf(
         PathPoint(
             x = -28.0,
             y = 98.0,

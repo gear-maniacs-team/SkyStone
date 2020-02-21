@@ -14,10 +14,11 @@ class OpenCvTest : LinearOpMode() {
         val pipeline = SkystoneDetector(telemetry)
 
         val manager = OpenCvManager(pipeline)
+        manager.tryInitAndStart(hardwareMap)
         try {
             manager.init(hardwareMap)
             sleep(2000)
-            manager.startDetector(640, 480)
+            manager.start()
         } catch (e: Exception) {
             e.printStackTrace()
             return
@@ -33,6 +34,6 @@ class OpenCvTest : LinearOpMode() {
             Thread.sleep(500)
         }
 
-        manager.stopDetector()
+        manager.stop()
     }
 }

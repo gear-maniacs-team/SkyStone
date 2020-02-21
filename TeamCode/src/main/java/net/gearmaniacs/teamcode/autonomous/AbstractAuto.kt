@@ -10,6 +10,8 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.util.ElapsedTime
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamRobot
+import net.gearmaniacs.teamcode.detector.OpenCvManager
+import net.gearmaniacs.teamcode.detector.SkystoneDetector
 import net.gearmaniacs.teamcode.drive.Drive
 import net.gearmaniacs.teamcode.drive.Drive.MAX_VEL
 import net.gearmaniacs.teamcode.hardware.motors.Intake
@@ -23,6 +25,8 @@ import net.gearmaniacs.teamcode.utils.PathAction
 import net.gearmaniacs.teamcode.utils.PathPoint
 import net.gearmaniacs.teamcode.utils.RobotClock
 import org.firstinspires.ftc.robotcore.external.Telemetry
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil
+import org.firstinspires.ftc.robotcore.internal.ui.UILocation
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import kotlin.math.abs
@@ -31,6 +35,9 @@ import kotlin.math.sin
 
 abstract class AbstractAuto : LinearOpMode() {
 
+    private val pipeline = SkystoneDetector(telemetry)
+    private val manager = OpenCvManager(pipeline)
+
     private val robot = TeamRobot(false)
     private val wheels = Wheels()
     private val encoder = GyroEncoders()
@@ -38,10 +45,6 @@ abstract class AbstractAuto : LinearOpMode() {
     private val lift = Lift()
     private val foundation = FoundationServos()
     private val outtake = OuttakeServos()
-
-    private lateinit var xProfile: MotionProfile
-    private lateinit var yProfile: MotionProfile
-    private lateinit var rProfile: MotionProfile
 
     private val axialCoefficients = PIDCoefficients(7.3, 1.82, 0.0)
     private val xPid = PIDFController(axialCoefficients, Drive.kV, clock = RobotClock)
@@ -54,11 +57,18 @@ abstract class AbstractAuto : LinearOpMode() {
     abstract val isBluePath: Boolean
 
     abstract val pathLeft: List<PathPoint>
-    abstract val pathMiddle: List<PathPoint>
+    abstract val pathCenter: List<PathPoint>
     abstract val pathRight: List<PathPoint>
 
     override fun runOpMode() {
         RobotPos.resetAll()
+
+        // Try starting OpenCv before starting the Gyro and the rest of the hardware
+        if (!manager.tryInitAndStart(hardwareMap)) {
+            AppUtil.getInstance().showToast(UILocation.BOTH, "Failed Initializing OpenCV")
+            return
+        }
+
         encoder.showUpdateTime = false
         robot.init(
             hardwareMap,
@@ -88,12 +98,23 @@ abstract class AbstractAuto : LinearOpMode() {
             telemetry.addData("Path Size", pathRight.size)
             telemetry.update()
         }
+
+        // Stop Detector
+        val position = pipeline.skystonePosition ?: SkystoneDetector.SkystonePosition.CENTER_STONE
+        manager.stop()
+
         robot.start()
         val elapsedTime = ElapsedTime()
 
         resetServos()
 
-        pathLeft.forEach { point ->
+        val path = when (position) {
+            SkystoneDetector.SkystonePosition.LEFT_STONE -> pathLeft
+            SkystoneDetector.SkystonePosition.CENTER_STONE -> pathCenter
+            SkystoneDetector.SkystonePosition.RIGHT_STONE -> pathRight
+        }
+
+        path.forEach { point ->
             if (isStopRequested) return
             outtake.deactivateSpinner()
             asyncActions.forEach { it.get() }
@@ -109,7 +130,7 @@ abstract class AbstractAuto : LinearOpMode() {
                 RobotPos.targetAngle *= -1.0
             }
 
-            xProfile = MotionProfileGenerator.generateSimpleMotionProfile(
+            val xProfile = MotionProfileGenerator.generateSimpleMotionProfile(
                 MotionState(RobotPos.currentX, 0.0, 0.0, 0.0),
                 MotionState(RobotPos.targetX, 0.0, 0.0, 0.0),
                 MAX_VEL,
@@ -117,7 +138,7 @@ abstract class AbstractAuto : LinearOpMode() {
                 Drive.MAX_JERK
             )
 
-            yProfile = MotionProfileGenerator.generateSimpleMotionProfile(
+            val yProfile = MotionProfileGenerator.generateSimpleMotionProfile(
                 MotionState(RobotPos.currentY, 0.0, 0.0, 0.0),
                 MotionState(RobotPos.targetY, 0.0, 0.0, 0.0),
                 MAX_VEL,
@@ -125,7 +146,7 @@ abstract class AbstractAuto : LinearOpMode() {
                 Drive.MAX_JERK
             )
 
-            rProfile = MotionProfileGenerator.generateSimpleMotionProfile(
+            val rProfile = MotionProfileGenerator.generateSimpleMotionProfile(
                 MotionState(RobotPos.currentAngle, 0.0, 0.0, 0.0),
                 MotionState(RobotPos.targetAngle, 0.0, 0.0, 0.0),
                 Drive.MAX_VEL_ANG,
@@ -133,7 +154,7 @@ abstract class AbstractAuto : LinearOpMode() {
                 Drive.MAX_JERK_ANG
             )
 
-            goToPoint(point)
+            goToPoint(point, xProfile, yProfile, rProfile)
             performAction(point.action)
         }
 
@@ -149,7 +170,12 @@ abstract class AbstractAuto : LinearOpMode() {
         }
     }
 
-    private fun goToPoint(point: PathPoint) {
+    private fun goToPoint(
+        point: PathPoint,
+        xProfile: MotionProfile,
+        yProfile: MotionProfile,
+        rProfile: MotionProfile
+    ) {
         xPid.reset()
         yPid.reset()
         rPid.reset()

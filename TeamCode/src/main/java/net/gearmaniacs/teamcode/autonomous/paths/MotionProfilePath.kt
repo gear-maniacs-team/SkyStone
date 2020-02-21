@@ -14,7 +14,7 @@ class MotionProfilePath : AbstractAuto() {
 
     override val pathLeft = emptyList<PathPoint>()
 
-    override val pathMiddle = emptyList<PathPoint>()
+    override val pathCenter = emptyList<PathPoint>()
 
     override val pathRight = listOf(
         PathPoint(40.0, 40.0, 0.0),

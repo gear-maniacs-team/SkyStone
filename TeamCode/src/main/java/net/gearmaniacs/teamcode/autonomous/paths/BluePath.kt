@@ -96,7 +96,7 @@ class BluePath : AbstractAuto() {
         )
     )
 
-    override val pathMiddle = listOf(
+    override val pathCenter = listOf(
         PathPoint(
             x = -25.0,
             y = 90.0,
