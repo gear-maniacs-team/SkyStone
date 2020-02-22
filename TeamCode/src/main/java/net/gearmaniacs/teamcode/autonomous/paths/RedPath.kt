@@ -36,6 +36,7 @@ class RedPath : AbstractAuto() {
             x = -208.0,
             y = 90.0,
             angle = 3.135,
+            turnError = Math.toRadians(10.0),
             action = PathAction.ATTACH_FOUNDATION or PathAction.EXTEND_OUTTAKE
         ),
         PathPoint(
@@ -43,11 +44,12 @@ class RedPath : AbstractAuto() {
             y = 58.09,
             angle = 1.558,
             moveError = 3.0,
+            turnError = Math.toRadians(10.0),
             action = PathAction.DETACH_FOUNDATION or PathAction.RETRACT_OUTTAKE
         ),
         PathPoint(
             x = 43.0,
-            y = 76.0,
+            y = 74.0,
             angle = 1.558,
             moveError = 2.5,
             action = PathAction.START_INTAKE

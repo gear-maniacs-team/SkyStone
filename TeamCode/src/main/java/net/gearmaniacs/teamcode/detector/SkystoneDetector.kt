@@ -9,7 +9,7 @@ import java.util.*
 class SkystoneDetector : OpenCvPipeline {
     enum class SkystonePosition {
         LEFT_STONE, CENTER_STONE, RIGHT_STONE
-    }q
+    }
 
     // These are the mats we need, I will be explaining them as we go
     private val matYCrCb = Mat()

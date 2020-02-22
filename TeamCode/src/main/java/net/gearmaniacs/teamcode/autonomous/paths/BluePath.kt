@@ -18,7 +18,7 @@ class BluePath : AbstractAuto() {
             action = PathAction.START_INTAKE
         ),
         PathPoint(
-            x = -28.0,
+            x = -30.0,
             y = 60.0,
             moveError = 1.5,
             angle = Math.toRadians(65.0),
@@ -52,7 +52,7 @@ class BluePath : AbstractAuto() {
         ),
         PathPoint(
             x = 10.0,
-            y = 76.0,
+            y = 70.0,
             angle = 1.558 - Math.toRadians(8.0),
             moveError = 2.5,
             action = PathAction.START_INTAKE
@@ -137,7 +137,7 @@ class BluePath : AbstractAuto() {
         ),
         PathPoint(
             x = 26.0,
-            y = 76.0,
+            y = 70.0,
             angle = 1.558 - Math.toRadians(8.0),
             moveError = 2.5,
             action = PathAction.START_INTAKE
@@ -211,7 +211,7 @@ class BluePath : AbstractAuto() {
             action = PathAction.DETACH_FOUNDATION or PathAction.RETRACT_OUTTAKE
         ),
         PathPoint(
-            x = 43.0,
+            x = 38.0,
             y = 76.0,
             angle = 1.558,
             moveError = 2.5,

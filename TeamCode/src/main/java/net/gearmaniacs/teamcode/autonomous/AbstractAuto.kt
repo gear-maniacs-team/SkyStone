@@ -54,7 +54,8 @@ abstract class AbstractAuto : LinearOpMode() {
     private val executor = Executors.newSingleThreadExecutor()
     private val asyncActions = mutableListOf<Future<*>>()
 
-    abstract val isBluePath: Boolean
+    open val usesDetector: Boolean = true
+    open val isBluePath: Boolean = true
 
     abstract val pathLeft: List<PathPoint>
     abstract val pathCenter: List<PathPoint>
@@ -63,11 +64,17 @@ abstract class AbstractAuto : LinearOpMode() {
     override fun runOpMode() {
         RobotPos.resetAll()
 
-        // Try starting OpenCv before starting the Gyro and the rest of the hardware
-        if (!manager.tryInitAndStart(hardwareMap)) {
-            AppUtil.getInstance().showToast(UILocation.BOTH, "Failed Initializing OpenCV")
-            return
+        if (usesDetector) {
+            // Try starting OpenCv before starting the Gyro and the rest of the hardware
+            if (!manager.tryInitAndStart(hardwareMap)) {
+                AppUtil.getInstance().showToast(UILocation.BOTH, "Failed Initializing OpenCV")
+                return
+            }
         }
+
+        telemetry.addLine("Finished Starting Camera")
+        telemetry.addLine("Starting Gyro")
+        telemetry.update()
 
         encoder.showUpdateTime = false
         robot.init(
@@ -100,7 +107,7 @@ abstract class AbstractAuto : LinearOpMode() {
         }
 
         // Stop Detector
-        val position = pipeline.skystonePosition ?: SkystoneDetector.SkystonePosition.CENTER_STONE
+        val position = (if (usesDetector) pipeline.skystonePosition else null) ?: SkystoneDetector.SkystonePosition.CENTER_STONE
         manager.stop()
 
         robot.start()

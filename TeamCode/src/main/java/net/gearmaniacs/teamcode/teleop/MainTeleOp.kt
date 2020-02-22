@@ -1,6 +1,7 @@
 package net.gearmaniacs.teamcode.teleop
 
 import com.qualcomm.robotcore.hardware.DcMotor
+import com.qualcomm.robotcore.hardware.Servo
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamOpMode
 import net.gearmaniacs.teamcode.drive.Drive
@@ -15,6 +16,7 @@ import net.gearmaniacs.teamcode.utils.MathUtils
 import net.gearmaniacs.teamcode.utils.MathUtils.expo
 import net.gearmaniacs.teamcode.utils.PerformanceProfiler
 import net.gearmaniacs.teamcode.utils.extensions.coerceRange
+import net.gearmaniacs.teamcode.utils.extensions.getDevice
 import kotlin.concurrent.thread
 import kotlin.math.abs
 import kotlin.math.cos
@@ -28,6 +30,7 @@ abstract class MainTeleOp : TeamOpMode() {
     protected val lift = Lift()
     protected val foundation = FoundationServos()
     protected val outtake = OuttakeServos()
+    private lateinit var capStoneServo: Servo
 
     private var liftTargetPosition = 0
     private var precisionModeOn = false
@@ -52,6 +55,7 @@ abstract class MainTeleOp : TeamOpMode() {
 
     override fun init() {
         check(robot.isOpModeActive) { "TeamRobot::init must be called in all child classes" }
+        capStoneServo = hardwareMap.getDevice("capstone")
         RobotPos.resetAll()
 
         wheels.setModeAll(DcMotor.RunMode.RUN_USING_ENCODER)
@@ -248,6 +252,12 @@ abstract class MainTeleOp : TeamOpMode() {
     private fun foundation() {
         if (gamepad2.x) foundationToggle.invert()
         if (foundationToggle.value) foundation.attach() else foundation.detach()
+    }
+
+    private fun capstone() {
+        outtake.activateGripper()
+        lift.setTargetPositionAll(100)
+        capStoneServo.position = 1.0
     }
 
     @Suppress("FunctionName")

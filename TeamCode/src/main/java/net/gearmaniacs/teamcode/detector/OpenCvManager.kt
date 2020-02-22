@@ -1,5 +1,6 @@
 package net.gearmaniacs.teamcode.detector
 
+import android.util.Log
 import com.qualcomm.robotcore.hardware.HardwareMap
 import net.gearmaniacs.teamcode.utils.IHardware
 import net.gearmaniacs.teamcode.utils.extensions.getDevice
@@ -29,19 +30,18 @@ class OpenCvManager(private var pipeline: OpenCvPipeline) : IHardware {
         camera.startStreaming(width, height, OpenCvCameraRotation.UPRIGHT)
     }
 
-    fun tryInitAndStart(hardwareMap: HardwareMap, tryouts: Int = 3): Boolean {
-        for (i in 0 until tryouts) {
-            try {
-                init(hardwareMap)
-                start()
-                return true
-            } catch (e: Exception) {
-                Thread.sleep(500)
-                continue
-            }
-
+    fun tryInitAndStart(hardwareMap: HardwareMap): Boolean {
+        Log.v("CpenCvManager", "Trying to start Camera")
+        return try {
+            init(hardwareMap)
+            start()
+            Log.v("CpenCvManager", "Camera started successfully")
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.v("CpenCvManager", "Camera strat failed")
+            false
         }
-        return false
     }
 
     override fun stop() {
