@@ -101,13 +101,18 @@ abstract class AbstractAuto : LinearOpMode() {
         encoder.start()
 
         while (!isStarted) {
+            if (usesDetector) {
+                telemetry.addData("Skystone Position", pipeline.skystonePosition)
+            }
             telemetry.addData("Status", "Waiting for start")
             telemetry.addData("Path Size", pathRight.size)
             telemetry.update()
+            Thread.yield()
         }
 
         // Stop Detector
-        val position = (if (usesDetector) pipeline.skystonePosition else null) ?: SkystoneDetector.SkystonePosition.CENTER_STONE
+        val position =
+            (if (usesDetector) pipeline.skystonePosition else null) ?: SkystoneDetector.SkystonePosition.CENTER_STONE
         manager.stop()
 
         robot.start()
@@ -160,6 +165,7 @@ abstract class AbstractAuto : LinearOpMode() {
                 Drive.MAX_ACC_ANG,
                 Drive.MAX_JERK_ANG
             )
+
 
             goToPoint(point, xProfile, yProfile, rProfile)
             performAction(point.action)
@@ -280,7 +286,10 @@ abstract class AbstractAuto : LinearOpMode() {
                 PathAction.SLEEP_500 -> sleep(500L)
                 PathAction.START_INTAKE -> intake.setPowerAll(0.75)
                 PathAction.STOP_INTAKE -> intake.setPowerAll(0.0)
-                PathAction.ATTACH_FOUNDATION -> foundation.attach()
+                PathAction.ATTACH_FOUNDATION -> {
+                    foundation.attach()
+                    sleep(800)
+                }
                 PathAction.PREPARE_ATTACH_FOUNDATION -> foundation.prepareAttach()
                 PathAction.DETACH_FOUNDATION -> foundation.detach()
                 PathAction.EXTEND_OUTTAKE -> outtake(true)

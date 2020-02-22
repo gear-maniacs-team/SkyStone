@@ -1,10 +1,12 @@
 package net.gearmaniacs.teamcode.teleop
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.Servo
 import net.gearmaniacs.teamcode.utils.extensions.getDevice
 
+@Disabled
 @TeleOp(name = "ServoProgrammer")
 open class ServoProgrammer : OpMode() {
 

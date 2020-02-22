@@ -4,6 +4,7 @@ import android.util.Log
 import com.qualcomm.robotcore.hardware.HardwareMap
 import net.gearmaniacs.teamcode.utils.IHardware
 import net.gearmaniacs.teamcode.utils.extensions.getDevice
+import net.gearmaniacs.teamcode.utils.extensions.justTry
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
 import org.openftc.easyopencv.*
@@ -45,7 +46,10 @@ class OpenCvManager(private var pipeline: OpenCvPipeline) : IHardware {
     }
 
     override fun stop() {
-        camera.stopStreaming()
+        justTry {
+
+            camera.stopStreaming()
+        }
     }
 
     fun showPreview(showFps: Boolean = false) {

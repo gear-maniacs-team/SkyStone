@@ -33,8 +33,8 @@ class OuttakeServos : IHardware {
     }
 
     fun semiExtend() {
-        leftExtension.position = 0.6
-        rightExtension.position = 0.4
+        leftExtension.position = 0.45
+        rightExtension.position = 0.55
     }
 
     fun retract() {
@@ -47,14 +47,14 @@ class OuttakeServos : IHardware {
     }
 
     fun releaseGripper() {
-        gripper.position = 0.44
+        gripper.position = 0.45
     }
 
     fun activateSpinner() {
-        spinner.position = 0.15
+        spinner.position = 0.36
     }
 
     fun deactivateSpinner() {
-        spinner.position = 0.95
+        spinner.position = 1.0
     }
 }

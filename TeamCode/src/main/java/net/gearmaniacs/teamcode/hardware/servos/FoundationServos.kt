@@ -19,12 +19,12 @@ class FoundationServos : IHardware {
 
     fun attach() {
         left.position = 0.0
-        right.position = 0.8
+        right.position = 0.9
     }
 
     fun prepareAttach() {
         left.position = 0.5
-        right.position = 0.4
+        right.position = 0.5
     }
 
     fun detach() {

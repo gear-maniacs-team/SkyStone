@@ -12,8 +12,8 @@ class BluePath : AbstractAuto() {
 
     override val pathLeft = listOf(
         PathPoint(
-            x = -40.0,
-            y = 80.0,
+            x = -38.0,
+            y = 82.0,
             angle = Math.toRadians(45.0),
             action = PathAction.START_INTAKE
         ),
@@ -26,13 +26,13 @@ class BluePath : AbstractAuto() {
         ),
         PathPoint(
             x = -32.0,
-            y = 73.0,
+            y = 67.0,
             angle = 1.558,
             action = PathAction.PREPARE_ATTACH_FOUNDATION
         ),
         PathPoint(
             x = -208.0,
-            y = 73.0,
+            y = 70.0,
             angle = 3.135,
             moveError = 4.0,
             action = PathAction.STOP_INTAKE or PathAction.ATTACH_GRIPPER
@@ -99,13 +99,13 @@ class BluePath : AbstractAuto() {
     override val pathCenter = listOf(
         PathPoint(
             x = -25.0,
-            y = 90.0,
+            y = 89.0,
             angle = 1.558 - Math.toRadians(15.0),
             action = PathAction.START_INTAKE
         ),
         PathPoint(
             x = -16.0,
-            y = 90.0,
+            y = 89.0,
             angle = 1.558 - Math.toRadians(15.0),
             action = PathAction.SLEEP_500
         ),
@@ -179,7 +179,7 @@ class BluePath : AbstractAuto() {
     override val pathRight = listOf(
         PathPoint(
             x = 1.0,
-            y = 90.0,
+            y = 92.0,
             angle = 0.9345,
             action = PathAction.START_INTAKE,
             moveError = 3.0

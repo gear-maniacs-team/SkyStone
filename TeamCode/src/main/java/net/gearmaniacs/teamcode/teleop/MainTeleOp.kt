@@ -60,10 +60,15 @@ abstract class MainTeleOp : TeamOpMode() {
 
         wheels.setModeAll(DcMotor.RunMode.RUN_USING_ENCODER)
         gamepad1.setJoystickDeadzone(0.5f)
+
+        telemetry.addLine("Initialization Finished")
+        telemetry.update()
     }
 
     override fun start() {
         super.start()
+
+        capStoneServo.position = 0.0
 
         thread {
             while (robot.isOpModeActive) {
@@ -93,10 +98,6 @@ abstract class MainTeleOp : TeamOpMode() {
         movement()
 
         with(wheels) {
-//            leftFront.velocity = Drive.cmToTicks(leftFrontPower.coerceRange(WHEELS_POWER_TOLERANCE) * Drive.MAX_VEL)
-//            leftRear.velocity = Drive.cmToTicks(leftRearPower.coerceRange(WHEELS_POWER_TOLERANCE) * Drive.MAX_VEL)
-//            rightRear.velocity = Drive.cmToTicks(rightRearPower.coerceRange(WHEELS_POWER_TOLERANCE) * Drive.MAX_VEL)
-//            rightFront.velocity = Drive.cmToTicks(rightFrontPower.coerceRange(WHEELS_POWER_TOLERANCE) * Drive.MAX_VEL)
             leftFront.power = leftFrontPower.coerceRange(WHEELS_POWER_TOLERANCE)
             leftRear.power = leftRearPower.coerceRange(WHEELS_POWER_TOLERANCE)
             rightRear.power = rightRearPower.coerceRange(WHEELS_POWER_TOLERANCE)
@@ -174,6 +175,9 @@ abstract class MainTeleOp : TeamOpMode() {
         lift()
         outtake()
         foundation()
+        while (gamepad2.left_trigger > 0 && gamepad2.right_trigger > 0) {
+            capstone()
+        }
     }
 
     private fun intake() {
@@ -231,8 +235,6 @@ abstract class MainTeleOp : TeamOpMode() {
             outtake.extend()
             Thread.sleep(600)
             outtake.activateSpinner()
-            Thread.sleep(1000)
-            outtake.semiExtend()
 
             extensionToggle.value = true
             spinnerToggle.value = true
@@ -256,8 +258,28 @@ abstract class MainTeleOp : TeamOpMode() {
 
     private fun capstone() {
         outtake.activateGripper()
-        lift.setTargetPositionAll(100)
+        Thread.sleep(200)
+        lift.setTargetPositionAll(350)
+        foundation.attach()
+        Thread.sleep(500)
+        outtake.extend()
+        Thread.sleep(700)
+        outtake.spinner.position = 0.0
         capStoneServo.position = 1.0
+        Thread.sleep(750)
+        lift.setTargetPositionAll(0)
+        Thread.sleep(200)
+        outtake.semiExtend()
+        Thread.sleep(400)
+        lift.setPowerAll(0.5)
+        val liftFinalHeight = 1250
+        lift.setTargetPositionAll(liftFinalHeight)
+        Thread.sleep(800)
+
+        extensionToggle.value = true
+        spinnerToggle.value = true
+        gripperToggle.value = true
+        liftTargetPosition = liftFinalHeight
     }
 
     @Suppress("FunctionName")
