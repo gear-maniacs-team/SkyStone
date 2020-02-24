@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.Servo
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamOpMode
-import net.gearmaniacs.teamcode.drive.Drive
 import net.gearmaniacs.teamcode.hardware.motors.Intake
 import net.gearmaniacs.teamcode.hardware.motors.Lift
 import net.gearmaniacs.teamcode.hardware.motors.Wheels
@@ -200,11 +199,12 @@ abstract class MainTeleOp : TeamOpMode() {
         liftTargetPosition += posChange
 
         // Let's be honest, we can't trust the drivers
-        if (liftTargetPosition > MAX_LIFT_HEIGHT_TICKS)
-            liftTargetPosition = MAX_LIFT_HEIGHT_TICKS
-        if (liftTargetPosition < 0)
-            liftTargetPosition = 0
-
+        if (!(gamepad2.right_trigger > 0.1)) {
+            if (liftTargetPosition > MAX_LIFT_HEIGHT_TICKS)
+                liftTargetPosition = MAX_LIFT_HEIGHT_TICKS
+            if (liftTargetPosition < 0)
+                liftTargetPosition = 0
+        }
         if (gamepad2.back) {
             liftTargetPosition = 0
         }

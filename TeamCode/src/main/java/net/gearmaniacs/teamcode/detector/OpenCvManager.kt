@@ -4,18 +4,23 @@ import android.util.Log
 import com.qualcomm.robotcore.hardware.HardwareMap
 import net.gearmaniacs.teamcode.utils.IHardware
 import net.gearmaniacs.teamcode.utils.extensions.getDevice
-import net.gearmaniacs.teamcode.utils.extensions.justTry
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
-import org.openftc.easyopencv.*
-import java.lang.Exception
+import org.openftc.easyopencv.OpenCvCamera
+import org.openftc.easyopencv.OpenCvCameraFactory
+import org.openftc.easyopencv.OpenCvCameraRotation
+import org.openftc.easyopencv.OpenCvPipeline
 
 class OpenCvManager(private var pipeline: OpenCvPipeline) : IHardware {
 
     private lateinit var camera: OpenCvCamera
 
     override fun init(hardwareMap: HardwareMap) {
-        val cameraMonitorViewId = hardwareMap.appContext.resources.getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.packageName)
+        val cameraMonitorViewId = hardwareMap.appContext.resources.getIdentifier(
+            "cameraMonitorViewId",
+            "id",
+            hardwareMap.appContext.packageName
+        )
         val webcamName = hardwareMap.getDevice<WebcamName>("Expensive Webcam")
         camera = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId)
 
@@ -46,10 +51,7 @@ class OpenCvManager(private var pipeline: OpenCvPipeline) : IHardware {
     }
 
     override fun stop() {
-        justTry {
-
-            camera.stopStreaming()
-        }
+        camera.stopStreaming()
     }
 
     fun showPreview(showFps: Boolean = false) {

@@ -101,32 +101,29 @@ abstract class AbstractAuto : LinearOpMode() {
         encoder.start()
 
         while (!isStarted) {
-            if (usesDetector) {
-                telemetry.addData("Skystone Position", pipeline.skystonePosition)
+            val position = pipeline.skystonePosition ?: SkystoneDetector.SkystonePosition.CENTER_STONE
+            with(telemetry) {
+                if (usesDetector)
+                    addData("Skystone Position", position)
+                addData("Status", "Waiting for start")
+                addData("Path Size", getPath(position).size)
+                update()
             }
-            telemetry.addData("Status", "Waiting for start")
-            telemetry.addData("Path Size", pathRight.size)
-            telemetry.update()
             Thread.yield()
         }
 
         // Stop Detector
         val position =
             (if (usesDetector) pipeline.skystonePosition else null) ?: SkystoneDetector.SkystonePosition.CENTER_STONE
-        manager.stop()
+        if (usesDetector)
+            manager.stop()
 
         robot.start()
         val elapsedTime = ElapsedTime()
 
         resetServos()
 
-        val path = when (position) {
-            SkystoneDetector.SkystonePosition.LEFT_STONE -> pathLeft
-            SkystoneDetector.SkystonePosition.CENTER_STONE -> pathCenter
-            SkystoneDetector.SkystonePosition.RIGHT_STONE -> pathRight
-        }
-
-        path.forEach { point ->
+        getPath(position).forEach { point ->
             if (isStopRequested) return
             outtake.deactivateSpinner()
             asyncActions.forEach { it.get() }
@@ -166,7 +163,6 @@ abstract class AbstractAuto : LinearOpMode() {
                 Drive.MAX_JERK_ANG
             )
 
-
             goToPoint(point, xProfile, yProfile, rProfile)
             performAction(point.action)
         }
@@ -178,9 +174,8 @@ abstract class AbstractAuto : LinearOpMode() {
         robot.stop()
         sleep(500)
         wheels.setZeroPowerBehaviorAll(DcMotor.ZeroPowerBehavior.FLOAT)
-        while (!isStopRequested) {
+        while (!isStopRequested)
             Thread.yield()
-        }
     }
 
     private fun goToPoint(
@@ -218,9 +213,8 @@ abstract class AbstractAuto : LinearOpMode() {
             val yError = abs(RobotPos.targetY - RobotPos.currentY)
             val thetaError = abs(RobotPos.targetAngle - RobotPos.currentAngle)
 
-            if (xError < point.moveError && yError < point.moveError && thetaError < point.turnError) {
+            if (xError < point.moveError && yError < point.moveError && thetaError < point.turnError)
                 break
-            }
         }
     }
 
@@ -264,6 +258,12 @@ abstract class AbstractAuto : LinearOpMode() {
             rightRear.velocity = Drive.cmToTicks(-fieldOrientedX - fieldOrientedY + theta)
             rightFront.velocity = Drive.cmToTicks(fieldOrientedX - fieldOrientedY + theta)
         }
+    }
+
+    private fun getPath(position: SkystoneDetector.SkystonePosition) = when (position) {
+        SkystoneDetector.SkystonePosition.LEFT_STONE -> pathLeft
+        SkystoneDetector.SkystonePosition.CENTER_STONE -> pathCenter
+        SkystoneDetector.SkystonePosition.RIGHT_STONE -> pathRight
     }
 
     private fun resetServos() {
