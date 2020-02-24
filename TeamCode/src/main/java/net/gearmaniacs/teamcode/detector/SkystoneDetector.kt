@@ -1,19 +1,24 @@
 package net.gearmaniacs.teamcode.detector
 
 import org.firstinspires.ftc.robotcore.external.Telemetry
-import org.opencv.core.*
+import org.opencv.core.Core
+import org.opencv.core.Mat
+import org.opencv.core.Point
+import org.opencv.core.Rect
+import org.opencv.core.Scalar
 import org.opencv.imgproc.Imgproc
 import org.openftc.easyopencv.OpenCvPipeline
-import java.util.*
 
 class SkystoneDetector : OpenCvPipeline {
+
     enum class SkystonePosition {
         LEFT_STONE, CENTER_STONE, RIGHT_STONE
     }
 
-    // These are the mats we need, I will be explaining them as we go
-    private val matYCrCb = Mat()
+    private val matYCrCbMat = Mat()
     private val means = arrayListOf<Scalar>()
+    private val blocks = ArrayList<Rect>(3)
+
     private var firstStonePosition = 0.0
     private var secondStonePosition = 0.0
     private var thirdStonePosition = 0.0
@@ -27,7 +32,6 @@ class SkystoneDetector : OpenCvPipeline {
     @Volatile
     var skystonePosition: SkystonePosition? = null
         private set
-    val blocks = arrayListOf<Rect>()
 
     @JvmOverloads
     constructor(tl: Telemetry? = null) {
@@ -51,7 +55,7 @@ class SkystoneDetector : OpenCvPipeline {
         this.tl = tl
         skystonePosition = null
     }
-    //These will be the points for our rectangle
+
     /**
      * This will create the rectangles
      *
@@ -62,27 +66,21 @@ class SkystoneDetector : OpenCvPipeline {
      */
     private fun drawRectangle(frame: Mat, rect: Rect, color: Scalar, thickness: Int): Mat {
         Imgproc.rectangle(frame, rect, color, thickness)
-        //submat simply put is cropping the mat
         return frame.submat(rect)
     }
 
     override fun processFrame(input: Mat): Mat {
         setValues(input.width().toDouble(), input.height().toDouble())
         try {
-            /**
-             * input which is in RGB is the frame the camera gives
-             * We convert the input frame to the color space matYCrCb
-             * Then we store this converted color space in the mat matYCrCb
-             * For all the color spaces go to
-             * https://docs.opencv.org/3.4/d8/d01/group__imgproc__color__conversions.html
-             */
-            Imgproc.cvtColor(input, matYCrCb, Imgproc.COLOR_RGB2YCrCb)
-            for (stone in blocks!!) {
+            Imgproc.cvtColor(input, matYCrCbMat, Imgproc.COLOR_RGB2YCrCb)
+
+            for (stone in blocks) {
                 val currentMat = Mat()
-                Core.extractChannel(drawRectangle(matYCrCb, stone, Scalar(255.0, 0.0, 255.0), 2), currentMat, 2)
+                Core.extractChannel(drawRectangle(matYCrCbMat, stone, Scalar(255.0, 0.0, 255.0), 2), currentMat, 2)
                 means.add(Core.mean(currentMat))
                 currentMat.release()
             }
+
             var max = means[0]
             var biggestIndex = 0
             for (k in means) {
@@ -91,41 +89,44 @@ class SkystoneDetector : OpenCvPipeline {
                     biggestIndex = means.indexOf(k)
                 }
             }
+
             when (biggestIndex) {
                 0 -> {
                     skystonePosition = SkystonePosition.LEFT_STONE
-                    Imgproc.rectangle(input, blocks!![0], Scalar(0.0, 255.0, 0.0), 30)
-                    Imgproc.rectangle(input, blocks!![1], Scalar(255.0, 0.0, 0.0), 30)
-                    Imgproc.rectangle(input, blocks!![2], Scalar(255.0, 0.0, 0.0), 30)
+                    Imgproc.rectangle(input, blocks[0], Scalar(0.0, 255.0, 0.0), 30)
+                    Imgproc.rectangle(input, blocks[1], Scalar(255.0, 0.0, 0.0), 30)
+                    Imgproc.rectangle(input, blocks[2], Scalar(255.0, 0.0, 0.0), 30)
                 }
                 1 -> {
                     skystonePosition = SkystonePosition.CENTER_STONE
-                    Imgproc.rectangle(input, blocks!![0], Scalar(255.0, 0.0, 0.0), 30)
-                    Imgproc.rectangle(input, blocks!![1], Scalar(0.0, 255.0, 0.0), 30)
-                    Imgproc.rectangle(input, blocks!![2], Scalar(255.0, 0.0, 0.0), 30)
+                    Imgproc.rectangle(input, blocks[0], Scalar(255.0, 0.0, 0.0), 30)
+                    Imgproc.rectangle(input, blocks[1], Scalar(0.0, 255.0, 0.0), 30)
+                    Imgproc.rectangle(input, blocks[2], Scalar(255.0, 0.0, 0.0), 30)
                 }
                 2 -> {
-                    Imgproc.rectangle(input, blocks!![0], Scalar(255.0, 0.0, 0.0), 30)
-                    Imgproc.rectangle(input, blocks!![1], Scalar(255.0, 0.0, 0.0), 30)
-                    Imgproc.rectangle(input, blocks!![2], Scalar(0.0, 255.0, 0.0), 30)
                     skystonePosition = SkystonePosition.RIGHT_STONE
+                    Imgproc.rectangle(input, blocks[0], Scalar(255.0, 0.0, 0.0), 30)
+                    Imgproc.rectangle(input, blocks[1], Scalar(255.0, 0.0, 0.0), 30)
+                    Imgproc.rectangle(input, blocks[2], Scalar(0.0, 255.0, 0.0), 30)
                 }
                 else -> {
                     skystonePosition = SkystonePosition.CENTER_STONE
-                    Imgproc.rectangle(input, blocks!![0], Scalar(255.0, 0.0, 0.0), 30)
-                    Imgproc.rectangle(input, blocks!![1], Scalar(255.0, 0.0, 0.0), 30)
-                    Imgproc.rectangle(input, blocks!![2], Scalar(255.0, 0.0, 0.0), 30)
+                    Imgproc.rectangle(input, blocks[0], Scalar(255.0, 0.0, 0.0), 30)
+                    Imgproc.rectangle(input, blocks[1], Scalar(255.0, 0.0, 0.0), 30)
+                    Imgproc.rectangle(input, blocks[2], Scalar(255.0, 0.0, 0.0), 30)
                 }
             }
-            if (tl != null) {
-                tl!!.addData("Skystone Position", skystonePosition)
-                tl!!.update()
+
+            tl?.let {
+                it.addData("Skystone Position", skystonePosition)
+                it.update()
             }
+
             means.clear()
         } catch (e: Exception) {
-            if (tl != null) {
-                tl!!.addData("Exception", e)
-                tl!!.update()
+            tl?.let {
+                it.addData("Exception", e)
+                it.update()
             }
         }
         return input
@@ -149,18 +150,21 @@ class SkystoneDetector : OpenCvPipeline {
             firstStonePosition = firstSkystonePercentage / 100 * width
             secondStonePosition = firstStonePosition + spacing
             thirdStonePosition = secondStonePosition + spacing
+
             blocks.add(
                 Rect(
                     Point(firstStonePosition - stoneWidth / 2, 0.50 * height - stoneHeight / 2),
                     Point(firstStonePosition + stoneWidth / 2, 0.50 * height + stoneHeight / 2)
                 )
             )
+
             blocks.add(
                 Rect(
                     Point(secondStonePosition - stoneWidth / 2, 0.50 * height - stoneHeight / 2),
                     Point(secondStonePosition + stoneWidth / 2, 0.50 * height + stoneHeight / 2)
                 )
             )
+
             blocks.add(
                 Rect(
                     Point(thirdStonePosition - stoneWidth / 2, 0.50 * height - stoneHeight / 2),

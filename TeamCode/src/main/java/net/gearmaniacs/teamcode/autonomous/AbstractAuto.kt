@@ -102,6 +102,7 @@ abstract class AbstractAuto : LinearOpMode() {
 
         while (!isStarted) {
             val position = pipeline.skystonePosition ?: SkystoneDetector.SkystonePosition.CENTER_STONE
+
             with(telemetry) {
                 if (usesDetector)
                     addData("Skystone Position", position)
@@ -109,12 +110,13 @@ abstract class AbstractAuto : LinearOpMode() {
                 addData("Path Size", getPath(position).size)
                 update()
             }
+
             Thread.yield()
         }
 
         // Stop Detector
         val position =
-            (if (usesDetector) pipeline.skystonePosition else null) ?: SkystoneDetector.SkystonePosition.CENTER_STONE
+            pipeline.skystonePosition.takeIf { usesDetector } ?: SkystoneDetector.SkystonePosition.CENTER_STONE
         if (usesDetector)
             manager.stop()
 
@@ -204,7 +206,7 @@ abstract class AbstractAuto : LinearOpMode() {
             val x = xPid.update(RobotPos.currentX, xState.v)
             val y = yPid.update(RobotPos.currentY, yState.v)
             val theta = rPid.update(RobotPos.currentAngle, rState.v)
-            movement(x * point.moveSpeed, y * point.moveSpeed, theta * point.turnSpeed)
+            movement(x, y, theta)
 
             printTelemetry(telemetry, xState, yState, rState)
             //printTelemetry(FtcDashboard.getInstance().telemetry, xState, yState, rState)

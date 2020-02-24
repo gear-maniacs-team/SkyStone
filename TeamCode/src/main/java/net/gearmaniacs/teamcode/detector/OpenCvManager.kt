@@ -40,12 +40,13 @@ class OpenCvManager(private var pipeline: OpenCvPipeline) : IHardware {
         Log.v("CpenCvManager", "Trying to start Camera")
         return try {
             init(hardwareMap)
+            Thread.sleep(1500)
             start()
             Log.v("CpenCvManager", "Camera started successfully")
             true
         } catch (e: Exception) {
             e.printStackTrace()
-            Log.v("CpenCvManager", "Camera strat failed")
+            Log.v("CpenCvManager", "Camera start failed")
             false
         }
     }
@@ -78,4 +79,3 @@ class OpenCvManager(private var pipeline: OpenCvPipeline) : IHardware {
         telemetry.addData("Overhead time ms", camera.overheadTimeMs)
     }
 }
-

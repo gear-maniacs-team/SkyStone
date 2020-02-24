@@ -91,7 +91,7 @@ class TeamRobot(
                 it.update()
             }
 
-//            Thread.yield()
+            Thread.yield()
         }
     }
 

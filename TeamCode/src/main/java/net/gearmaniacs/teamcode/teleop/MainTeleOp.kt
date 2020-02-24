@@ -199,12 +199,10 @@ abstract class MainTeleOp : TeamOpMode() {
         liftTargetPosition += posChange
 
         // Let's be honest, we can't trust the drivers
-        if (!(gamepad2.right_trigger > 0.1)) {
-            if (liftTargetPosition > MAX_LIFT_HEIGHT_TICKS)
-                liftTargetPosition = MAX_LIFT_HEIGHT_TICKS
-            if (liftTargetPosition < 0)
-                liftTargetPosition = 0
-        }
+        if (liftTargetPosition > MAX_LIFT_HEIGHT_TICKS)
+            liftTargetPosition = MAX_LIFT_HEIGHT_TICKS
+        if (liftTargetPosition < 0)
+            liftTargetPosition = 0
         if (gamepad2.back) {
             liftTargetPosition = 0
         }
@@ -272,14 +270,14 @@ abstract class MainTeleOp : TeamOpMode() {
         outtake.semiExtend()
         Thread.sleep(400)
         lift.setPowerAll(0.5)
-        val liftFinalHeight = 1250
-        lift.setTargetPositionAll(liftFinalHeight)
+        val finalHeight = 1250
+        lift.setTargetPositionAll(finalHeight)
         Thread.sleep(800)
 
         extensionToggle.value = true
         spinnerToggle.value = true
         gripperToggle.value = true
-        liftTargetPosition = liftFinalHeight
+        liftTargetPosition = finalHeight
     }
 
     @Suppress("FunctionName")

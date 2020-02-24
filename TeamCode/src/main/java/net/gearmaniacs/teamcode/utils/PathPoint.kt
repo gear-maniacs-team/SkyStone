@@ -18,17 +18,15 @@ data class PathPoint(
     val x: Double,
     val y: Double,
     val angle: Double,
-    val moveSpeed: Double = 1.0,
-    val turnSpeed: Double = 1.0,
     val moveError: Double = 2.0,
     val turnError: Double = Math.toRadians(5.0),
     val action: Int = PathAction.NO_ACTION
 ) {
     override fun toString(): String = buildString {
         append("PathPoint(")
-        append(String.format("%.4f", x))
-        append(String.format("%.4f", y))
-        append(String.format("%.4f", angle))
+        append(String.format("%.2f", x))
+        append(String.format("%.2f", y))
+        append(String.format("%.3f", angle))
         append(')')
     }
 }
