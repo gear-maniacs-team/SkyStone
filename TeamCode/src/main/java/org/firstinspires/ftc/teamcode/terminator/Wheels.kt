@@ -19,13 +19,17 @@ class Wheels {
         backLeft = dcMotors["left_rear"] as DcMotorEx
         backRight = dcMotors["right_rear"] as DcMotorEx
 
-        frontLeft.direction = DcMotorSimple.Direction.REVERSE
-        backLeft.direction = DcMotorSimple.Direction.REVERSE
+        frontLeft.direction = DcMotorSimple.Direction.FORWARD
+        backLeft.direction = DcMotorSimple.Direction.FORWARD
+        backRight.direction = DcMotorSimple.Direction.REVERSE
+        frontRight.direction = DcMotorSimple.Direction.REVERSE
     }
 
     fun waitForMotors() {
         while (frontLeft.isBusy || frontRight.isBusy || backLeft.isBusy || backRight.isBusy)
             Thread.sleep(10)
+
+        setPower(0.0)
     }
 
     fun setPower(power: Double) {
@@ -49,16 +53,6 @@ class Wheels {
         backRight.mode = runMode
     }
 
-    /*fun rotateTicks(ticks : Int, power : Double, direction: DcMotorSimple.Direction) {
-
-       frontLeft.direction = direction
-       frontLeft.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-       frontLeft.targetPosition = ticks
-       frontLeft.power = power
-       frontLeft.mode = DcMotor.RunMode.RUN_TO_POSITION
-       waitForMotor()
-   }*/
-
     fun goForwardCm(distance: Double, power: Double) {
         val ticks: Int = cmToTick(distance).toInt()
 
@@ -68,22 +62,34 @@ class Wheels {
         backRight.startMotor(power, ticks)
     }
 
-    fun goBackCm(distance: Double, power: Double) = goForwardCm(distance, -power)
+    fun goBackCm(distance: Double, power: Double) = goForwardCm(-distance, power)
 
-    fun goLeftCm(distance: Double, power: Double) = goRightCm(distance, -power)
+    fun goLeftCm(distance: Double, power: Double) = goRightCm(-distance, power)
 
     fun goRightCm(distance: Double, power: Double) {
         val ticks: Int = cmToTick(distance).toInt()
 
         frontLeft.startMotor(power, ticks)
-        frontRight.startMotor(-power, ticks)
-        backLeft.startMotor(-power, ticks)
+        frontRight.startMotor(power, -ticks)
+        backLeft.startMotor(power, -ticks)
         backRight.startMotor(power, ticks)
     }
 
+    fun rotateLeft(distance: Double, power: Double) = rotateRight(-distance, power)
+
+    fun rotateRight(distance: Double, power: Double) {
+        val ticks = cmToTick(distance).toInt()
+
+        frontLeft.startMotor(power, ticks)
+        frontRight.startMotor(power, ticks)
+        backLeft.startMotor(power, -ticks)
+        backRight.startMotor(power, -ticks)
+    }
+
     companion object {
-        const val DIAMETER = 10.0
-        const val ENCODER_COUNTS = 537.6
+        private const val DIAMETER = 10.0
+
+        private const val ENCODER_COUNTS = 537.6
 
         fun ticToRad(encoderCounts: Double, tickCount: Double): Double = (tickCount * Math.PI * 2) / encoderCounts
 
@@ -93,15 +99,15 @@ class Wheels {
 
         fun degToRad(deg: Double): Double = Math.toRadians(deg)
 
-        fun cmToTick(x: Double): Double = 7.0 // TODO: Finish this function
+        fun cmToTick(cm: Double): Double = (cm * ENCODER_COUNTS) / (DIAMETER * Math.PI)
 
         fun rpmToTps(rpm: Double, encoderCounts: Double): Double = rpm * (encoderCounts / 60.0)
 
         private fun DcMotorEx.startMotor(power: Double, target: Int) {
             mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
             targetPosition = target
-            this.power = power
             mode = DcMotor.RunMode.RUN_TO_POSITION
+            this.power = power
         }
     }
 }

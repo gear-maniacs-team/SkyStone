@@ -262,17 +262,17 @@ abstract class MainTeleOp : TeamOpMode() {
         Thread.sleep(500)
         outtake.extend()
         Thread.sleep(700)
-        outtake.spinner.position = 0.0
+        outtake.spinner.position = 0.02
         capStoneServo.position = 1.0
-        Thread.sleep(750)
+        Thread.sleep(800)
         lift.setTargetPositionAll(0)
         Thread.sleep(200)
         outtake.semiExtend()
         Thread.sleep(400)
-        lift.setPowerAll(0.5)
-        val finalHeight = 1250
+        lift.setPowerAll(0.35)
+        val finalHeight = 1000
         lift.setTargetPositionAll(finalHeight)
-        Thread.sleep(800)
+        Thread.sleep(1500)
 
         extensionToggle.value = true
         spinnerToggle.value = true

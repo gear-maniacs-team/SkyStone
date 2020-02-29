@@ -1,10 +1,12 @@
 package net.gearmaniacs.teamcode.autonomous.paths
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
+import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import net.gearmaniacs.teamcode.autonomous.SimpleAbstractAuto
 import net.gearmaniacs.teamcode.utils.PathAction
 import net.gearmaniacs.teamcode.utils.PathPoint
 
+@Disabled
 @Autonomous(name = "Foundation")
 class FoundationPath : SimpleAbstractAuto() {
     override val path = listOf(

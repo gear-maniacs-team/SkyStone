@@ -12,13 +12,13 @@ class RedPath : AbstractAuto() {
 
     override val pathLeft = listOf(
         PathPoint(
-            x = -5.0,
+            x = -7.0,
             y = 100.0,
             angle = Math.toRadians(80.0),
             action = PathAction.START_INTAKE
         ),
         PathPoint(
-            x = 6.0,
+            x = 5.0,
             y = 100.0,
             angle = Math.toRadians(85.0),
             action = PathAction.SLEEP_500
@@ -54,39 +54,39 @@ class RedPath : AbstractAuto() {
         ),
         PathPoint(
             x = 43.0,
-            y = 74.0,
+            y = 69.0,
             angle = 1.558,
             moveError = 2.5,
             action = PathAction.START_INTAKE
         ),
         PathPoint(
-            x = 45.0,
-            y = 100.0,
+            x = 47.0,
+            y = 105.0,
             angle = 1.558 - Math.toRadians(15.0)
         ),
         PathPoint(
-            x = 46.0,
-            y = 100.0,
+            x = 52.0,
+            y = 108.0,
             angle = 1.558 - Math.toRadians(10.0),
             action = PathAction.SLEEP_500
         ),
         PathPoint(
             x = -60.0,
-            y = 72.0,
+            y = 69.0,
             angle = 1.558,
-            moveError = 3.5,
+            moveError = 3.0,
             action = PathAction.STOP_INTAKE or PathAction.ATTACH_GRIPPER
         ),
         PathPoint(
             x = -180.0,
-            y = 80.0,
+            y = 70.0,
             angle = 1.558,
             moveError = 4.5,
             action = PathAction.EXTEND_OUTTAKE
         ),
         PathPoint(
             x = -190.0,
-            y = 80.0,
+            y = 70.0,
             angle = 1.558,
             moveError = 3.0,
             action = PathAction.SLEEP_500 or PathAction.RELEASE_GRIPPER or PathAction.RETRACT_OUTTAKE
@@ -141,7 +141,7 @@ class RedPath : AbstractAuto() {
         ),
         PathPoint(
             x = 23.0,
-            y = 76.0,
+            y = 68.0,
             angle = 1.558,
             moveError = 2.5,
             action = PathAction.START_INTAKE
@@ -184,12 +184,12 @@ class RedPath : AbstractAuto() {
         PathPoint(
             x = -40.0,
             y = 80.0,
-            angle = Math.toRadians(45.0),
+            angle = Math.toRadians(40.0),
             action = PathAction.START_INTAKE
         ),
         PathPoint(
-            x = -26.0,
-            y = 93.0,
+            x = -28.0,
+            y = 96.5,
             moveError = 1.5,
             angle = Math.toRadians(35.0),
             action = PathAction.SLEEP_500
@@ -232,12 +232,12 @@ class RedPath : AbstractAuto() {
         ),
         PathPoint(
             x = 16.0,
-            y = 110.0,
+            y = 105.0,
             angle = 1.558 - Math.toRadians(15.0)
         ),
         PathPoint(
             x = 20.0,
-            y = 110.0,
+            y = 105.0,
             angle = 1.558 - Math.toRadians(15.0),
             action = PathAction.SLEEP_500
         ),

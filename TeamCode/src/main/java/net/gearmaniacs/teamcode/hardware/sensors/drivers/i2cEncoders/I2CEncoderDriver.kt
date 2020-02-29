@@ -15,7 +15,6 @@ class I2CEncoderDriver(deviceClient: I2cDeviceSynch) : I2cDeviceSynchDevice<I2cD
 
     init {
         super.registerArmingStateCallback(false)
-
     }
 
     val currentPosition

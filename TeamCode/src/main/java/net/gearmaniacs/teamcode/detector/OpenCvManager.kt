@@ -40,7 +40,7 @@ class OpenCvManager(private var pipeline: OpenCvPipeline) : IHardware {
         Log.v("CpenCvManager", "Trying to start Camera")
         return try {
             init(hardwareMap)
-            Thread.sleep(1500)
+            Thread.sleep(2500)
             start()
             Log.v("CpenCvManager", "Camera started successfully")
             true
