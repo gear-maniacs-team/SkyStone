@@ -53,7 +53,7 @@ class I2CEncoderV2(val i2cInterface: II2CInterface) {
         write8(EncoderRegistry.REG_GCONF, gConfValue and 0xFF)
         write8(EncoderRegistry.REG_GCONF2, (gConfValue shr 8) and 0xFF)
         this.initializedGconf = gConfValue
-        this.dataType = usedDataType;
+        this.dataType = usedDataType
     }
 
     /**
@@ -68,9 +68,9 @@ class I2CEncoderV2(val i2cInterface: II2CInterface) {
      * Returns true if the status of the encoder changed, otherwise return false
      */
     fun updateStatus(): Boolean {
-        val status = this.readEncoderStatus();
+        val status = this.readEncoderStatus()
         if (status == 0) {
-            return false;
+            return false
         }
         if (EncoderStatus.PUSHR.isSetIn(status)) {
             this.callEvent(this.onButtonRelease)
@@ -478,7 +478,8 @@ class I2CEncoderV2(val i2cInterface: II2CInterface) {
         REG_GCONF2(0x30),
         REG_IDCODE(0x70),
         REG_VERSION(0x71),
-        REG_EEPROMS(0x80)
+        REG_EEPROMS(0x80),
+        LAST(REG_EEPROMS.address + 1)
     }
 
     enum class EncoderFadeStatus(val bValue: Int) {
