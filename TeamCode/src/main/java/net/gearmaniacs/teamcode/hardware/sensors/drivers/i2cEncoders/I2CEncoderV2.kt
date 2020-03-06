@@ -9,6 +9,9 @@ import net.gearmaniacs.teamcode.hardware.sensors.drivers.i2cEncoders.I2CEncoderV
 import net.gearmaniacs.teamcode.hardware.sensors.drivers.i2cEncoders.I2CEncoderV2.RMODConfig.X1
 import net.gearmaniacs.teamcode.hardware.sensors.drivers.i2cEncoders.I2CEncoderV2.WrapConfig.DISABLE
 
+/**
+ * http://www.duppa.net/i2c-encoder-v2-1/
+ */
 class I2CEncoderV2(val i2cInterface: II2CInterface) {
     private lateinit var dataType: EncoderDataType
     private var initializedGconf: Int = 0
