@@ -3,7 +3,7 @@ package net.gearmaniacs.teamcode.utils
 import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import net.gearmaniacs.teamcode.pursuit.CurvePoint
+import net.gearmaniacs.teamcode.milkshake.CurvePoint
 
 object PathParser {
 

@@ -44,6 +44,11 @@ class Encoders : IHardware, IUpdatable, Localizer {
         setModeAll(RunMode.RUN_WITHOUT_ENCODER)
     }
 
+    override fun start() {
+        setModeAll(RunMode.STOP_AND_RESET_ENCODER)
+        setModeAll(RunMode.RUN_WITHOUT_ENCODER)
+    }
+
     fun setModeAll(mode: RunMode) {
         left.mode = mode
         right.mode = mode
@@ -97,7 +102,7 @@ class Encoders : IHardware, IUpdatable, Localizer {
         val robot = TeamRobot.getRobot()
         if (robot == null || !robot.isOpModeActive) return
 
-        val leftPos = -left.getCurrentPosition(robot.bulkData2).toDouble()
+        val leftPos = left.getCurrentPosition(robot.bulkData2).toDouble()
         val rightPos = right.getCurrentPosition(robot.bulkData1).toDouble()
         val backPos = back.getCurrentPosition(robot.bulkData2).toDouble()
 
