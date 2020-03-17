@@ -1,6 +1,7 @@
 package net.gearmaniacs.teamcode.utils
 
-import net.gearmaniacs.teamcode.pursuit.Point
+import net.gearmaniacs.teamcode.milkshake.Point
+import java.lang.RuntimeException
 import kotlin.math.*
 
 object MathUtils {
@@ -26,48 +27,54 @@ object MathUtils {
         if (abs(startPoint.x - endPoint.x) < 0.003)
             startPoint.x = endPoint.x + 0.003
 
-        val m1 = (endPoint.y - startPoint.y) / (endPoint.x - startPoint.x)
+        val slope = (endPoint.y - startPoint.y) / (endPoint.x - startPoint.x)
+        val slopeSq = slope * slope
 
-        val quadraticA = 1.0 + m1 * m1
+        // Subtract the offset of the circle
+        val x = startPoint.x - circleCenter.x
+        val y = startPoint.y - circleCenter.y
 
-        val x1 = startPoint.x - circleCenter.x
-        val y1 = startPoint.y - circleCenter.y
-
-        val quadraticB = (2.0 * m1 * y1) - (2.0 * (m1 * m1) * x1)
-        val quadraticC = ((m1 * m1) * (x1 * x1)) - (2.0 * y1 * m1 * x1) + (y1 * y1) - (radius * radius)
+        val quadraticA = 1.0 + slopeSq
+        val quadraticB = (2.0 * slope * y) - (2.0 * slopeSq * x)
+        val quadraticC = (slopeSq * (x * x)) - (2.0 * y * slope * x) + (y * y) - (radius * radius)
 
         val allPoints = ArrayList<Point>(2)
 
         try {
-            var xRoot1 =
-                (-quadraticB + sqrt((quadraticB * quadraticB) - (4.0 * quadraticA * quadraticC))) / (2.0 * quadraticA)
-            var yRoot1 = m1 * (xRoot1 - x1) + y1
+            val delta = sqrt((quadraticB * quadraticB) - (4.0 * quadraticA * quadraticC))
+            if (delta.isNaN())
+                throw RuntimeException("Delta is NaN. Intersections couldn't be computed")
+
+            var xRoot1 = (-quadraticB + delta) / (2.0 * quadraticA)
+            var yRoot1 = slope * (xRoot1 - x) + y
 
             // Add back the offset of the circle
             xRoot1 += circleCenter.x
             yRoot1 += circleCenter.y
 
+            // TODO: Should we instead compute the min/max of y?
             val minX = min(startPoint.x, endPoint.x)
             val maxX = max(startPoint.x, endPoint.x)
 
-            if (xRoot1 > minX && xRoot1 < maxX)
+            if (minX < xRoot1 && xRoot1 < maxX)
                 allPoints.add(Point(xRoot1, yRoot1))
 
-            var xRoot2 =
-                (-quadraticB - sqrt((quadraticB * quadraticB) - (4.0 * quadraticA * quadraticC))) / (2.0 * quadraticA)
-            var yRoot2 = m1 * (xRoot2 - x1) + y1
+            var xRoot2 = (-quadraticB - delta) / (2.0 * quadraticA)
+            var yRoot2 = slope * (xRoot2 - x) + y
 
+            // Add back the offset of the circle
             xRoot2 += circleCenter.x
             yRoot2 += circleCenter.y
 
-            if (xRoot2 > minX && xRoot2 < maxX)
+            if (minX < xRoot2 && xRoot2 < maxX)
                 allPoints.add(Point(xRoot2, yRoot2))
         } catch (e: Exception) {
+            e.printStackTrace()
         }
 
         return allPoints
     }
 
     fun expo(input: Double, expoFactor: Double): Double =
-        expoFactor * input * input * input + (1 - expoFactor) * input
+        expoFactor * input * input * input + (1.0 - expoFactor) * input
 }
