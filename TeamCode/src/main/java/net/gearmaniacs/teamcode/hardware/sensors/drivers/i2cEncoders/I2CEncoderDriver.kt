@@ -1,10 +1,8 @@
 package net.gearmaniacs.teamcode.hardware.sensors.drivers.i2cEncoders
 
-import android.util.Log
 import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.hardware.I2cAddr
 import com.qualcomm.robotcore.hardware.I2cDeviceSynch
-import com.qualcomm.robotcore.hardware.I2cDeviceSynch.ReadWindow
 import com.qualcomm.robotcore.hardware.I2cDeviceSynchDevice
 import com.qualcomm.robotcore.hardware.configuration.annotations.DeviceProperties
 import com.qualcomm.robotcore.hardware.configuration.annotations.I2cDeviceType

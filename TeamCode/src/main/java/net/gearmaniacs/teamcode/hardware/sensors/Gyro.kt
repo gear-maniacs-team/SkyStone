@@ -13,6 +13,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference
 class Gyro : IHardware, IUpdatable {
 
     companion object {
+        private val axesRef = AxesReference.EXTRINSIC
+        private val angleOrder = AxesOrder.XYZ
+        private val angleUnit = AngleUnit.RADIANS
+
         fun computeAngle(lastAngle: Double, newAngle: Double): Double {
             var deltaAngle = newAngle - lastAngle
 
@@ -25,13 +29,10 @@ class Gyro : IHardware, IUpdatable {
         }
     }
 
-    private val axesRef = AxesReference.EXTRINSIC
-    private val angleOrder = AxesOrder.XYZ
-    private val angleUnit = AngleUnit.RADIANS
-
     private lateinit var imu: BNO055IMU
     private var lastAngle = 0.0
     var updateGlobalAngle = true
+
     @Volatile
     var angle = 0.0
         private set
@@ -55,11 +56,11 @@ class Gyro : IHardware, IUpdatable {
     }
 
     /*
+     * Computes the average angle of both IMU sensors in Radians
+     *
      * We have to process the angle because the imu works in euler angles so the Z axis is
      * returned as 0 to 3.14 or 0 to -3.14 rolling back to -3.124 or +3.124 when rotation passes
      * 3.14 radians. We detect this transition and track the total cumulative angle of rotation.
-     *
-     * @return the average angle of both IMU sensors in Radians
      */
     private fun updateAngleValue() {
         // The third angle is the Z angle, which is needed for heading

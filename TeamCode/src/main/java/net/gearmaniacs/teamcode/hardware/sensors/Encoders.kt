@@ -40,8 +40,7 @@ class Encoders : IHardware, IUpdatable, Localizer {
         right.direction = DcMotorSimple.Direction.FORWARD
         back.direction = DcMotorSimple.Direction.FORWARD
 
-        setModeAll(RunMode.STOP_AND_RESET_ENCODER)
-        setModeAll(RunMode.RUN_WITHOUT_ENCODER)
+        start()
     }
 
     override fun start() {

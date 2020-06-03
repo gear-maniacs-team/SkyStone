@@ -52,7 +52,7 @@ class I2CEncoderV2(val i2cInterface: II2CInterface) {
         Thread.sleep(SLEEP_TIME_AFTER_RESET)
 
         val gConfValue = usedDataType.bValue or wrapConfig.bValue or direction.bVal or pullUpConfig.bVal or
-                rmodConfig.bVal or encoderType.bVal or eepromBank.bVal or clkStrech.bValue or relMode.bValue
+            rmodConfig.bVal or encoderType.bVal or eepromBank.bVal or clkStrech.bValue or relMode.bValue
         write8(EncoderRegistry.REG_GCONF, gConfValue and 0xFF)
         write8(EncoderRegistry.REG_GCONF2, (gConfValue shr 8) and 0xFF)
         this.initializedGconf = gConfValue
@@ -377,6 +377,7 @@ class I2CEncoderV2(val i2cInterface: II2CInterface) {
     enum class EEPROM(val bVal: Int) {
         /** Select the first EEPROM bank */
         BANK1(0x40),
+
         /** Select the second EEPROM bank */
         BANK2(0x00)
     }
@@ -384,6 +385,7 @@ class I2CEncoderV2(val i2cInterface: II2CInterface) {
     enum class EncoderType(val bVal: Int) {
         /** Standard rotary encoder is soldered */
         STD(0x00),
+
         /** RGB illuminated encoder is soldered */
         RGB(0x20)
     }
@@ -391,6 +393,7 @@ class I2CEncoderV2(val i2cInterface: II2CInterface) {
     enum class RMODConfig(val bVal: Int) {
         /** Encoder in X1 mode */
         X1(0x00),
+
         /** Encoder in X2 mode */
         X2(0x10)
     }
@@ -398,6 +401,7 @@ class I2CEncoderV2(val i2cInterface: II2CInterface) {
     enum class PullupConfig(val bVal: Int) {
         /** Enable the internal pull-up on the INT pin */
         ENABLE(0x00),
+
         /** Disable the internal pull-up on the INT pin */
         DISABLE(0x08)
     }
@@ -405,6 +409,7 @@ class I2CEncoderV2(val i2cInterface: II2CInterface) {
     enum class Direction(val bVal: Int) {
         /** Rotate left side to increase the value counter */
         LEFT(0x04),
+
         /** Rotate right side to increase the value counter */
         RIGHT(0x00)
     }
@@ -414,6 +419,7 @@ class I2CEncoderV2(val i2cInterface: II2CInterface) {
          * Wrap enable. When the counter value reaches the CMAX+1, restart to the CMIN and vice versa
          */
         ENABLE(0x02),
+
         /**
          * Wrap disable. When the counter value reaches the CMAX or CMIN, the counter stops to increasing or decreasing
          */
@@ -433,6 +439,7 @@ class I2CEncoderV2(val i2cInterface: II2CInterface) {
     enum class EncoderDataType(val bValue: Int) {
         /** The Threshold, counter step and counter value are used with floating numbers */
         FLOAT(0x01),
+
         /** The Threshold, counter step and counter value are used with integer numbers */
         INT(0x00)
     }

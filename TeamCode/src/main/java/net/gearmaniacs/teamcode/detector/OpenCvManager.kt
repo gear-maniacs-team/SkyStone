@@ -72,10 +72,12 @@ class OpenCvManager(private var pipeline: OpenCvPipeline) : IHardware {
     fun getPipeline() = pipeline
 
     fun printTelemetry(telemetry: Telemetry) {
-        telemetry.addData("Frame Count", camera.frameCount)
-        telemetry.addData("FPS", String.format("%.2f", camera.fps))
-        telemetry.addData("Total frame time ms", camera.totalFrameTimeMs)
-        telemetry.addData("Pipeline time ms", camera.pipelineTimeMs)
-        telemetry.addData("Overhead time ms", camera.overheadTimeMs)
+        with(telemetry) {
+            addData("Frame Count", camera.frameCount)
+            addData("FPS", String.format("%.2f", camera.fps))
+            addData("Total frame time ms", camera.totalFrameTimeMs)
+            addData("Pipeline time ms", camera.pipelineTimeMs)
+            addData("Overhead time ms", camera.overheadTimeMs)
+        }
     }
 }

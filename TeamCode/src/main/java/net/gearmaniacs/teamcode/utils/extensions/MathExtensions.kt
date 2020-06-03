@@ -8,8 +8,6 @@ const val CM_TO_INCH = 0.394
 
 infix fun Double.epsilonEquals(other: Double) = abs(this - other) < MathUtils.EPSILON
 
-infix fun Double.smaller(other: Double) = abs(this) < other
-
 fun Double.coerceRange(minimumValue: Double): Double {
     return if (abs(this) < minimumValue) sign(this) * minimumValue else this
 }

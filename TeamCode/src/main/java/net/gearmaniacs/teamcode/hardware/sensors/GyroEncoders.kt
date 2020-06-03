@@ -124,7 +124,7 @@ class GyroEncoders : IHardware, IUpdatable, Localizer {
     }
 
     override fun update() {
-        val future = executor.submit(Callable<Double> {
+        val future = executor.submit(Callable {
             updateAngleValue()
         })
 
