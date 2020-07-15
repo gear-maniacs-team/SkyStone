@@ -1,9 +1,13 @@
 package org.firstinspires.ftc.teamcode.terminator
 
+import com.acmerobotics.dashboard.FtcDashboard
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
+import net.gearmaniacs.teamcode.RobotPos
+import net.gearmaniacs.teamcode.utils.MathUtils
 
 class Wheels {
 
@@ -26,10 +30,16 @@ class Wheels {
     }
 
     fun waitForMotors() {
-        while (frontLeft.isBusy || frontRight.isBusy || backLeft.isBusy || backRight.isBusy)
+        while (frontLeft.isBusy && frontRight.isBusy && backLeft.isBusy && backRight.isBusy) {
+            val packet = TelemetryPacket().apply {
+                put("frontLeft encoder", frontLeft.currentPosition)
+                put("frontRight encoder", frontRight.currentPosition)
+                put("backLeft encoder", backLeft.currentPosition)
+                put("backRight encoder", backRight.currentPosition)
+            }
+            FtcDashboard.getInstance().sendTelemetryPacket(packet)
             Thread.sleep(10)
-
-        setPower(0.0)
+        }
     }
 
     fun setPower(power: Double) {
@@ -51,6 +61,13 @@ class Wheels {
         frontRight.mode = runMode
         backLeft.mode = runMode
         backRight.mode = runMode
+    }
+
+    fun goForwardTick(ticks: Int, power: Double) {
+        frontLeft.startMotor(power, ticks)
+        frontRight.startMotor(power, ticks)
+        backLeft.startMotor(power, ticks)
+        backRight.startMotor(power, ticks)
     }
 
     fun goForwardCm(distance: Double, power: Double) {
@@ -85,6 +102,24 @@ class Wheels {
         backLeft.startMotor(power, -ticks)
         backRight.startMotor(power, -ticks)
     }
+
+    fun goRightForward(distance: Double, power: Double){
+        val ticks = cmToTick(distance).toInt()
+
+        frontLeft.startMotor(power,ticks)
+        backRight.startMotor(power, ticks)
+    }
+
+    fun goLeftBack(distance: Double,power: Double) = goRightForward(-distance, power)
+
+    fun goLeftForward(distance: Double, power: Double){
+        val ticks = cmToTick(distance).toInt()
+
+        frontRight.startMotor(power, ticks)
+        backLeft.startMotor(power, ticks)
+    }
+
+    fun goRightBack(distance: Double, power: Double) = goLeftForward(-distance, power)
 
     companion object {
         private const val DIAMETER = 10.0
