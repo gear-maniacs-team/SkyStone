@@ -31,9 +31,11 @@ class TeamRobot(
         private set
     lateinit var expansionHub2: ExpansionHubEx
         private set
+
     @Volatile
     var bulkData1: RevBulkData? = null
         private set
+
     @Volatile
     var bulkData2: RevBulkData? = null
         private set

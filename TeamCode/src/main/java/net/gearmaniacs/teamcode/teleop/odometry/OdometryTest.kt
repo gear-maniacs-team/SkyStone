@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamOpMode
 import net.gearmaniacs.teamcode.drive.DashboardUtil
+import net.gearmaniacs.teamcode.hardware.sensors.Encoders
 import net.gearmaniacs.teamcode.hardware.sensors.GyroEncoders
 import net.gearmaniacs.teamcode.utils.MathUtils.angleWrap
 import net.gearmaniacs.teamcode.utils.PerformanceProfiler
@@ -18,7 +19,7 @@ import kotlin.math.pow
 @TeleOp(name = "Odometry Test", group = "Odometry")
 open class OdometryTest : TeamOpMode() {
 
-    private val encoder = GyroEncoders()
+    private val encoder = Encoders()
     private val performanceProfiler = PerformanceProfiler()
     private val dashboard: FtcDashboard = FtcDashboard.getInstance()
 
@@ -28,7 +29,6 @@ open class OdometryTest : TeamOpMode() {
     private var nextIndexTrajectory = 1
 
     override fun init() {
-        robot.useBulkRead = false
         RobotPos.resetAll()
         initRobot(listOf(encoder), listOf(encoder))
     }
@@ -36,7 +36,7 @@ open class OdometryTest : TeamOpMode() {
     override fun loop() {
         performanceProfiler.update(telemetry)
 
-        val leftPos = 0 //-encoder.left.getCurrentPosition(robot.bulkData2)
+        val leftPos = encoder.left.getCurrentPosition(robot.bulkData2)
         val rightPos = encoder.right.getCurrentPosition(robot.bulkData1)
         val backPos = encoder.back.getCurrentPosition(robot.bulkData2)
 

@@ -29,6 +29,7 @@ class SkystoneDetector : OpenCvPipeline {
     private var defaultValues: Boolean
     private var spacing = 0.0
     private var tl: Telemetry? = null
+
     @Volatile
     var skystonePosition: SkystonePosition? = null
         private set

@@ -15,8 +15,10 @@ import kotlin.concurrent.thread
 class VuforiaManager : IHardware {
 
     private val lock = Any()
+
     @Volatile
     private var initialized = false
+
     @Volatile
     private var tfod: TFObjectDetector? = null
 

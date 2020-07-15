@@ -5,7 +5,7 @@ package net.gearmaniacs.teamcode.utils
  */
 class DelayedBoolean @JvmOverloads constructor(
     private val delay: Long,
-    private var transitionTimestamp: Long = System.currentTimeMillis(),
+    private var transitionTimestamp: Long = RobotClock.millis(),
     initialValue: Boolean = false
 ) {
 
@@ -13,7 +13,7 @@ class DelayedBoolean @JvmOverloads constructor(
 
     var value: Boolean
         get() = _value
-        set(newValue) = update(System.currentTimeMillis(), newValue)
+        set(newValue) = update(RobotClock.millis(), newValue)
 
     fun invert() = updateAndGet(!value)
 
@@ -31,5 +31,5 @@ class DelayedBoolean @JvmOverloads constructor(
         return _value
     }
 
-    fun updateAndGet(newValue: Boolean) = updateAndGet(System.currentTimeMillis(), newValue)
+    fun updateAndGet(newValue: Boolean) = updateAndGet(RobotClock.millis(), newValue)
 }

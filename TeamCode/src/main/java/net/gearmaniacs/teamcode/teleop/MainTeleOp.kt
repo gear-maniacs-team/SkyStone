@@ -41,7 +41,7 @@ abstract class MainTeleOp : TeamOpMode() {
 
     private var resetAngle = 0.0
     private var resetRotationPid = true
-    private val rotationPid = PidController(0.4, 0.0, 0.0).apply {
+    private val rotationPid = PidController(0.01, 0.0, 0.0).apply {
         setOutputRange(-0.3, 0.3)
     }
 
@@ -82,7 +82,6 @@ abstract class MainTeleOp : TeamOpMode() {
 
         precisionModeOn = gamepad1.right_bumper
         if (gamepad1.b) fieldOrientedToggle.invert()
-        rotationPid.Kp = if (precisionModeOn) 0.0 else 0.4
 
         if (gamepad1.back) {
             resetAngle = RobotPos.currentAngle
