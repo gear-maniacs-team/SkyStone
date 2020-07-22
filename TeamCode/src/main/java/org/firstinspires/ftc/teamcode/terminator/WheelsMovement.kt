@@ -13,10 +13,7 @@ import net.gearmaniacs.teamcode.utils.RobotClock
 @Autonomous(name = "Boogaloo", group = "Boogaloo")
 class FoundationRed : LinearOpMode() {
 
-
-    private val YPID = PIDController(0.04,0.000005,4.0)
-    private val APID = PIDController(0.04,0.000005,4.0)//69420
-    private val XPID = PIDController(0.05,0.000005,4.0)
+    private var pidSystem = PIDSystem()
     private val robot = TeamRobot()
     private val wheels = Wheels()
     private val encoders = Encoders()
@@ -27,23 +24,13 @@ class FoundationRed : LinearOpMode() {
         wheels.init(hardwareMap)
         robot.start()
         waitForStart()
-        YPID.setPoint = 45.0
-        APID.setPoint = 90.0
-        XPID.setPoint = 45.0
-        YPID.setOutputRange(-1.0, 1.0)
-        APID.setOutputRange(-1.0, 1.0)
-        XPID.setOutputRange(-1.0, 1.0)
+
+        pidSystem.addPoints(PathPoint(45.0, 45.0, 0.0), PathPoint(0.0,0.0,0.0))
+        pidSystem.init()
 
         while (opModeIsActive()){
 
-            val yResult = YPID.performPID(RobotPos.currentY)
-            val aResult = APID.performPID(Math.toDegrees(RobotPos.currentAngle))
-            val xResult = XPID.performPID(RobotPos.currentX)
-
-            wheels.frontLeft.power = yResult + aResult + xResult
-            wheels.frontRight.power = yResult - aResult - xResult
-            wheels.backLeft.power = yResult + aResult - xResult
-            wheels.backRight.power = yResult - aResult + xResult
+            pidSystem.run(robot, wheels)
 
             val packet = TelemetryPacket().apply {
                 put("XPos", RobotPos.currentX)
