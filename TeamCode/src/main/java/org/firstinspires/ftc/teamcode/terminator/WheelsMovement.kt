@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamRobot
+import net.gearmaniacs.teamcode.TeamRobot.Companion.isOpModeActive
 import net.gearmaniacs.teamcode.hardware.sensors.Encoders
 import net.gearmaniacs.teamcode.utils.RobotClock
 
@@ -25,12 +26,13 @@ class FoundationRed : LinearOpMode() {
         robot.start()
         waitForStart()
 
-        pidSystem.addPoints(PathPoint(45.0, 45.0, 0.0), PathPoint(0.0,0.0,0.0))
+        pidSystem.addPoints(PathPoint(0.0, 300.0, Math.toRadians(90.0)), PathPoint(80.0,300.0,Math.toRadians(180.0)),
+                    PathPoint(80.0,0.0,Math.toRadians(270.0)), PathPoint(0.0,0.0,Math.toRadians(360.0))
+        )
         pidSystem.init()
-
         while (opModeIsActive()){
 
-            pidSystem.run(robot, wheels)
+            pidSystem.run(wheels)
 
             val packet = TelemetryPacket().apply {
                 put("XPos", RobotPos.currentX)
@@ -38,6 +40,11 @@ class FoundationRed : LinearOpMode() {
                 put("Angle", Math.toDegrees(RobotPos.currentAngle))
             }
             FtcDashboard.getInstance().sendTelemetryPacket(packet)
+
+            if(pidSystem.currentPoint == pidSystem.pathSize()){
+                robot.stop()
+                return
+            }
         }
 
         robot.stop()

@@ -2,63 +2,68 @@ package org.firstinspires.ftc.teamcode.terminator
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamRobot
 import net.gearmaniacs.teamcode.utils.RobotClock
+import kotlin.math.cos
 import kotlin.math.sign
+import kotlin.math.sin
 
 class PIDSystem {
 
-    private val YPID = PIDController(0.04, 0.000005, 4.0)
-    private val APID = PIDController(0.04, 0.000005, 4.0)//69420
-    private val XPID = PIDController(0.05, 0.000005, 4.0)
+    private val YPID = PIDController(0.03, 0.0, 3.2)
+    private val APID = PIDController(1.0, 0.0, 4.0)//69420
+    private val XPID = PIDController(0.03, 0.0, 3.2)
 
     private var pathPoints = mutableListOf<PathPoint>()
-    private val movementApprox = 1.0
-    private val angleApprox = 2.5
-    private var currentPoint = 0
+    private val movementApprox = 5.0
+    private val angleApprox = 3.0
+    var currentPoint = 0
+        private set
     private val switchPointTime = 0.2
     private var isWaiting = false
-    private var lastTime = 0.0
+    private var lastTime = RobotClock.seconds()
 
     fun init() {
-        YPID.setOutputRange(-1.0, 1.0)
-        APID.setOutputRange(-1.0, 1.0)
-        XPID.setOutputRange(-1.0, 1.0)
+        YPID.setOutputRange(-0.33, 0.33)
+        APID.setOutputRange(-0.33, 0.33)
+        XPID.setOutputRange(-0.33, 0.33)
 
         setPoint(pathPoints[currentPoint])
     }
 
-    fun run(robot : TeamRobot, wheels : Wheels){
+    fun pathSize() = pathPoints.size
+
+    fun run(wheels : Wheels){
 
         println("currentPoint = $currentPoint")
         println("isWaiting = $isWaiting")
 
-        if (hasReachedPoint(pathPoints[currentPoint]))
-        {
-            isWaiting = true
-            lastTime = RobotClock.seconds()
-            if (RobotClock.seconds() - lastTime > switchPointTime)
-                isWaiting = false
+        if (hasReachedPoint(pathPoints[currentPoint])) {
 
-            if (currentPoint < pathPoints.size - 1)
+            if (currentPoint < pathPoints.size)
             {
-                setPoint(pathPoints[currentPoint])
                 currentPoint++
+                if(currentPoint == pathPoints.size){
+                    return
+                }
+                setPoint(pathPoints[currentPoint])
             }
-            else
-                robot.stop()
-        }
 
-        if (!isWaiting)
-        {
+        }
 
             val yResult = YPID.performPID(RobotPos.currentY)
-            val aResult = APID.performPID(Math.toDegrees(RobotPos.currentAngle))
+            val aResult = APID.performPID(RobotPos.currentAngle)
             val xResult = XPID.performPID(RobotPos.currentX)
 
-            wheels.frontLeft.power = yResult + aResult + xResult
-            wheels.frontRight.power = yResult - aResult - xResult
-            wheels.backLeft.power = yResult + aResult - xResult
-            wheels.backRight.power = yResult - aResult + xResult
-        }
+            val currentAngle = RobotPos.currentAngle
+            val sinOrientation = sin(currentAngle)
+            val cosOrientation = cos(currentAngle)
+
+            val fieldOrientedX = xResult * cosOrientation - yResult * sinOrientation
+            val fieldOrientedY = xResult * sinOrientation + yResult * cosOrientation
+
+            wheels.frontLeft.power = fieldOrientedY + aResult + fieldOrientedX
+            wheels.frontRight.power = fieldOrientedY - aResult - fieldOrientedX
+            wheels.backLeft.power = fieldOrientedY + aResult - fieldOrientedX
+            wheels.backRight.power = fieldOrientedY - aResult + fieldOrientedX
 
     }
 
@@ -85,7 +90,7 @@ class PIDSystem {
     private fun hasReachedPoint(point : PathPoint): Boolean {
         return isApprox(point.X, RobotPos.currentX, movementApprox)
                 && isApprox(point.Y, RobotPos.currentY, movementApprox)
-                && isApprox(point.angle, RobotPos.currentAngle, angleApprox)
+                && isApprox(point.angle, RobotPos.currentAngle, Math.toRadians(angleApprox))
     }
 
 }
