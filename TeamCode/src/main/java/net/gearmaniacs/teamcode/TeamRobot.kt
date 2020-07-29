@@ -14,6 +14,7 @@ import net.gearmaniacs.teamcode.utils.extensions.justTry
 import org.firstinspires.ftc.robotcore.internal.opmode.OpModeManagerImpl
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil
 import org.firstinspires.ftc.robotcore.internal.ui.UILocation
+import org.firstinspires.ftc.teamcode.terminator.Wheels
 import org.openftc.revextensions2.ExpansionHubEx
 import org.openftc.revextensions2.RevBulkData
 import kotlin.concurrent.thread

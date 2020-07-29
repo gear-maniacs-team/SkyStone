@@ -6,9 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.TeamRobot
-import net.gearmaniacs.teamcode.TeamRobot.Companion.isOpModeActive
 import net.gearmaniacs.teamcode.hardware.sensors.Encoders
-import net.gearmaniacs.teamcode.utils.RobotClock
 
 //adb connect 192.168.43.1
 @Autonomous(name = "Boogaloo", group = "Boogaloo")
@@ -49,6 +47,4 @@ class FoundationRed : LinearOpMode() {
 
         robot.stop()
     }
-
-
 }

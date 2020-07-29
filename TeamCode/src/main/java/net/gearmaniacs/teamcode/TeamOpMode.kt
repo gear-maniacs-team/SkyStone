@@ -7,7 +7,7 @@ import net.gearmaniacs.teamcode.utils.IUpdatable
 
 abstract class TeamOpMode : OpMode() {
 
-    protected val robot = TeamRobot()
+    protected open val robot = TeamRobot()
 
     protected fun initRobot(
         hardwareList: List<IHardware> = emptyList(),
