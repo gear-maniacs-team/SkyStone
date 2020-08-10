@@ -51,8 +51,9 @@ class PIDController(
 
         if ((abs(totalError + error) * ki < maxOutput &&
                     abs(totalError + error) * ki > minOutput) || sign(totalError) != sign(error)
-        )
+        ) {
             totalError += 0.5 * (error + lastError) * deltaTime
+        }
 
         result = kp * error + kd * derivative + ki * totalError
         result = if (result epsilonEquals 0.0) 0.0 else result
@@ -60,14 +61,10 @@ class PIDController(
         previousTime = currentTime
     }
 
-    fun performPID(): Double {
-        calculate()
-        return result
-    }
-
     fun performPID(_input: Double): Double {
         input = _input
-        return performPID()
+        calculate()
+        return result
     }
 
     fun setInputRange(min: Double, max: Double) {

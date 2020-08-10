@@ -1,9 +1,7 @@
 package org.firstinspires.ftc.teamcode.terminator
 
-class PathPoint(
-    var X : Double,
-   var Y : Double,
-   var angle : Double
-) {
-
-}
+data class PathPoint(
+    val X: Double,
+    val Y: Double,
+    val angle: Double
+)

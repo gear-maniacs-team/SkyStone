@@ -7,16 +7,17 @@ import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
 import net.gearmaniacs.teamcode.RobotPos
+import net.gearmaniacs.teamcode.utils.IHardware
 import net.gearmaniacs.teamcode.utils.MathUtils
 
-class Wheels {
+class Wheels : IHardware {
 
     lateinit var frontLeft: DcMotorEx
     lateinit var frontRight: DcMotorEx
     lateinit var backLeft: DcMotorEx
     lateinit var backRight: DcMotorEx
 
-    fun init(hardwareMap: HardwareMap) {
+    override fun init(hardwareMap: HardwareMap) {
         val dcMotors = hardwareMap.dcMotor
         frontLeft = dcMotors["left_front"] as DcMotorEx
         frontRight = dcMotors["right_front"] as DcMotorEx
