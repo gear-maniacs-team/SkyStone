@@ -12,7 +12,7 @@ import net.gearmaniacs.teamcode.hardware.sensors.Encoders
 @Autonomous(name = "Boogaloo", group = "Boogaloo")
 class FoundationRed : LinearOpMode() {
 
-    private var pidSystem = PIDSystem()
+    private val pidSystem = PIDSystem()
     private val robot = TeamRobot()
     private val wheels = Wheels()
     private val encoders = Encoders()
@@ -24,11 +24,14 @@ class FoundationRed : LinearOpMode() {
         robot.start()
         waitForStart()
 
-        pidSystem.addPoints(PathPoint(0.0, 300.0, Math.toRadians(90.0)), PathPoint(80.0,300.0,Math.toRadians(180.0)),
-                    PathPoint(80.0,0.0,Math.toRadians(270.0)), PathPoint(0.0,0.0,Math.toRadians(360.0))
+        pidSystem.addPoints(
+            PathPoint(0.0, 300.0, Math.toRadians(90.0)),
+            PathPoint(80.0, 300.0, Math.toRadians(180.0)),
+            PathPoint(80.0, 0.0, Math.toRadians(270.0)),
+            PathPoint(0.0, 0.0, Math.toRadians(360.0))
         )
         pidSystem.init()
-        while (opModeIsActive()){
+        while (opModeIsActive()) {
 
             pidSystem.run(wheels)
 
@@ -39,7 +42,7 @@ class FoundationRed : LinearOpMode() {
             }
             FtcDashboard.getInstance().sendTelemetryPacket(packet)
 
-            if(pidSystem.currentPoint == pidSystem.pathSize()){
+            if (pidSystem.currentPoint == pidSystem.pathSize()) {
                 robot.stop()
                 return
             }

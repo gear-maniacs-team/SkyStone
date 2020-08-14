@@ -122,6 +122,20 @@ class Wheels : IHardware {
 
     fun goRightBack(distance: Double, power: Double) = goLeftForward(-distance, power)
 
+    fun setModeAll(mode: DcMotor.RunMode) {
+        frontLeft.mode = mode
+        frontRight.mode = mode
+        backLeft.mode = mode
+        backRight.mode = mode
+    }
+
+    fun setZeroPowerBehaviorAll(behavior: DcMotor.ZeroPowerBehavior) {
+        frontLeft.zeroPowerBehavior = behavior
+        frontRight.zeroPowerBehavior = behavior
+        backLeft.zeroPowerBehavior = behavior
+        backRight.zeroPowerBehavior = behavior
+    }
+
     companion object {
         private const val DIAMETER = 10.0
 
