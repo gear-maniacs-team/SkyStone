@@ -1,5 +1,6 @@
 package net.gearmaniacs.teamcode.utils
 
+import net.gearmaniacs.teamcode.RobotPos
 import net.gearmaniacs.teamcode.milkshake.Point
 import java.lang.RuntimeException
 import kotlin.math.*
@@ -77,4 +78,9 @@ object MathUtils {
 
     fun expo(input: Double, expoFactor: Double): Double =
         expoFactor * input * input * input + (1.0 - expoFactor) * input
+
+    fun rotateVector(x: Double, y: Double, radians: Radians): Pair<Double, Double> {
+        val sinAngle = sin(radians.value)
+        val cosAngle = cos(radians.value)
+        return (x * cosAngle - y * sinAngle) to (x * sinAngle + y * cosAngle)
 }

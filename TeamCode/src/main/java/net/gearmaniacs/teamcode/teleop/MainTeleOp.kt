@@ -1,5 +1,6 @@
 package net.gearmaniacs.teamcode.teleop
 
+import com.qualcomm.hardware.microsoft.MicrosoftGamepadXbox360
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.Servo
 import net.gearmaniacs.teamcode.RobotPos
@@ -14,6 +15,7 @@ import net.gearmaniacs.teamcode.utils.DelayedBoolean
 import net.gearmaniacs.teamcode.utils.MathUtils
 import net.gearmaniacs.teamcode.utils.MathUtils.expo
 import net.gearmaniacs.teamcode.utils.PerformanceProfiler
+import net.gearmaniacs.teamcode.utils.Radians
 import net.gearmaniacs.teamcode.utils.extensions.coerceRange
 import net.gearmaniacs.teamcode.utils.extensions.getDevice
 import kotlin.concurrent.thread
@@ -147,11 +149,8 @@ abstract class MainTeleOp : TeamOpMode() {
         if (abs(x) == 0.0 && abs(y) == 0.0) return
 
         val currentAngle = if (fieldOrientedToggle.value) RobotPos.currentAngle - resetAngle else 0.0
-        val sinOrientation = sin(currentAngle)
-        val cosOrientation = cos(currentAngle)
 
-        val fieldOrientedX = x * cosOrientation - y * sinOrientation
-        val fieldOrientedY = x * sinOrientation + y * cosOrientation
+        val (fieldOrientedX, fieldOrientedY) = MathUtils.rotateVector(x, y, Radians(currentAngle))
 
         val denominator = abs(fieldOrientedX) + abs(fieldOrientedY)
         var scaledX = fieldOrientedX * powerMultiplier

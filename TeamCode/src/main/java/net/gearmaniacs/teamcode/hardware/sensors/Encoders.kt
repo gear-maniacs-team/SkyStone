@@ -26,10 +26,15 @@ class Encoders : IHardware, IUpdatable, Localizer {
         private set
 
     private val performance = PerformanceProfiler()
+    private var showUpdateTime = false
+
+    private var lastUpdateTime = 0L
     private var previousLeftPosition = 0.0
     private var previousRightPosition = 0.0
     private var previousBackPosition = 0.0
-    private var showUpdateTime = false
+
+    @Volatile
+    private var robotSpeed: RobotSpeed? = null
 
     override fun init(hardwareMap: HardwareMap) {
         left = hardwareMap.getDevice("intake_left")
@@ -46,6 +51,8 @@ class Encoders : IHardware, IUpdatable, Localizer {
     override fun start() {
         setModeAll(RunMode.STOP_AND_RESET_ENCODER)
         setModeAll(RunMode.RUN_WITHOUT_ENCODER)
+
+        lastUpdateTime = RobotClock.millis()
     }
 
     fun setModeAll(mode: RunMode) {
@@ -53,6 +60,8 @@ class Encoders : IHardware, IUpdatable, Localizer {
         right.mode = mode
         back.mode = mode
     }
+
+    fun getRobotSpeed() = robotSpeed
 
     private fun arcUpdate(leftPos: Double, rightPos: Double, backPos: Double) {
         if (showUpdateTime) {
@@ -62,6 +71,7 @@ class Encoders : IHardware, IUpdatable, Localizer {
 
         val currentAngle = RobotPos.currentAngle
 
+        val deltaTime = RobotClock.millis() - lastUpdateTime
         val deltaBack = toCm(backPos - previousBackPosition)
         val deltaRight = toCm(rightPos - previousRightPosition)
         val deltaLeft = toCm(leftPos - previousLeftPosition)
@@ -81,21 +91,27 @@ class Encoders : IHardware, IUpdatable, Localizer {
         // Calculate and update the position values
         // Rotate the cartesian coordinate system by transforming into polar form, adding the angle and then
         // transforming back into cartesian form.
-        val sinAverageOrientation = sin(averageOrientation)
-        val cosAverageOrientation = cos(averageOrientation)
-        RobotPos.currentX += newX * cosAverageOrientation - newY * sinAverageOrientation
-        RobotPos.currentY += newX * sinAverageOrientation + newY * cosAverageOrientation
+        val rotatedVecPair = MathUtils.rotateVector(newX, newY, Radians(averageOrientation))
+        RobotPos.currentX += rotatedVecPair.first
+        RobotPos.currentY += rotatedVecPair.second
         RobotPos.currentAngle += deltaAngle
 
         previousBackPosition = backPos
         previousLeftPosition = leftPos
         previousRightPosition = rightPos
+
+        // Compute the current robot speed
+        robotSpeed = RobotSpeed(newX / deltaTime, newY / deltaTime, deltaAngle / deltaTime)
+
+        lastUpdateTime = RobotClock.millis()
     }
 
     // Please do not question this
     override var poseEstimate: Pose2d
         get() = Pose2d(RobotPos.currentY, -RobotPos.currentX, RobotPos.currentAngle)
-        set(value) { RobotPos.currentX = value.y; RobotPos.currentY = -value.x; RobotPos.currentAngle = value.heading }
+        set(value) {
+            RobotPos.currentX = value.y; RobotPos.currentY = -value.x; RobotPos.currentAngle = value.heading
+        }
 
     override fun update() {
         val robot = TeamRobot.getRobot()
@@ -107,6 +123,8 @@ class Encoders : IHardware, IUpdatable, Localizer {
 
         arcUpdate(leftPos, rightPos, backPos)
     }
+
+    data class RobotSpeed(val x: Double, val y: Double, val rot: Double)
 
     companion object {
         private const val M_DIAMETER = 7.2
