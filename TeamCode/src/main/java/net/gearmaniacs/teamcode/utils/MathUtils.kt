@@ -83,4 +83,5 @@ object MathUtils {
         val sinAngle = sin(radians.value)
         val cosAngle = cos(radians.value)
         return (x * cosAngle - y * sinAngle) to (x * sinAngle + y * cosAngle)
+    }
 }

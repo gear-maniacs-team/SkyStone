@@ -34,7 +34,7 @@ class Encoders : IHardware, IUpdatable, Localizer {
     private var previousBackPosition = 0.0
 
     @Volatile
-    private var robotSpeed: RobotSpeed? = null
+    private var robotSpeed: RobotSpeed = RobotSpeed(0.0,0.0,0.0)
 
     override fun init(hardwareMap: HardwareMap) {
         left = hardwareMap.getDevice("intake_left")
@@ -71,7 +71,7 @@ class Encoders : IHardware, IUpdatable, Localizer {
 
         val currentAngle = RobotPos.currentAngle
 
-        val deltaTime = RobotClock.millis() - lastUpdateTime
+        val deltaTime = (RobotClock.millis() - lastUpdateTime)/1000.0 //in seconds
         val deltaBack = toCm(backPos - previousBackPosition)
         val deltaRight = toCm(rightPos - previousRightPosition)
         val deltaLeft = toCm(leftPos - previousLeftPosition)

@@ -34,8 +34,9 @@ open class OdometryTest : TeamOpMode() {
     }
 
     override fun loop() {
-        performanceProfiler.update(telemetry)
 
+        performanceProfiler.update(telemetry)
+        val robotSpeed = encoder.getRobotSpeed()
         val leftPos = encoder.left.getCurrentPosition(robot.bulkData2)
         val rightPos = encoder.right.getCurrentPosition(robot.bulkData1)
         val backPos = encoder.back.getCurrentPosition(robot.bulkData2)
@@ -44,6 +45,9 @@ open class OdometryTest : TeamOpMode() {
             addData("X Position", "%.3f", RobotPos.currentX)
             addData("Y Position", "%.3f", RobotPos.currentY)
             addData("Radians", "%.3f", angleWrap(RobotPos.currentAngle))
+            addData("Speed X", "%.3f", robotSpeed.x)
+            addData("Speed Y", "%.3f", robotSpeed.y)
+            addData("Speed Rot", "%.3f", robotSpeed.rot)
             addLine()
             addData("Left encoder", leftPos)
             addData("Right encoder", rightPos)
@@ -54,6 +58,9 @@ open class OdometryTest : TeamOpMode() {
             put("X Position", RobotPos.currentX)
             put("Y Position", RobotPos.currentY)
             put("Radians", angleWrap(RobotPos.currentAngle))
+            put("X Vel", robotSpeed.x)
+            put("Y Vel", robotSpeed.y)
+            put("Angular Vel", robotSpeed.rot)
             put("Left encoder", leftPos)
             put("Right encoder", rightPos)
             put("Back encoder", backPos)
