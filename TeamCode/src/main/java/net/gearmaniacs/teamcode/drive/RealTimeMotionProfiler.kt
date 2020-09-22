@@ -1,6 +1,7 @@
 package net.gearmaniacs.teamcode.drive
 
 import net.gearmaniacs.teamcode.utils.Ranges
+import net.gearmaniacs.teamcode.utils.RobotClock
 import net.gearmaniacs.teamcode.utils.extensions.epsilonEquals
 import net.gearmaniacs.teamcode.utils.extensions.millisToSeconds
 import kotlin.math.abs
@@ -79,13 +80,13 @@ class RealTimeMotionProfiler(
 
         lastDirection = direction
         if (isTransitionPhase) {
-            lastTimeStamp = System.currentTimeMillis()
+            lastTimeStamp = RobotClock.millis()
             initialSpeed = lastCorrectedSpeed
             return lastCorrectedSpeed
         }
 
         val deltaTime =
-            (System.currentTimeMillis() - lastTimeStamp).millisToSeconds()
+            (RobotClock.millis() - lastTimeStamp).millisToSeconds()
 
 
         lastCorrectedSpeed = Ranges.clamp(
@@ -125,8 +126,4 @@ fun test() {
         println(realTimeMotionProfiler.computeCorrectedPower(0.0f))
         Thread.sleep(100)
     }
-}
-
-fun main() {
-    test()
 }
